@@ -191,6 +191,43 @@ export function useTours() {
     await fetchTours();
   }
 
+  async function updateTour(tourId: string, draft: TourDraft, status: "draft" | "published" = "published") {
+    if (!user) throw new Error("Not authenticated");
+    const totalMinutes =
+      draft.stops.reduce((s, stop) => s + stop.durationMinutes, 0) +
+      draft.stops.length * 15;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { error: tErr } = await db.from("tours").update({
+      name: draft.name,
+      category: draft.category as string,
+      description: draft.description,
+      status,
+      price_per_person: Number(draft.pricePerPerson),
+      max_guests: draft.maxGuests,
+      start_time: draft.startTime,
+      days_of_week: draft.daysOfWeek,
+      estimated_duration_minutes: totalMinutes,
+    }).eq("id", tourId);
+    if (tErr) throw tErr;
+
+    await db.from("tour_stops").delete().eq("tour_id", tourId);
+    if (draft.stops.length > 0) {
+      const { error: sErr } = await db.from("tour_stops").insert(
+        draft.stops.map((stop: { name: string; durationMinutes: number }, i: number) => ({
+          tour_id: tourId,
+          name: stop.name,
+          duration_minutes: stop.durationMinutes,
+          stop_order: i + 1,
+        }))
+      );
+      if (sErr) throw sErr;
+    }
+
+    await fetchTours();
+  }
+
   async function deleteTour(tourId: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).from("tours").delete().eq("id", tourId);

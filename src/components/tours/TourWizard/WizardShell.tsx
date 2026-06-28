@@ -83,9 +83,8 @@ interface WizardShellProps {
 export default function WizardShell({ tourId, seedDraft }: WizardShellProps = {}) {
   const router = useRouter();
   const { createTour, updateTour } = useTours();
-  const { profile } = useProfile();
   const [step, setStep] = useState(0);
-  const [draft, dispatch] = useReducer(reducer, seedDraft ?? emptyDraft);
+  const [draft, dispatch] = useReducer(reducer, seedDraft ?? initialDraft);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
