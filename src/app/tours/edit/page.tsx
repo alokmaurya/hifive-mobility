@@ -30,7 +30,9 @@ function EditTourContent() {
   }
 
   const seedDraft: TourDraft = {
-    name: tour.name,
+    city: tour.city,
+    state: tour.state,
+    country: tour.country || "India",
     category: tour.category,
     description: tour.description,
     stops: tour.stops.map((s) => ({ name: s.name, durationMinutes: s.durationMinutes, order: s.order })),
