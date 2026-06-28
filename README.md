@@ -1,2 +1,2 @@
-# hifive-mobality
-Mobality application
+# hifive-mobility
+Mobility application
