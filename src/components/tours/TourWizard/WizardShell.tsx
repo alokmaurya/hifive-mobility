@@ -72,11 +72,16 @@ function canProceed(step: number, draft: TourDraft): boolean {
   return true;
 }
 
-export default function WizardShell() {
+interface WizardShellProps {
+  tourId?: string;
+  seedDraft?: TourDraft;
+}
+
+export default function WizardShell({ tourId, seedDraft }: WizardShellProps = {}) {
   const router = useRouter();
-  const { createTour } = useTours();
+  const { createTour, updateTour } = useTours();
   const [step, setStep] = useState(0);
-  const [draft, dispatch] = useReducer(reducer, initialDraft);
+  const [draft, dispatch] = useReducer(reducer, seedDraft ?? initialDraft);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -88,7 +93,11 @@ export default function WizardShell() {
     setSaving(true);
     setSaveError(null);
     try {
-      await createTour(draft, status);
+      if (tourId) {
+        await updateTour(tourId, draft, status);
+      } else {
+        await createTour(draft, status);
+      }
       router.replace("/tours");
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "Failed to save tour");
@@ -112,7 +121,7 @@ export default function WizardShell() {
           )}
           <div className="flex-1">
             <p className="text-xs text-zinc-500">Step {step + 1} of {STEPS.length}</p>
-            <p className="text-sm font-bold text-white">{STEPS[step]}</p>
+            <p className="text-sm font-bold text-white">{tourId ? "Edit Tour" : "New Tour"} — {STEPS[step]}</p>
           </div>
         </div>
 
@@ -177,14 +186,14 @@ export default function WizardShell() {
               disabled={saving}
               className="flex-1 py-3.5 rounded-2xl border-2 border-zinc-700 text-sm font-bold text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 transition-colors"
             >
-              {saving ? "Saving…" : "Save Draft"}
+              {saving ? "Saving…" : tourId ? "Save Changes" : "Save Draft"}
             </button>
             <button
               onClick={() => handleSave("published")}
               disabled={saving}
               className="flex-1 py-3.5 rounded-2xl bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 disabled:opacity-50 transition-colors"
             >
-              {saving ? "Publishing…" : "Publish Tour 🎉"}
+              {saving ? "Saving…" : tourId ? "Update Tour" : "Publish Tour 🎉"}
             </button>
           </div>
         )}
