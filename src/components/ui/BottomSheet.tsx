@@ -22,15 +22,15 @@ export default function BottomSheet({ open, onClose, title, children }: BottomSh
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-stone-100">
-          <div className="w-10 h-1 bg-stone-200 rounded-full absolute top-2 left-1/2 -translate-x-1/2" />
-          {title && <h3 className="text-base font-bold text-stone-900 mt-2">{title}</h3>}
+      <div className="relative w-full max-w-md bg-zinc-900 rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-zinc-800">
+          <div className="w-10 h-1 bg-zinc-700 rounded-full absolute top-2 left-1/2 -translate-x-1/2" />
+          {title && <h3 className="text-base font-bold text-white mt-2">{title}</h3>}
           <button
             onClick={onClose}
-            className="ml-auto p-1.5 rounded-lg hover:bg-stone-100 transition-colors mt-2"
+            className="ml-auto p-1.5 rounded-lg hover:bg-zinc-800 transition-colors mt-2"
           >
-            <X className="w-4 h-4 text-stone-500" />
+            <X className="w-4 h-4 text-zinc-400" />
           </button>
         </div>
         <div className="overflow-y-auto px-5 py-4 flex-1">{children}</div>

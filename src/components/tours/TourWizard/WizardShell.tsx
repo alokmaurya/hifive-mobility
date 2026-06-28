@@ -79,22 +79,22 @@ export default function WizardShell() {
   const ok = canProceed(step, draft);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col max-w-md mx-auto">
+    <div className="min-h-screen bg-zinc-950 flex flex-col max-w-md mx-auto">
       {/* Header */}
-      <div className="bg-white border-b border-stone-100 sticky top-0 z-20">
+      <div className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-20">
         <div className="flex items-center gap-3 px-4 h-14">
           {step === 0 ? (
-            <Link href="/tours" className="p-2 -ml-2 rounded-xl hover:bg-stone-100">
-              <ChevronLeft className="w-5 h-5 text-stone-600" />
+            <Link href="/tours" className="p-2 -ml-2 rounded-xl hover:bg-zinc-800">
+              <ChevronLeft className="w-5 h-5 text-zinc-400" />
             </Link>
           ) : (
-            <button onClick={back} className="p-2 -ml-2 rounded-xl hover:bg-stone-100">
-              <ChevronLeft className="w-5 h-5 text-stone-600" />
+            <button onClick={back} className="p-2 -ml-2 rounded-xl hover:bg-zinc-800">
+              <ChevronLeft className="w-5 h-5 text-zinc-400" />
             </button>
           )}
           <div className="flex-1">
-            <p className="text-xs text-stone-400">Step {step + 1} of {STEPS.length}</p>
-            <p className="text-sm font-bold text-stone-900">{STEPS[step]}</p>
+            <p className="text-xs text-zinc-500">Step {step + 1} of {STEPS.length}</p>
+            <p className="text-sm font-bold text-white">{STEPS[step]}</p>
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export default function WizardShell() {
             <div
               key={i}
               className={`flex-1 h-1 rounded-full transition-colors ${
-                i <= step ? "bg-brand-500" : "bg-stone-200"
+                i <= step ? "bg-yellow-400" : "bg-zinc-800"
               }`}
             />
           ))}
@@ -140,25 +140,25 @@ export default function WizardShell() {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-white border-t border-stone-100 px-4 py-3 pb-safe">
+      <div className="bg-zinc-900 border-t border-zinc-800 px-4 py-3 pb-safe">
         {step < STEPS.length - 1 ? (
           <button
             onClick={next}
             disabled={!ok}
             className={`w-full py-3.5 rounded-2xl text-base font-bold transition-all ${
               ok
-                ? "bg-brand-500 text-white hover:bg-brand-600 shadow-lg shadow-brand-200"
-                : "bg-stone-100 text-stone-300 cursor-not-allowed"
+                ? "bg-yellow-400 text-black hover:bg-yellow-300"
+                : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
             }`}
           >
             Continue
           </button>
         ) : (
           <div className="flex gap-3">
-            <button className="flex-1 py-3.5 rounded-2xl border-2 border-stone-200 text-sm font-bold text-stone-600 hover:bg-stone-50 transition-colors">
+            <button className="flex-1 py-3.5 rounded-2xl border-2 border-zinc-700 text-sm font-bold text-zinc-400 hover:bg-zinc-800 transition-colors">
               Save Draft
             </button>
-            <button className="flex-1 py-3.5 rounded-2xl bg-teal-500 text-white text-sm font-bold hover:bg-teal-600 shadow-lg shadow-teal-100 transition-colors">
+            <button className="flex-1 py-3.5 rounded-2xl bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors">
               Publish Tour 🎉
             </button>
           </div>

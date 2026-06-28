@@ -28,11 +28,11 @@ export default function MyTours() {
   ];
 
   return (
-    <div className="min-h-screen bg-stone-50 pb-24">
+    <div className="min-h-screen bg-zinc-950 pb-24">
       <AppHeader title="My Tours" notificationCount={1} />
 
       {/* Tabs */}
-      <div className="bg-white border-b border-stone-100 sticky top-14 z-20">
+      <div className="bg-zinc-900 border-b border-zinc-800 sticky top-14 z-20">
         <div className="max-w-md mx-auto flex px-4">
           {tabs.map(({ key, label, count }) => (
             <button
@@ -40,13 +40,13 @@ export default function MyTours() {
               onClick={() => setTab(key)}
               className={`flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
                 tab === key
-                  ? "border-brand-500 text-brand-500"
-                  : "border-transparent text-stone-400 hover:text-stone-600"
+                  ? "border-yellow-400 text-yellow-400"
+                  : "border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
               {label}
               {count > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === key ? "bg-brand-100 text-brand-600" : "bg-stone-100 text-stone-400"}`}>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === key ? "bg-yellow-400/10 text-yellow-400" : "bg-zinc-800 text-zinc-500"}`}>
                   {count}
                 </span>
               )}
@@ -67,7 +67,7 @@ export default function MyTours() {
             description={tab === "published" ? "Create and publish your first sightseeing tour" : undefined}
             action={
               tab === "published" ? (
-                <Link href="/tours/new" className="inline-flex items-center gap-2 bg-brand-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl">
+                <Link href="/tours/new" className="inline-flex items-center gap-2 bg-yellow-400 text-black text-sm font-bold px-5 py-2.5 rounded-xl">
                   <Plus className="w-4 h-4" /> Create Tour
                 </Link>
               ) : undefined
@@ -79,24 +79,24 @@ export default function MyTours() {
       {/* FAB */}
       <Link
         href="/tours/new"
-        className="fixed bottom-20 right-4 z-30 w-14 h-14 bg-brand-500 rounded-full shadow-xl shadow-brand-300 flex items-center justify-center hover:bg-brand-600 transition-colors"
+        className="fixed bottom-20 right-4 z-30 w-14 h-14 bg-yellow-400 rounded-full shadow-xl shadow-yellow-400/30 flex items-center justify-center hover:bg-yellow-300 transition-colors"
       >
-        <Plus className="w-6 h-6 text-white" />
+        <Plus className="w-6 h-6 text-black" />
       </Link>
 
       {/* Action sheet */}
       <BottomSheet open={!!selected} onClose={() => setSelected(null)} title={selected?.name}>
         <div className="space-y-1">
           {[
-            { icon: Pencil, label: "Edit Tour", color: "text-stone-700" },
-            { icon: PauseCircle, label: selected?.status === "paused" ? "Resume Tour" : "Pause Tour", color: "text-amber-600" },
-            { icon: Copy, label: "Duplicate Tour", color: "text-teal-600" },
-            { icon: Trash2, label: "Delete Tour", color: "text-red-500" },
+            { icon: Pencil, label: "Edit Tour", color: "text-zinc-300" },
+            { icon: PauseCircle, label: selected?.status === "paused" ? "Resume Tour" : "Pause Tour", color: "text-yellow-400" },
+            { icon: Copy, label: "Duplicate Tour", color: "text-zinc-300" },
+            { icon: Trash2, label: "Delete Tour", color: "text-red-400" },
           ].map(({ icon: Icon, label, color }) => (
             <button
               key={label}
               onClick={() => setSelected(null)}
-              className="w-full flex items-center gap-3 px-1 py-3 rounded-xl hover:bg-stone-50 transition-colors"
+              className="w-full flex items-center gap-3 px-1 py-3 rounded-xl hover:bg-zinc-800 transition-colors"
             >
               <Icon className={`w-5 h-5 ${color}`} />
               <span className={`text-sm font-medium ${color}`}>{label}</span>

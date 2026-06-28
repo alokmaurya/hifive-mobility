@@ -31,11 +31,11 @@ export default function BookingsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-stone-50 pb-24">
+    <div className="min-h-screen bg-zinc-950 pb-24">
       <AppHeader title="Bookings" notificationCount={pendingCount} />
 
       {/* Tabs */}
-      <div className="bg-white border-b border-stone-100 sticky top-14 z-20">
+      <div className="bg-zinc-900 border-b border-zinc-800 sticky top-14 z-20">
         <div className="max-w-md mx-auto flex px-4">
           {tabs.map(({ key, label }) => (
             <button
@@ -43,8 +43,8 @@ export default function BookingsPage() {
               onClick={() => setTab(key)}
               className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 tab === key
-                  ? "border-brand-500 text-brand-500"
-                  : "border-transparent text-stone-400 hover:text-stone-600"
+                  ? "border-yellow-400 text-yellow-400"
+                  : "border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
               {label}

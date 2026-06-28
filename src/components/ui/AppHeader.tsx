@@ -23,35 +23,35 @@ export default function AppHeader({
   return (
     <header
       className={`sticky top-0 z-30 px-4 h-14 flex items-center justify-between ${
-        transparent ? "bg-transparent" : "bg-white border-b border-stone-100"
+        transparent ? "bg-transparent" : "bg-zinc-900 border-b border-zinc-800"
       }`}
     >
       <div className="flex items-center gap-2">
         {showBack ? (
           <Link
             href={backHref}
-            className="p-2 -ml-2 rounded-xl hover:bg-stone-100 transition-colors"
+            className="p-2 -ml-2 rounded-xl hover:bg-zinc-800 transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-stone-700" />
+            <ChevronLeft className="w-5 h-5 text-zinc-300" />
           </Link>
         ) : null}
         {title ? (
-          <h1 className="text-base font-bold text-stone-900">{title}</h1>
+          <h1 className="text-base font-bold text-white">{title}</h1>
         ) : (
           <div className="flex items-center gap-1.5">
             <span className="text-xl">🧭</span>
-            <span className="text-base font-bold text-stone-900">HiFive</span>
-            <span className="text-base font-bold text-brand-500">Tours</span>
+            <span className="text-base font-bold text-white">HiFive</span>
+            <span className="text-base font-bold text-yellow-400">Tours</span>
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-2">
         {rightSlot}
-        <button className="relative p-2 rounded-xl hover:bg-stone-100 transition-colors">
-          <Bell className="w-5 h-5 text-stone-600" />
+        <button className="relative p-2 rounded-xl hover:bg-zinc-800 transition-colors">
+          <Bell className="w-5 h-5 text-zinc-400" />
           {notificationCount > 0 && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-brand-500 rounded-full" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full" />
           )}
         </button>
       </div>
