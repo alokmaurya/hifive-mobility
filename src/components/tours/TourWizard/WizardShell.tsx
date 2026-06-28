@@ -3,11 +3,13 @@
 import { useReducer, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { TourDraft, TourCategory } from "@/types/tour";
 import Step1BasicInfo from "./Step1BasicInfo";
 import Step2Stops from "./Step2Stops";
 import Step3Schedule from "./Step3Schedule";
 import Step4Preview from "./Step4Preview";
+import { useTours } from "@/hooks/useTours";
 
 const STEPS = ["Basic Info", "Stops", "Schedule", "Preview"];
 
@@ -71,12 +73,28 @@ function canProceed(step: number, draft: TourDraft): boolean {
 }
 
 export default function WizardShell() {
+  const router = useRouter();
+  const { createTour } = useTours();
   const [step, setStep] = useState(0);
   const [draft, dispatch] = useReducer(reducer, initialDraft);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
   const ok = canProceed(step, draft);
+
+  async function handleSave(status: "draft" | "published") {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await createTour(draft, status);
+      router.replace("/tours");
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Failed to save tour");
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col max-w-md mx-auto">
@@ -103,9 +121,7 @@ export default function WizardShell() {
           {STEPS.map((_, i) => (
             <div
               key={i}
-              className={`flex-1 h-1 rounded-full transition-colors ${
-                i <= step ? "bg-yellow-400" : "bg-zinc-800"
-              }`}
+              className={`flex-1 h-1 rounded-full transition-colors ${i <= step ? "bg-yellow-400" : "bg-zinc-800"}`}
             />
           ))}
         </div>
@@ -141,25 +157,34 @@ export default function WizardShell() {
 
       {/* Footer CTA */}
       <div className="bg-zinc-900 border-t border-zinc-800 px-4 py-3 pb-safe">
+        {saveError && (
+          <p className="text-xs text-red-400 mb-2 text-center">{saveError}</p>
+        )}
         {step < STEPS.length - 1 ? (
           <button
             onClick={next}
             disabled={!ok}
             className={`w-full py-3.5 rounded-2xl text-base font-bold transition-all ${
-              ok
-                ? "bg-yellow-400 text-black hover:bg-yellow-300"
-                : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+              ok ? "bg-yellow-400 text-black hover:bg-yellow-300" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
             }`}
           >
             Continue
           </button>
         ) : (
           <div className="flex gap-3">
-            <button className="flex-1 py-3.5 rounded-2xl border-2 border-zinc-700 text-sm font-bold text-zinc-400 hover:bg-zinc-800 transition-colors">
-              Save Draft
+            <button
+              onClick={() => handleSave("draft")}
+              disabled={saving}
+              className="flex-1 py-3.5 rounded-2xl border-2 border-zinc-700 text-sm font-bold text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Saving…" : "Save Draft"}
             </button>
-            <button className="flex-1 py-3.5 rounded-2xl bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors">
-              Publish Tour 🎉
+            <button
+              onClick={() => handleSave("published")}
+              disabled={saving}
+              className="flex-1 py-3.5 rounded-2xl bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 disabled:opacity-50 transition-colors"
+            >
+              {saving ? "Publishing…" : "Publish Tour 🎉"}
             </button>
           </div>
         )}

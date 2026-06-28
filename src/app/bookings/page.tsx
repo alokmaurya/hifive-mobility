@@ -5,23 +5,16 @@ import AppHeader from "@/components/ui/AppHeader";
 import BottomNav from "@/components/ui/BottomNav";
 import BookingCard from "@/components/bookings/BookingCard";
 import EmptyState from "@/components/ui/EmptyState";
-import { mockBookings } from "@/lib/mockData";
-import type { Booking, BookingStatus } from "@/types/tour";
+import RequireAuth from "@/components/ui/RequireAuth";
+import { useBookings } from "@/hooks/useBookings";
 
 type Tab = "pending" | "confirmed" | "cancelled";
 
-export default function BookingsPage() {
+function BookingsContent() {
+  const { bookings, loading, updateBookingStatus } = useBookings();
   const [tab, setTab] = useState<Tab>("pending");
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
 
   const filtered = bookings.filter((b) => b.status === tab);
-
-  const handleConfirm = (id: string) =>
-    setBookings((prev) => prev.map((b) => b.id === id ? { ...b, status: "confirmed" as BookingStatus } : b));
-
-  const handleCancel = (id: string) =>
-    setBookings((prev) => prev.map((b) => b.id === id ? { ...b, status: "cancelled" as BookingStatus } : b));
-
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
   const tabs: { key: Tab; label: string }[] = [
@@ -54,13 +47,19 @@ export default function BookingsPage() {
       </div>
 
       <div className="max-w-md mx-auto px-4 pt-4 space-y-3">
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-20 bg-zinc-900 rounded-2xl border border-zinc-800 animate-pulse" />
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
           filtered.map((booking) => (
             <BookingCard
               key={booking.id}
               booking={booking}
-              onConfirm={handleConfirm}
-              onCancel={handleCancel}
+              onConfirm={(id) => updateBookingStatus(id, "confirmed")}
+              onCancel={(id) => updateBookingStatus(id, "cancelled")}
             />
           ))
         ) : (
@@ -74,5 +73,13 @@ export default function BookingsPage() {
 
       <BottomNav />
     </div>
+  );
+}
+
+export default function BookingsPage() {
+  return (
+    <RequireAuth>
+      <BookingsContent />
+    </RequireAuth>
   );
 }

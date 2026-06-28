@@ -8,28 +8,43 @@ import BottomNav from "@/components/ui/BottomNav";
 import TourCard from "@/components/tours/TourCard";
 import BottomSheet from "@/components/ui/BottomSheet";
 import EmptyState from "@/components/ui/EmptyState";
-import { mockTours } from "@/lib/mockData";
+import RequireAuth from "@/components/ui/RequireAuth";
+import { useTours } from "@/hooks/useTours";
 import type { Tour } from "@/types/tour";
 
 type Tab = "published" | "draft" | "past";
 
-export default function MyTours() {
+function MyToursContent() {
+  const { tours, loading, updateTourStatus, deleteTour } = useTours();
   const [tab, setTab] = useState<Tab>("published");
   const [selected, setSelected] = useState<Tour | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const tours = mockTours.filter((t) =>
+  const filtered = tours.filter((t) =>
     tab === "past" ? t.status === "past" : t.status === tab
   );
 
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: "published", label: "Published", count: mockTours.filter((t) => t.status === "published").length },
-    { key: "draft",     label: "Drafts",    count: mockTours.filter((t) => t.status === "draft").length },
-    { key: "past",      label: "Past",      count: mockTours.filter((t) => t.status === "past").length },
+    { key: "published", label: "Published", count: tours.filter((t) => t.status === "published").length },
+    { key: "draft",     label: "Drafts",    count: tours.filter((t) => t.status === "draft").length },
+    { key: "past",      label: "Past",      count: tours.filter((t) => t.status === "past").length },
   ];
+
+  async function handleAction(action: string) {
+    if (!selected) return;
+    setActionLoading(true);
+    try {
+      if (action === "pause")   await updateTourStatus(selected.id, "paused");
+      if (action === "resume")  await updateTourStatus(selected.id, "published");
+      if (action === "delete")  await deleteTour(selected.id);
+    } catch {}
+    setActionLoading(false);
+    setSelected(null);
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-24">
-      <AppHeader title="My Tours" notificationCount={1} />
+      <AppHeader title="My Tours" />
 
       {/* Tabs */}
       <div className="bg-zinc-900 border-b border-zinc-800 sticky top-14 z-20">
@@ -56,8 +71,14 @@ export default function MyTours() {
       </div>
 
       <div className="max-w-md mx-auto px-4 pt-4 space-y-3">
-        {tours.length > 0 ? (
-          tours.map((tour) => (
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-24 bg-zinc-900 rounded-2xl border border-zinc-800 animate-pulse" />
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
+          filtered.map((tour) => (
             <TourCard key={tour.id} tour={tour} onActionMenu={setSelected} />
           ))
         ) : (
@@ -88,15 +109,16 @@ export default function MyTours() {
       <BottomSheet open={!!selected} onClose={() => setSelected(null)} title={selected?.name}>
         <div className="space-y-1">
           {[
-            { icon: Pencil, label: "Edit Tour", color: "text-zinc-300" },
-            { icon: PauseCircle, label: selected?.status === "paused" ? "Resume Tour" : "Pause Tour", color: "text-yellow-400" },
-            { icon: Copy, label: "Duplicate Tour", color: "text-zinc-300" },
-            { icon: Trash2, label: "Delete Tour", color: "text-red-400" },
-          ].map(({ icon: Icon, label, color }) => (
+            { icon: Pencil,      label: "Edit Tour",    action: "edit",   color: "text-zinc-300" },
+            { icon: PauseCircle, label: selected?.status === "paused" ? "Resume Tour" : "Pause Tour", action: selected?.status === "paused" ? "resume" : "pause", color: "text-yellow-400" },
+            { icon: Copy,        label: "Duplicate",    action: "dup",    color: "text-zinc-300" },
+            { icon: Trash2,      label: "Delete Tour",  action: "delete", color: "text-red-400" },
+          ].map(({ icon: Icon, label, action, color }) => (
             <button
               key={label}
-              onClick={() => setSelected(null)}
-              className="w-full flex items-center gap-3 px-1 py-3 rounded-xl hover:bg-zinc-800 transition-colors"
+              disabled={actionLoading}
+              onClick={() => handleAction(action)}
+              className="w-full flex items-center gap-3 px-1 py-3 rounded-xl hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
               <Icon className={`w-5 h-5 ${color}`} />
               <span className={`text-sm font-medium ${color}`}>{label}</span>
@@ -107,5 +129,13 @@ export default function MyTours() {
 
       <BottomNav />
     </div>
+  );
+}
+
+export default function MyTours() {
+  return (
+    <RequireAuth>
+      <MyToursContent />
+    </RequireAuth>
   );
 }
