@@ -10,8 +10,9 @@ import Step2Stops from "./Step2Stops";
 import Step3Schedule from "./Step3Schedule";
 import Step4Preview from "./Step4Preview";
 import { useTours } from "@/hooks/useTours";
+import { useProfile } from "@/hooks/useProfile";
 
-const STEPS = ["Basic Info", "Stops", "Schedule", "Preview"];
+const STEPS = ["Location", "Stops", "Schedule", "Preview"];
 
 type Action =
   | { type: "SET_FIELD"; field: keyof TourDraft; value: TourDraft[keyof TourDraft] }
@@ -21,8 +22,10 @@ type Action =
   | { type: "UPDATE_STOP_DURATION"; index: number; duration: number }
   | { type: "TOGGLE_DAY"; day: number };
 
-const initialDraft: TourDraft = {
-  name: "",
+const emptyDraft: TourDraft = {
+  city: "",
+  state: "",
+  country: "India",
   category: "",
   description: "",
   stops: [],
@@ -66,7 +69,7 @@ function reducer(state: TourDraft, action: Action): TourDraft {
 }
 
 function canProceed(step: number, draft: TourDraft): boolean {
-  if (step === 0) return draft.name.trim().length > 0 && draft.category !== "" && draft.description.trim().length > 0;
+  if (step === 0) return draft.city.trim().length > 0 && draft.category !== "" && draft.description.trim().length > 0;
   if (step === 1) return draft.stops.length >= 1;
   if (step === 2) return draft.daysOfWeek.length > 0 && draft.pricePerPerson !== "" && Number(draft.pricePerPerson) > 0;
   return true;
@@ -141,6 +144,7 @@ export default function WizardShell({ tourId, seedDraft }: WizardShellProps = {}
         {step === 0 && (
           <Step1BasicInfo
             draft={draft}
+            profile={profile}
             onField={(field, value) => dispatch({ type: "SET_FIELD", field: field as keyof TourDraft, value: value as TourDraft[keyof TourDraft] })}
             onCategory={(cat) => dispatch({ type: "SET_FIELD", field: "category", value: cat as TourCategory })}
           />
@@ -161,7 +165,7 @@ export default function WizardShell({ tourId, seedDraft }: WizardShellProps = {}
             onToggleDay={(day) => dispatch({ type: "TOGGLE_DAY", day })}
           />
         )}
-        {step === 3 && <Step4Preview draft={draft} />}
+        {step === 3 && <Step4Preview draft={draft} profile={profile} />}
       </div>
 
       {/* Footer CTA */}

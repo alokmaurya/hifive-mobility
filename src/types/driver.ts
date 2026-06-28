@@ -1,5 +1,8 @@
 import type { TourCategory } from "./tour";
 
+export type FuelType = "petrol" | "diesel" | "cng";
+export type VehicleType = "hatchback" | "sedan" | "suv" | "van" | "tempo";
+
 export interface Driver {
   id: string;
   name: string;
@@ -8,10 +11,15 @@ export interface Driver {
   totalTrips: number;
   vehicleModel: string;
   vehiclePlate: string;
+  carBrand: string;
+  vehicleType: VehicleType;
+  vehicleCapacity: number;
+  fuelType: FuelType;
+  isAc: boolean;
+  luggageCapacityBags: number;
+  isPetFriendly: boolean;
   bio: string;
   languages: string[];
-  vehicleType: "car" | "van" | "suv";
-  vehicleCapacity: number;
   yearsExperience: number;
   specialties: TourCategory[];
   totalToursRun: number;

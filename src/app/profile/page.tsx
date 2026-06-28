@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check } from "lucide-react";
+import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check, Fuel, Package, PawPrint, Wind } from "lucide-react";
 import AppHeader from "@/components/ui/AppHeader";
 import BottomNav from "@/components/ui/BottomNav";
 import RequireAuth from "@/components/ui/RequireAuth";
@@ -9,28 +9,69 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/contexts/AuthContext";
 import { CATEGORY_META } from "@/lib/utils";
 import type { TourCategory } from "@/types/tour";
+import type { Driver, FuelType, VehicleType } from "@/types/driver";
+
+const VEHICLE_TYPES: { value: VehicleType; label: string }[] = [
+  { value: "hatchback", label: "Hatchback" },
+  { value: "sedan", label: "Sedan" },
+  { value: "suv", label: "SUV" },
+  { value: "van", label: "Van" },
+  { value: "tempo", label: "Tempo" },
+];
+
+const FUEL_TYPES: { value: FuelType; label: string }[] = [
+  { value: "petrol", label: "Petrol" },
+  { value: "diesel", label: "Diesel" },
+  { value: "cng", label: "CNG" },
+];
 
 function ProfileContent() {
   const { profile, loading, updateProfile } = useProfile();
   const { signOut } = useAuth();
-  const [editing, setEditing] = useState(false);
+
+  // bio / name edit
+  const [editingBio, setEditingBio] = useState(false);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+
+  // vehicle edit
+  const [editingVehicle, setEditingVehicle] = useState(false);
+  const [vehicle, setVehicle] = useState<Partial<Driver>>({});
   const [saving, setSaving] = useState(false);
 
-  function startEdit() {
+  function startBioEdit() {
     setName(profile?.name ?? "");
     setBio(profile?.bio ?? "");
-    setEditing(true);
+    setEditingBio(true);
   }
 
-  async function saveEdit() {
+  async function saveBioEdit() {
     setSaving(true);
-    try {
-      await updateProfile({ name, bio });
-    } catch {}
+    try { await updateProfile({ name, bio }); } catch {}
     setSaving(false);
-    setEditing(false);
+    setEditingBio(false);
+  }
+
+  function startVehicleEdit() {
+    setVehicle({
+      vehicleModel: profile?.vehicleModel ?? "",
+      vehiclePlate: profile?.vehiclePlate ?? "",
+      carBrand: profile?.carBrand ?? "",
+      vehicleType: profile?.vehicleType ?? "suv",
+      vehicleCapacity: profile?.vehicleCapacity ?? 4,
+      fuelType: profile?.fuelType ?? "petrol",
+      isAc: profile?.isAc ?? true,
+      luggageCapacityBags: profile?.luggageCapacityBags ?? 2,
+      isPetFriendly: profile?.isPetFriendly ?? false,
+    });
+    setEditingVehicle(true);
+  }
+
+  async function saveVehicleEdit() {
+    setSaving(true);
+    try { await updateProfile(vehicle); } catch {}
+    setSaving(false);
+    setEditingVehicle(false);
   }
 
   if (loading) {
@@ -59,7 +100,7 @@ function ProfileContent() {
               {profile?.name?.charAt(0).toUpperCase() ?? "?"}
             </div>
             <div className="flex-1 min-w-0">
-              {editing ? (
+              {editingBio ? (
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -84,7 +125,7 @@ function ProfileContent() {
             </div>
           </div>
 
-          {editing ? (
+          {editingBio ? (
             <>
               <textarea
                 value={bio}
@@ -94,18 +135,11 @@ function ProfileContent() {
                 className="mt-4 w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
               />
               <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => setEditing(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5"
-                >
+                <button onClick={() => setEditingBio(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5">
                   <X className="w-4 h-4 text-zinc-400" />
                   <span className="text-sm font-semibold text-zinc-300">Cancel</span>
                 </button>
-                <button
-                  onClick={saveEdit}
-                  disabled={saving}
-                  className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
+                <button onClick={saveBioEdit} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5">
                   <Check className="w-4 h-4 text-black" />
                   <span className="text-sm font-semibold text-black">{saving ? "Saving…" : "Save"}</span>
                 </button>
@@ -114,10 +148,7 @@ function ProfileContent() {
           ) : (
             <>
               {profile?.bio && <p className="text-sm text-zinc-400 mt-4 leading-relaxed">{profile.bio}</p>}
-              <button
-                onClick={startEdit}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors"
-              >
+              <button onClick={startBioEdit} className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors">
                 <Pencil className="w-4 h-4 text-zinc-400" />
                 <span className="text-sm font-semibold text-zinc-300">Edit Profile</span>
               </button>
@@ -142,28 +173,171 @@ function ProfileContent() {
           ))}
         </div>
 
-        {/* Vehicle */}
-        {profile?.vehicleModel && (
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4">
-            <div className="flex items-center gap-2 mb-3">
+        {/* Vehicle details */}
+        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
               <Car className="w-5 h-5 text-zinc-500" />
-              <span className="text-sm font-bold text-white">Vehicle</span>
+              <span className="text-sm font-bold text-white">Vehicle Details</span>
             </div>
+            {!editingVehicle && (
+              <button onClick={startVehicleEdit} className="flex items-center gap-1 text-xs font-semibold text-yellow-400 px-2.5 py-1 rounded-lg bg-yellow-400/10 hover:bg-yellow-400/20 transition-colors">
+                <Pencil className="w-3 h-3" /> Edit
+              </button>
+            )}
+          </div>
+
+          {editingVehicle ? (
+            <div className="space-y-3">
+              {/* Car name + brand row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Name / Model</label>
+                  <input
+                    value={vehicle.vehicleModel ?? ""}
+                    onChange={(e) => setVehicle(v => ({ ...v, vehicleModel: e.target.value }))}
+                    placeholder="e.g. Ertiga"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Brand</label>
+                  <input
+                    value={vehicle.carBrand ?? ""}
+                    onChange={(e) => setVehicle(v => ({ ...v, carBrand: e.target.value }))}
+                    placeholder="e.g. Maruti"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                  />
+                </div>
+              </div>
+
+              {/* Plate */}
+              <div>
+                <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Number Plate</label>
+                <input
+                  value={vehicle.vehiclePlate ?? ""}
+                  onChange={(e) => setVehicle(v => ({ ...v, vehiclePlate: e.target.value.toUpperCase() }))}
+                  placeholder="e.g. HP 01 AB 1234"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                />
+              </div>
+
+              {/* Type + Fuel row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Type</label>
+                  <select
+                    value={vehicle.vehicleType ?? "suv"}
+                    onChange={(e) => setVehicle(v => ({ ...v, vehicleType: e.target.value as VehicleType }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                  >
+                    {VEHICLE_TYPES.map(({ value, label }) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Fuel</label>
+                  <select
+                    value={vehicle.fuelType ?? "petrol"}
+                    onChange={(e) => setVehicle(v => ({ ...v, fuelType: e.target.value as FuelType }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                  >
+                    {FUEL_TYPES.map(({ value, label }) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Seats + Luggage row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">No. of Seats</label>
+                  <input
+                    type="number"
+                    min={1} max={20}
+                    value={vehicle.vehicleCapacity ?? 4}
+                    onChange={(e) => setVehicle(v => ({ ...v, vehicleCapacity: Number(e.target.value) }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Luggage (bags)</label>
+                  <input
+                    type="number"
+                    min={0} max={20}
+                    value={vehicle.luggageCapacityBags ?? 2}
+                    onChange={(e) => setVehicle(v => ({ ...v, luggageCapacityBags: Number(e.target.value) }))}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                  />
+                </div>
+              </div>
+
+              {/* Toggles */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setVehicle(v => ({ ...v, isAc: !v.isAc }))}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
+                    vehicle.isAc ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
+                  }`}
+                >
+                  <Wind className="w-4 h-4" /> AC
+                </button>
+                <button
+                  onClick={() => setVehicle(v => ({ ...v, isPetFriendly: !v.isPetFriendly }))}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
+                    vehicle.isPetFriendly ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
+                  }`}
+                >
+                  <PawPrint className="w-4 h-4" /> Pet Friendly
+                </button>
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setEditingVehicle(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5"
+                >
+                  <X className="w-4 h-4 text-zinc-400" />
+                  <span className="text-sm font-semibold text-zinc-300">Cancel</span>
+                </button>
+                <button
+                  onClick={saveVehicleEdit}
+                  disabled={saving}
+                  className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  <Check className="w-4 h-4 text-black" />
+                  <span className="text-sm font-semibold text-black">{saving ? "Saving…" : "Save Vehicle"}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
             <div className="space-y-2 text-sm">
               {[
-                { label: "Model",    value: profile.vehicleModel },
-                { label: "Plate",    value: profile.vehiclePlate },
-                { label: "Capacity", value: `Up to ${profile.vehicleCapacity} guests` },
-                { label: "Type",     value: profile.vehicleType.toUpperCase() },
+                { icon: Car,     label: "Car",      value: [profile?.carBrand, profile?.vehicleModel].filter(Boolean).join(" ") || "—" },
+                { icon: Car,     label: "Plate",    value: profile?.vehiclePlate || "—" },
+                { icon: Car,     label: "Type",     value: profile?.vehicleType ? VEHICLE_TYPES.find(v => v.value === profile.vehicleType)?.label ?? profile.vehicleType : "—" },
+                { icon: Users,   label: "Seats",    value: profile?.vehicleCapacity ? `${profile.vehicleCapacity} seats` : "—" },
+                { icon: Fuel,    label: "Fuel",     value: profile?.fuelType ? FUEL_TYPES.find(f => f.value === profile.fuelType)?.label ?? profile.fuelType : "—" },
+                { icon: Package, label: "Luggage",  value: profile?.luggageCapacityBags != null ? `${profile.luggageCapacityBags} bags` : "—" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between">
                   <span className="text-zinc-500">{label}</span>
                   <span className="font-medium text-zinc-200">{value}</span>
                 </div>
               ))}
+              <div className="flex gap-2 mt-1 pt-1">
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${profile?.isAc ? "bg-yellow-400/10 text-yellow-400" : "bg-zinc-800 text-zinc-600"}`}>
+                  {profile?.isAc ? "✓ AC" : "No AC"}
+                </span>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${profile?.isPetFriendly ? "bg-yellow-400/10 text-yellow-400" : "bg-zinc-800 text-zinc-600"}`}>
+                  {profile?.isPetFriendly ? "✓ Pet Friendly" : "No Pets"}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Languages & Specialties */}
         {((profile?.languages?.length ?? 0) > 0 || (profile?.specialties?.length ?? 0) > 0) && (

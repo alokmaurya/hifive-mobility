@@ -22,8 +22,15 @@ create table if not exists public.drivers (
   years_experience      int default 1,
   vehicle_model         text default '',
   vehicle_plate         text default '',
+  car_brand             text default '',
   vehicle_capacity      int default 4,
-  vehicle_type          text default 'suv',
+  vehicle_type          text default 'suv'
+                          check (vehicle_type in ('hatchback','sedan','suv','van','tempo')),
+  fuel_type             text default 'petrol'
+                          check (fuel_type in ('petrol','diesel','cng')),
+  is_ac                 boolean default true,
+  luggage_capacity_bags int default 2,
+  is_pet_friendly       boolean default false,
   languages             text[] default '{}',
   specialties           text[] default '{}',
   is_verified           boolean default false,
@@ -37,6 +44,9 @@ create table if not exists public.tours (
   id                          uuid primary key default gen_random_uuid(),
   driver_id                   uuid references public.drivers(id) on delete cascade not null,
   name                        text not null,
+  city                        text default '',
+  state                       text default '',
+  country                     text default 'India',
   category                    text not null,
   description                 text default '',
   status                      text default 'draft'

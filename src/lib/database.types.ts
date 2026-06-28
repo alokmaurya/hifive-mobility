@@ -13,8 +13,13 @@ export interface Database {
           years_experience: number;
           vehicle_model: string | null;
           vehicle_plate: string | null;
+          car_brand: string | null;
           vehicle_capacity: number;
           vehicle_type: string;
+          fuel_type: string;
+          is_ac: boolean;
+          luggage_capacity_bags: number;
+          is_pet_friendly: boolean;
           languages: string[];
           specialties: string[];
           is_verified: boolean;
@@ -31,8 +36,13 @@ export interface Database {
           years_experience?: number;
           vehicle_model?: string | null;
           vehicle_plate?: string | null;
+          car_brand?: string | null;
           vehicle_capacity?: number;
           vehicle_type?: string;
+          fuel_type?: string;
+          is_ac?: boolean;
+          luggage_capacity_bags?: number;
+          is_pet_friendly?: boolean;
           languages?: string[];
           specialties?: string[];
           is_verified?: boolean;
@@ -52,6 +62,9 @@ export interface Database {
           start_time: string;
           days_of_week: number[];
           estimated_duration_minutes: number;
+          city: string;
+          state: string;
+          country: string;
           current_bookings: number;
           rating: number | null;
           review_count: number;
@@ -70,6 +83,9 @@ export interface Database {
           start_time?: string;
           days_of_week?: number[];
           estimated_duration_minutes?: number;
+          city?: string;
+          state?: string;
+          country?: string;
           current_bookings?: number;
         };
         Update: Partial<Database["public"]["Tables"]["tours"]["Insert"]>;

@@ -29,6 +29,9 @@ export interface Tour {
   id: string;
   driverId: string;
   name: string;
+  city: string;
+  state: string;
+  country: string;
   category: TourCategory;
   description: string;
   coverImage?: string;
@@ -85,7 +88,9 @@ export interface PayoutSummary {
 }
 
 export type TourDraft = {
-  name: string;
+  city: string;
+  state: string;
+  country: string;
   category: TourCategory | "";
   description: string;
   stops: Omit<TourStop, "id">[];
