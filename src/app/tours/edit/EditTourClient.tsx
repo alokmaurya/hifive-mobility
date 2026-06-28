@@ -1,15 +1,11 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { useTours } from "@/hooks/useTours";
 import WizardShell from "@/components/tours/TourWizard/WizardShell";
 import RequireAuth from "@/components/ui/RequireAuth";
 import type { TourDraft } from "@/types/tour";
 
-function EditTourContent() {
-  const searchParams = useSearchParams();
-  const tourId = searchParams.get("id") ?? "";
+function EditTourContent({ tourId }: { tourId: string }) {
   const { tours, loading } = useTours();
   const tour = tours.find((t) => t.id === tourId);
 
@@ -45,18 +41,10 @@ function EditTourContent() {
   return <WizardShell tourId={tourId} seedDraft={seedDraft} />;
 }
 
-function EditTourWrapper() {
+export default function EditTourClient({ tourId }: { tourId: string }) {
   return (
     <RequireAuth>
-      <Suspense fallback={
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-        </div>
-      }>
-        <EditTourContent />
-      </Suspense>
+      <EditTourContent tourId={tourId} />
     </RequireAuth>
   );
 }
-
-export default EditTourWrapper;

@@ -6,8 +6,13 @@ export const mockDriver: Driver = {
   name: "Ramesh Gupta",
   rating: 4.9,
   totalTrips: 312,
-  vehicleModel: "Toyota Innova Crysta",
+  vehicleModel: "Innova Crysta",
   vehiclePlate: "UP 65 AB 4321",
+  carBrand: "Toyota",
+  fuelType: "diesel",
+  isAc: true,
+  luggageCapacityBags: 4,
+  isPetFriendly: false,
   bio: "Passionate local guide with 8 years of experience showing visitors the hidden gems of Agra and Mathura. Fluent in Hindi, English, and basic Japanese.",
   languages: ["Hindi", "English", "Japanese (basic)"],
   vehicleType: "suv",
@@ -24,7 +29,8 @@ export const mockTours: Tour[] = [
   {
     id: "tour_001",
     driverId: "drv_001",
-    name: "Taj Mahal Sunrise & Agra Fort",
+    name: "Agra | Ramesh Gupta | 4.90 | Innova Crysta | 6 | Diesel",
+    city: "Agra", state: "Uttar Pradesh", country: "India",
     category: "heritage",
     description: "Start the day with the iconic Taj Mahal at sunrise before the crowds arrive. After sunrise, explore the magnificent Agra Fort and its Mughal architecture. Includes expert commentary at every stop.",
     stops: [
@@ -47,7 +53,8 @@ export const mockTours: Tour[] = [
   {
     id: "tour_002",
     driverId: "drv_001",
-    name: "Mathura & Vrindavan Spiritual Journey",
+    name: "Mathura | Ramesh Gupta | 4.90 | Innova Crysta | 6 | Diesel",
+    city: "Mathura", state: "Uttar Pradesh", country: "India",
     category: "religious",
     description: "Visit the birthplace of Lord Krishna in Mathura and explore the sacred temples of Vrindavan. Perfect for those seeking a spiritual and culturally rich experience.",
     stops: [
@@ -71,7 +78,8 @@ export const mockTours: Tour[] = [
   {
     id: "tour_003",
     driverId: "drv_001",
-    name: "Fatehpur Sikri Half-Day",
+    name: "Fatehpur Sikri | Ramesh Gupta | 4.90 | Innova Crysta | 6 | Diesel",
+    city: "Fatehpur Sikri", state: "Uttar Pradesh", country: "India",
     category: "heritage",
     description: "Explore the abandoned Mughal capital of Fatehpur Sikri, a UNESCO World Heritage Site just 40km from Agra. A lesser-known gem with stunning architecture.",
     stops: [
