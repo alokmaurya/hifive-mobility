@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HiFive Mobility - Driver",
-  description: "Driver portal for HiFive Mobility",
+  title: "HiFive Tours — Driver",
+  description: "Create and manage sightseeing tour itineraries",
 };
 
 export default function RootLayout({

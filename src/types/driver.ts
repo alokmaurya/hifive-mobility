@@ -1,4 +1,4 @@
-export type DriverStatus = "online" | "offline" | "on_trip";
+import type { TourCategory } from "./tour";
 
 export interface Driver {
   id: string;
@@ -8,39 +8,14 @@ export interface Driver {
   totalTrips: number;
   vehicleModel: string;
   vehiclePlate: string;
-  status: DriverStatus;
-}
-
-export interface EarningsSummary {
-  today: number;
-  week: number;
-  month: number;
-  currency: string;
-}
-
-export interface Trip {
-  id: string;
-  pickupAddress: string;
-  dropoffAddress: string;
-  fare: number;
-  currency: string;
-  distance: number;
-  duration: number;
-  status: "completed" | "cancelled" | "in_progress";
-  timestamp: string;
-  passengerName: string;
-  passengerRating?: number;
-}
-
-export interface RideRequest {
-  id: string;
-  passengerName: string;
-  passengerRating: number;
-  pickupAddress: string;
-  dropoffAddress: string;
-  estimatedFare: number;
-  currency: string;
-  distance: number;
-  estimatedDuration: number;
-  pickupDistance: number;
+  bio: string;
+  languages: string[];
+  vehicleType: "car" | "van" | "suv";
+  vehicleCapacity: number;
+  yearsExperience: number;
+  specialties: TourCategory[];
+  totalToursRun: number;
+  totalGuestsHosted: number;
+  licenseNumber: string;
+  isVerified: boolean;
 }
