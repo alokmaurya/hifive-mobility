@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Pencil, PauseCircle, Copy, Trash2 } from "lucide-react";
 import AppHeader from "@/components/ui/AppHeader";
@@ -15,6 +16,7 @@ import type { Tour } from "@/types/tour";
 type Tab = "published" | "draft" | "past";
 
 function MyToursContent() {
+  const router = useRouter();
   const { tours, loading, updateTourStatus, deleteTour } = useTours();
   const [tab, setTab] = useState<Tab>("published");
   const [selected, setSelected] = useState<Tour | null>(null);
@@ -32,6 +34,11 @@ function MyToursContent() {
 
   async function handleAction(action: string) {
     if (!selected) return;
+    if (action === "edit") {
+      setSelected(null);
+      router.push(`/tours/edit?id=${selected.id}`);
+      return;
+    }
     setActionLoading(true);
     try {
       if (action === "pause")   await updateTourStatus(selected.id, "paused");
