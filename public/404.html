@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HiFive Mobility</title>
+  <script>
+    // GitHub Pages SPA redirect — keeps path under the repo basePath (/hifive-mobility/)
+    var l = window.location;
+    var base = l.pathname.split('/').slice(0, 2).join('/'); // /hifive-mobility
+    var rest = '/' + l.pathname.split('/').slice(2).join('/');
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      base + '/?p=' + encodeURIComponent(rest) +
+      (l.search ? '&q=' + encodeURIComponent(l.search.slice(1)) : '') +
+      l.hash
+    );
+  </script>
+</head>
+<body>
+  <noscript>
+    <p>Redirecting&hellip; <a href="/hifive-mobility/">Go to home</a></p>
+  </noscript>
+</body>
+</html>

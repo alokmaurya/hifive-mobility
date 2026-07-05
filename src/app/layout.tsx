@@ -28,6 +28,20 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Restore path after GitHub Pages 404 redirect */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var params = new URLSearchParams(window.location.search);
+            var p = params.get('p');
+            if (p) {
+              var q = params.get('q');
+              var url = window.location.pathname + p + (q ? '?' + q : '') + window.location.hash;
+              window.history.replaceState(null, '', url);
+            }
+          })();
+        `}} />
+      </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
       </body>
