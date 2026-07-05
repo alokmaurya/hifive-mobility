@@ -6,6 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Booking, BookingStatus } from "@/types/tour";
 
 function mapBooking(row: Record<string, unknown>, tourName?: string): Booking {
+  const traveller = row.travellers as { name?: string; phone?: string; email?: string } | null;
+  const guestName = (traveller?.name?.trim() || (row.guest_name as string) || "").trim() || "Unknown Traveller";
+  const guestPhone = traveller?.phone ?? (row.guest_phone as string) ?? "";
   return {
     id: row.id as string,
     tourId: row.tour_id as string,
@@ -13,15 +16,19 @@ function mapBooking(row: Record<string, unknown>, tourName?: string): Booking {
     tourDate: row.tour_date as string,
     guest: {
       id: row.id as string,
-      name: row.guest_name as string,
-      phone: (row.guest_phone as string) ?? "",
-      guestCount: row.guest_count as number,
+      name: guestName,
+      phone: guestPhone,
+      guestCount: (row.guest_count as number) ?? 1,
       specialRequests: (row.special_requests as string) ?? undefined,
     },
     status: row.status as BookingStatus,
     totalAmount: Number(row.total_amount),
     currency: "₹",
     bookedAt: row.created_at as string,
+    // Extra fields for driver view
+    tourType: row.tour_type as string | undefined,
+    hoursRequested: row.hours_requested as number | undefined,
+    travellerEmail: traveller?.email,
   };
 }
 
@@ -36,7 +43,7 @@ export function useBookings() {
     setLoading(true);
     const { data, error } = await supabase
       .from("bookings")
-      .select("*, tours(name)")
+      .select("*, tours(name), travellers(name, phone, email)")
       .eq("driver_id", user.id)
       .order("created_at", { ascending: false });
 

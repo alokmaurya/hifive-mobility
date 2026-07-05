@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare } from "lucide-react";
+import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare, Clock, Mail, MapPin } from "lucide-react";
 import type { Booking } from "@/types/tour";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -17,8 +17,18 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "bg-red-400/10 text-red-400",
 };
 
+const TOUR_TYPE_META: Record<string, { emoji: string; label: string }> = {
+  city_sightseeing:       { emoji: "🏙️", label: "City Sightseeing" },
+  outer_city_sightseeing: { emoji: "🛣️", label: "Outer City Tour" },
+  flexi:                  { emoji: "⏱️", label: "Flexi" },
+};
+
 export default function BookingCard({ booking, onConfirm, onCancel }: BookingCardProps) {
   const [expanded, setExpanded] = useState(false);
+
+  const tourMeta = booking.tourType ? (TOUR_TYPE_META[booking.tourType] ?? { emoji: "🗺️", label: booking.tourType }) : null;
+  const isFlexi = booking.tourType === "flexi";
+  const displayName = booking.guest.name || "Unknown Traveller";
 
   return (
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
@@ -26,12 +36,25 @@ export default function BookingCard({ booking, onConfirm, onCancel }: BookingCar
         className="w-full text-left p-4"
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-bold text-white">{booking.guest.name}</p>
-            <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{booking.tourName}</p>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-3">
+            {/* Avatar */}
+            <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0">
+              <span className="text-base font-bold text-yellow-400">{displayName.charAt(0).toUpperCase()}</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white leading-tight">{displayName}</p>
+              {tourMeta && (
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  {tourMeta.emoji} {tourMeta.label}
+                </p>
+              )}
+              {!tourMeta && booking.tourName && (
+                <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1">{booking.tourName}</p>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+          <div className="flex flex-col items-end gap-1 shrink-0">
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[booking.status]}`}>
               {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
             </span>
@@ -39,24 +62,77 @@ export default function BookingCard({ booking, onConfirm, onCancel }: BookingCar
           </div>
         </div>
 
-        <div className="flex items-center gap-4 mt-2 text-xs text-zinc-500">
+        <div className="flex items-center gap-4 mt-2.5 text-xs text-zinc-500 pl-13">
           <span className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
             {formatDate(booking.tourDate)}
           </span>
-          <span className="flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            {booking.guest.guestCount} {booking.guest.guestCount === 1 ? "guest" : "guests"}
-          </span>
+          {isFlexi && booking.hoursRequested ? (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {booking.hoursRequested} hrs
+            </span>
+          ) : (
+            <span className="flex items-center gap-1">
+              <Users className="w-3 h-3" />
+              {booking.guest.guestCount} {booking.guest.guestCount === 1 ? "guest" : "guests"}
+            </span>
+          )}
           {expanded ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
         </div>
       </button>
 
       {expanded && (
         <div className="px-4 pb-4 border-t border-zinc-800 pt-3 space-y-3">
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <Phone className="w-4 h-4 text-zinc-500" />
-            <a href={`tel:${booking.guest.phone}`} className="text-yellow-400 font-medium">{booking.guest.phone}</a>
+          {/* Traveller contact info */}
+          <div className="bg-zinc-800/60 rounded-xl p-3 space-y-2">
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Traveller Details</p>
+            <div className="flex items-center gap-2 text-sm">
+              <Users className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+              <span className="text-white font-medium">{displayName}</span>
+            </div>
+            {booking.guest.phone && (
+              <div className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <a href={`tel:${booking.guest.phone}`} className="text-yellow-400 font-medium text-sm hover:underline">
+                  {booking.guest.phone}
+                </a>
+              </div>
+            )}
+            {booking.travellerEmail && (
+              <div className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <a href={`mailto:${booking.travellerEmail}`} className="text-yellow-400 font-medium text-sm hover:underline truncate">
+                  {booking.travellerEmail}
+                </a>
+              </div>
+            )}
+          </div>
+
+          {/* Booking details */}
+          <div className="bg-zinc-800/60 rounded-xl p-3 space-y-2">
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Booking Details</p>
+            <div className="flex items-center gap-2 text-sm text-zinc-400">
+              <Calendar className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+              <span>{formatDate(booking.tourDate)}</span>
+            </div>
+            {isFlexi && booking.hoursRequested ? (
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Clock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>{booking.hoursRequested} hours requested</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Users className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>{booking.guest.guestCount} {booking.guest.guestCount === 1 ? "guest" : "guests"}</span>
+              </div>
+            )}
+            {tourMeta && (
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <MapPin className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>{tourMeta.emoji} {tourMeta.label}</span>
+              </div>
+            )}
           </div>
 
           {booking.guest.specialRequests && (

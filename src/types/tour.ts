@@ -72,6 +72,9 @@ export interface Booking {
   totalAmount: number;
   currency: string;
   bookedAt: string;
+  tourType?: string;
+  hoursRequested?: number;
+  travellerEmail?: string;
 }
 
 export interface TourEarning {
