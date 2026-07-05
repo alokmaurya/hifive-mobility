@@ -20,9 +20,11 @@ function DashboardContent() {
   const pendingBookings = bookings.filter((b) => b.status === "pending");
   const recentBookings  = bookings.slice(0, 3);
 
-  const totalNet = bookings
-    .filter((b) => b.status === "confirmed")
-    .reduce((s, b) => s + b.totalAmount * 0.9, 0);
+  const totalNet = Math.round(
+    bookings
+      .filter((b) => b.status === "confirmed")
+      .reduce((s, b) => s + b.totalAmount * 0.9, 0)
+  );
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";

@@ -36,9 +36,15 @@ export default function SignupPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      // Supabase trigger auto-creates the driver profile row.
-      // If email confirmation is enabled, show a prompt; otherwise redirect.
-      router.replace("/dashboard");
+      // Supabase may require email confirmation before a session exists.
+      // Check if we got a session; if not, show a "check your email" message.
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.replace("/dashboard");
+      } else {
+        setLoading(false);
+        setError("Account created! Please check your email to confirm your address, then sign in.");
+      }
     }
   }
 
