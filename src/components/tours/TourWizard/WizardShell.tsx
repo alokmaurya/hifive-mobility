@@ -70,10 +70,18 @@ function reducer(state: TourDraft, action: Action): TourDraft {
   }
 }
 
+const isFlexi = (draft: TourDraft) => draft.category === "flexi";
+
 function canProceed(step: number, draft: TourDraft): boolean {
   if (step === 0) return draft.city.trim().length > 0 && draft.category !== "" && draft.description.trim().length > 0;
   if (step === 1) return draft.stops.length >= 1;
-  if (step === 2) return draft.daysOfWeek.length > 0 && draft.pricePerPerson !== "" && Number(draft.pricePerPerson) > 0;
+  if (step === 2) {
+    const daysOk = draft.daysOfWeek.length > 0;
+    const priceOk = isFlexi(draft)
+      ? Number(draft.hourlyRate) > 0
+      : Number(draft.pricePerPerson) > 0;
+    return daysOk && priceOk;
+  }
   return true;
 }
 
@@ -106,8 +114,15 @@ export default function WizardShell({ tourId, seedDraft, currentStatus }: Wizard
         await createTour(draft, status);
       }
       router.replace("/tours");
-    } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Failed to save tour");
+    } catch (e: unknown) {
+      // Supabase errors are plain objects with a .message property, not Error instances
+      const msg =
+        e instanceof Error
+          ? e.message
+          : (e as Record<string, unknown>)?.message as string | undefined
+            ?? (e as Record<string, unknown>)?.details as string | undefined
+            ?? JSON.stringify(e);
+      setSaveError(msg || "Failed to save tour");
       setSaving(false);
     }
   }
