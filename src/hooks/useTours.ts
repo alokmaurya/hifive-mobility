@@ -123,7 +123,7 @@ export function useTours() {
       .select()
       .single();
 
-    if (tErr || !tour) throw tErr ?? new Error("Failed to create tour");
+    if (tErr || !tour) throw new Error(tErr?.message ?? tErr?.details ?? "Failed to create tour");
 
     if (draft.stops.length > 0) {
       const { error: sErr } = await db.from("tour_stops").insert(
@@ -134,7 +134,7 @@ export function useTours() {
           stop_order: i + 1,
         }))
       );
-      if (sErr) throw sErr;
+      if (sErr) throw new Error(sErr.message ?? sErr.details ?? "Failed to save stops");
     }
 
     await fetchTours();
@@ -175,7 +175,7 @@ export function useTours() {
       tour_type: draft.category || "city_sightseeing",
       hourly_rate: Number(draft.hourlyRate) || 0,
     }).eq("id", tourId);
-    if (tErr) throw tErr;
+    if (tErr) throw new Error(tErr.message ?? tErr.details ?? "Failed to update tour");
 
     await db.from("tour_stops").delete().eq("tour_id", tourId);
     if (draft.stops.length > 0) {
@@ -187,7 +187,7 @@ export function useTours() {
           stop_order: i + 1,
         }))
       );
-      if (sErr) throw sErr;
+      if (sErr) throw new Error(sErr.message ?? sErr.details ?? "Failed to update stops");
     }
 
     await fetchTours();
