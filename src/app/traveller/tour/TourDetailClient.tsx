@@ -86,24 +86,24 @@ export default function TourDetailClient() {
   const totalAmount = tour ? guestCount * tour.pricePerPerson : 0;
 
   if (loading) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (!tour) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <p className="text-slate-400">Tour not found.</p>
+    <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+      <p className="text-blue-200">Tour not found.</p>
     </div>
   );
 
   return (
     <RequireTravellerAuth>
-      <div className="min-h-screen bg-white pb-28">
+      <div className="min-h-screen bg-blue-950 pb-28">
         {/* Header */}
-        <div className="bg-blue-950 px-4 pt-10 pb-4">
+        <div className="bg-blue-900 border-b border-blue-800 px-4 pt-10 pb-4">
           <div className="max-w-md mx-auto">
-            <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-300 hover:text-white text-sm mb-3">
+            <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-200 hover:text-white text-sm mb-3">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
           </div>
@@ -111,74 +111,74 @@ export default function TourDetailClient() {
 
         <div className="px-4 max-w-md mx-auto mt-4 space-y-4">
           {/* Tour info card */}
-          <div className="bg-white rounded-3xl p-5 border border-sky-200 shadow-sm">
+          <div className="bg-blue-900 rounded-3xl p-5 border border-blue-800">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <span className="text-xs font-semibold text-sky-500 uppercase tracking-wide capitalize">{tour.category}</span>
-                <h1 className="text-blue-900 font-bold text-lg leading-snug mt-1">{tour.name}</h1>
+                <span className="text-xs font-semibold text-white uppercase tracking-wide capitalize">{tour.category}</span>
+                <h1 className="text-white font-bold text-lg leading-snug mt-1">{tour.name}</h1>
                 <div className="flex items-center gap-1.5 mt-2">
-                  <MapPin className="w-3.5 h-3.5 text-sky-500" />
-                  <span className="text-slate-500 text-sm">{tour.city}{tour.state ? `, ${tour.state}` : ""}</span>
+                  <MapPin className="w-3.5 h-3.5 text-white" />
+                  <span className="text-blue-200 text-sm">{tour.city}{tour.state ? `, ${tour.state}` : ""}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sky-600 font-bold text-xl">₹{tour.pricePerPerson.toLocaleString("en-IN")}</div>
-                <div className="text-slate-400 text-xs">per person</div>
+                <div className="text-white font-bold text-xl">₹{tour.pricePerPerson.toLocaleString("en-IN")}</div>
+                <div className="text-blue-300 text-xs">per person</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-sky-100">
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-blue-800">
               {(tour.rating ?? 0) > 0 && (
                 <div className="flex items-center gap-1">
-                  <Star className="w-3.5 h-3.5 text-sky-500 fill-sky-500" />
-                  <span className="text-blue-900 text-sm font-semibold">{(tour.rating ?? 0).toFixed(1)}</span>
-                  {(tour.reviewCount ?? 0) > 0 && <span className="text-slate-400 text-xs">({tour.reviewCount})</span>}
+                  <Star className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+                  <span className="text-white text-sm font-semibold">{(tour.rating ?? 0).toFixed(1)}</span>
+                  {(tour.reviewCount ?? 0) > 0 && <span className="text-blue-300 text-xs">({tour.reviewCount})</span>}
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-500 text-sm">Max {tour.maxGuests}</span>
+                <Users className="w-3.5 h-3.5 text-blue-300" />
+                <span className="text-blue-200 text-sm">Max {tour.maxGuests}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-500 text-sm">{tour.schedule?.startTime}</span>
+                <Clock className="w-3.5 h-3.5 text-blue-300" />
+                <span className="text-blue-200 text-sm">{tour.schedule?.startTime}</span>
               </div>
             </div>
 
             {(tour.schedule?.daysOfWeek?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {(tour.schedule?.daysOfWeek ?? []).slice().sort().map((d) => (
-                  <span key={d} className="text-xs px-2.5 py-1 rounded-full bg-sky-100 text-sky-700">{DAY_LABELS[d]}</span>
+                  <span key={d} className="text-xs px-2.5 py-1 rounded-full bg-blue-800 text-zinc-300">{DAY_LABELS[d]}</span>
                 ))}
               </div>
             )}
 
             {tour.description && (
-              <p className="text-slate-500 text-sm mt-4 leading-relaxed">{tour.description}</p>
+              <p className="text-blue-200 text-sm mt-4 leading-relaxed">{tour.description}</p>
             )}
           </div>
 
           {/* Booking form */}
           {bookSuccess ? (
-            <div className="bg-white rounded-3xl p-5 border border-green-200 shadow-sm text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <Calendar className="w-6 h-6 text-green-500" />
+            <div className="bg-blue-900 rounded-3xl p-5 border border-green-500/30 text-center">
+              <div className="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <Calendar className="w-6 h-6 text-green-400" />
               </div>
-              <h2 className="text-blue-900 font-bold text-lg">Booking Requested!</h2>
-              <p className="text-slate-500 text-sm mt-1">Your booking is pending confirmation from the driver.</p>
+              <h2 className="text-white font-bold text-lg">Booking Requested!</h2>
+              <p className="text-blue-200 text-sm mt-1">Your booking is pending confirmation from the driver.</p>
               <button
                 onClick={() => router.push("/traveller/bookings")}
-                className="mt-4 px-6 py-2.5 bg-sky-500 text-white font-bold rounded-2xl hover:bg-sky-400 transition-colors text-sm"
+                className="mt-4 px-6 py-2.5 bg-white text-blue-900 font-bold rounded-2xl hover:bg-blue-50 transition-colors text-sm"
               >
                 View My Bookings
               </button>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl p-5 border border-sky-200 shadow-sm">
-              <h2 className="text-blue-900 font-bold text-base mb-4">Book This Tour</h2>
+            <div className="bg-blue-900 rounded-3xl p-5 border border-blue-800">
+              <h2 className="text-white font-bold text-base mb-4">Book This Tour</h2>
               <form onSubmit={handleBook} className="space-y-4">
                 <div>
-                  <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide block mb-1.5">
+                  <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide block mb-1.5">
                     <Calendar className="w-3 h-3 inline mr-1" />Tour Date *
                   </label>
                   <input
@@ -187,30 +187,30 @@ export default function TourDetailClient() {
                     onChange={(e) => setTourDate(e.target.value)}
                     required
                     min={new Date().toISOString().split("T")[0]}
-                    className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-sky-50 text-blue-900 focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm"
+                    className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-800 text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide block mb-1.5">
+                  <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide block mb-1.5">
                     <Users className="w-3 h-3 inline mr-1" />Guests *
                   </label>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                      className="w-10 h-10 rounded-full border border-sky-200 bg-sky-50 text-blue-900 hover:border-sky-400 transition-colors flex items-center justify-center text-lg"
+                      className="w-10 h-10 rounded-full border border-blue-700 bg-blue-800 text-white hover:border-white transition-colors flex items-center justify-center text-lg"
                     >−</button>
                     <span className="text-blue-900 font-bold text-lg w-8 text-center">{guestCount}</span>
                     <button
                       type="button"
                       onClick={() => setGuestCount(Math.min(tour.maxGuests, guestCount + 1))}
-                      className="w-10 h-10 rounded-full border border-sky-200 bg-sky-50 text-blue-900 hover:border-sky-400 transition-colors flex items-center justify-center text-lg"
+                      className="w-10 h-10 rounded-full border border-blue-700 bg-blue-800 text-white hover:border-white transition-colors flex items-center justify-center text-lg"
                     >+</button>
-                    <span className="text-slate-400 text-xs ml-1">max {tour.maxGuests}</span>
+                    <span className="text-blue-300 text-xs ml-1">max {tour.maxGuests}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide block mb-1.5">
+                  <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide block mb-1.5">
                     <MessageSquare className="w-3 h-3 inline mr-1" />Special Requests
                   </label>
                   <textarea
@@ -218,13 +218,13 @@ export default function TourDetailClient() {
                     onChange={(e) => setSpecialRequests(e.target.value)}
                     rows={2}
                     placeholder="Any special requirements?"
-                    className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-sky-50 text-blue-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm resize-none"
+                    className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm resize-none"
                   />
                 </div>
 
-                <div className="bg-sky-50 rounded-2xl px-4 py-3 flex items-center justify-between border border-sky-100">
-                  <span className="text-slate-500 text-sm">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
-                  <span className="text-sky-600 font-bold text-lg">₹{totalAmount.toLocaleString("en-IN")}</span>
+                <div className="bg-blue-800 rounded-2xl px-4 py-3 flex items-center justify-between">
+                  <span className="text-blue-200 text-sm">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
+                  <span className="text-white font-bold text-lg">₹{totalAmount.toLocaleString("en-IN")}</span>
                 </div>
 
                 {bookError && <p className="text-sm text-red-500 text-center">{bookError}</p>}
@@ -232,7 +232,7 @@ export default function TourDetailClient() {
                 <button
                   type="submit"
                   disabled={booking}
-                  className="w-full py-3.5 bg-sky-500 text-white font-bold rounded-2xl hover:bg-sky-400 disabled:opacity-50 transition-colors"
+                  className="w-full py-3.5 bg-white text-blue-900 font-bold rounded-2xl hover:bg-blue-50 disabled:opacity-50 transition-colors"
                 >
                   {booking ? "Requesting…" : "Request Booking"}
                 </button>

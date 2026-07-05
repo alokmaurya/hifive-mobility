@@ -160,14 +160,14 @@ export default function DriverDetailClient() {
   }
 
   if (loadingPage) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (!driver) return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <p className="text-slate-400">Driver not found.</p>
+    <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+      <p className="text-blue-200">Driver not found.</p>
     </div>
   );
 
@@ -176,14 +176,14 @@ export default function DriverDetailClient() {
 
   return (
     <RequireTravellerAuth>
-      <div className="min-h-screen bg-white pb-24">
+      <div className="min-h-screen bg-blue-950 pb-24">
         {/* Header */}
-        <div className="bg-blue-950 px-4 pt-10 pb-4">
+        <div className="bg-blue-900 border-b border-blue-800 px-4 pt-10 pb-4">
           <div className="max-w-md mx-auto">
-            <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-300 hover:text-white text-sm mb-2">
+            <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-200 hover:text-white text-sm mb-2">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
-            <div className="flex items-center gap-1 text-blue-400 text-xs">
+            <div className="flex items-center gap-1 text-blue-300 text-xs">
               <MapPin className="w-3 h-3" />
               <span>{city}{state ? `, ${state}` : ""}</span>
             </div>
@@ -192,10 +192,10 @@ export default function DriverDetailClient() {
 
         <div className="px-4 max-w-md mx-auto mt-4 space-y-4">
           {/* Driver card */}
-          <div className="bg-white rounded-3xl p-4 border border-sky-200 shadow-sm">
+          <div className="bg-blue-900 rounded-3xl p-4 border border-blue-800">
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl font-bold text-blue-700">{driver.name.charAt(0).toUpperCase()}</span>
+              <div className="w-14 h-14 bg-blue-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl font-bold text-white">{driver.name.charAt(0).toUpperCase()}</span>
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
@@ -207,29 +207,29 @@ export default function DriverDetailClient() {
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mt-1 flex-wrap">
-                  {driver.age && <span className="text-slate-500 text-xs">Age {driver.age}</span>}
+                  {driver.age && <span className="text-blue-200 text-xs">Age {driver.age}</span>}
                   <div className="flex items-center gap-0.5">
-                    <Star className="w-3 h-3 text-sky-500 fill-sky-500" />
-                    <span className="text-sky-500 text-xs font-bold">{driver.rating.toFixed(1)}</span>
+                    <Star className="w-3 h-3 text-yellow-300 fill-yellow-300" />
+                    <span className="text-yellow-300 text-xs font-bold">{driver.rating.toFixed(1)}</span>
                   </div>
-                  <span className="text-slate-400 text-xs">{driver.totalToursRun} trips</span>
+                  <span className="text-blue-300 text-xs">{driver.totalToursRun} trips</span>
                 </div>
               </div>
             </div>
 
             {/* Car photo */}
-            <div className="bg-sky-50 rounded-2xl h-36 flex items-center justify-center mb-3 relative overflow-hidden border border-sky-100">
+            <div className="bg-blue-800 rounded-2xl h-36 flex items-center justify-center mb-3 relative overflow-hidden">
               {driver.carPhotoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={driver.carPhotoUrl} alt="Car" className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-1.5">
-                  <Car className="w-12 h-12 text-sky-300" />
-                  <span className="text-slate-400 text-sm font-semibold">{driver.carBrand} {driver.vehicleModel}</span>
+                  <Car className="w-12 h-12 text-blue-400" />
+                  <span className="text-blue-300 text-sm font-semibold">{driver.carBrand} {driver.vehicleModel}</span>
                 </div>
               )}
               {driver.vehiclePlate && (
-                <div className="absolute bottom-2 right-2 bg-blue-950/80 px-3 py-1 rounded-lg border border-blue-800">
+                <div className="absolute bottom-2 right-2 bg-blue-950/80 px-3 py-1 rounded-lg border border-blue-700">
                   <span className="text-white text-sm font-mono font-bold tracking-wider">{driver.vehiclePlate}</span>
                 </div>
               )}
@@ -237,39 +237,39 @@ export default function DriverDetailClient() {
 
             {/* Vehicle details */}
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="bg-sky-50 rounded-xl px-2 py-2 text-center border border-sky-100">
-                <p className="text-slate-400 text-[9px] uppercase tracking-wide">Type</p>
-                <p className="text-blue-900 text-xs font-semibold mt-0.5 capitalize">{driver.vehicleType}</p>
+              <div className="bg-blue-800 rounded-xl px-2 py-2 text-center">
+                <p className="text-blue-300 text-[9px] uppercase tracking-wide">Type</p>
+                <p className="text-white text-xs font-semibold mt-0.5 capitalize">{driver.vehicleType}</p>
               </div>
-              <div className="bg-sky-50 rounded-xl px-2 py-2 text-center border border-sky-100">
-                <p className="text-slate-400 text-[9px] uppercase tracking-wide">Fuel</p>
-                <p className="text-blue-900 text-xs font-semibold mt-0.5">{FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
+              <div className="bg-blue-800 rounded-xl px-2 py-2 text-center">
+                <p className="text-blue-300 text-[9px] uppercase tracking-wide">Fuel</p>
+                <p className="text-white text-xs font-semibold mt-0.5">{FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
               </div>
-              <div className="bg-sky-50 rounded-xl px-2 py-2 text-center border border-sky-100">
-                <p className="text-slate-400 text-[9px] uppercase tracking-wide">Seats</p>
-                <p className="text-blue-900 text-xs font-semibold mt-0.5">{driver.vehicleCapacity}</p>
+              <div className="bg-blue-800 rounded-xl px-2 py-2 text-center">
+                <p className="text-blue-300 text-[9px] uppercase tracking-wide">Seats</p>
+                <p className="text-white text-xs font-semibold mt-0.5">{driver.vehicleCapacity}</p>
               </div>
             </div>
 
             {/* Amenities */}
-            <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-sky-100">
+            <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-blue-800">
               <div className="flex items-center gap-1">
-                {driver.isAc ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <XCircle className="w-3.5 h-3.5 text-slate-300" />}
-                <span className={`text-xs ${driver.isAc ? "text-green-600" : "text-slate-300"}`}>AC</span>
+                {driver.isAc ? <CheckCircle className="w-3.5 h-3.5 text-green-400" /> : <XCircle className="w-3.5 h-3.5 text-blue-400" />}
+                <span className={`text-xs ${driver.isAc ? "text-green-400" : "text-blue-400"}`}>AC</span>
               </div>
               <div className="flex items-center gap-1">
-                <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-500 text-xs">{driver.luggageCapacityBags} bags</span>
+                <Briefcase className="w-3.5 h-3.5 text-blue-200" />
+                <span className="text-blue-200 text-xs">{driver.luggageCapacityBags} bags</span>
               </div>
               <div className="flex items-center gap-1">
-                <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-sky-500" : "text-slate-300"}`} />
-                <span className={`text-xs ${driver.isPetFriendly ? "text-sky-600" : "text-slate-300"}`}>
+                <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-white" : "text-blue-400"}`} />
+                <span className={`text-xs ${driver.isPetFriendly ? "text-white" : "text-blue-400"}`}>
                   {driver.isPetFriendly ? "Pet friendly" : "No pets"}
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-slate-300"}`} />
-                <span className={`text-xs ${driver.smokingAllowed ? "text-orange-500" : "text-slate-300"}`}>
+                <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-blue-400"}`} />
+                <span className={`text-xs ${driver.smokingAllowed ? "text-orange-400" : "text-blue-400"}`}>
                   {driver.smokingAllowed ? "Smoking ok" : "No smoking"}
                 </span>
               </div>
@@ -279,7 +279,7 @@ export default function DriverDetailClient() {
           {/* Tour type options */}
           {!submitted && (
             <div className="space-y-3">
-              <h2 className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Choose Tour Type</h2>
+              <h2 className="text-sm font-semibold text-blue-200 uppercase tracking-wide">Choose Tour Type</h2>
               {TOUR_OPTIONS.map((opt) => {
                 const tour = getTourForType(opt.type);
                 const isSelected = selectedOption === opt.type;
@@ -287,8 +287,8 @@ export default function DriverDetailClient() {
                 const available = opt.type === "flexi" ? (flexiRate > 0) : !!tour;
 
                 return (
-                  <div key={opt.type} className={`bg-white rounded-3xl border-2 transition-all overflow-hidden shadow-sm ${
-                    isSelected ? "border-sky-500" : "border-sky-200"
+                  <div key={opt.type} className={`bg-blue-900 rounded-3xl border-2 transition-all overflow-hidden ${
+                    isSelected ? "border-white" : "border-blue-800"
                   }`}>
                     <button
                       onClick={() => {
@@ -299,61 +299,61 @@ export default function DriverDetailClient() {
                     >
                       <span className="text-2xl">{opt.emoji}</span>
                       <div className="flex-1">
-                        <p className={`font-semibold text-sm ${isSelected ? "text-sky-500" : "text-blue-900"}`}>{opt.label}</p>
-                        <p className="text-slate-400 text-xs">{opt.desc}</p>
+                        <p className={`font-semibold text-sm ${isSelected ? "text-white" : "text-white"}`}>{opt.label}</p>
+                        <p className="text-blue-300 text-xs">{opt.desc}</p>
                         {!available && <p className="text-red-400 text-xs mt-0.5">Not offered by this driver</p>}
                         {available && opt.type !== "flexi" && tour && (
-                          <p className="text-slate-500 text-xs mt-0.5">
+                          <p className="text-blue-200 text-xs mt-0.5">
                             ₹{tour.pricePerPerson.toLocaleString("en-IN")}/person · {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
                           </p>
                         )}
                         {available && opt.type === "flexi" && (
-                          <p className="text-slate-500 text-xs mt-0.5">₹{flexiRate}/hr</p>
+                          <p className="text-blue-200 text-xs mt-0.5">₹{flexiRate}/hr</p>
                         )}
                       </div>
-                      {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                      {isExpanded ? <ChevronUp className="w-4 h-4 text-blue-300" /> : <ChevronDown className="w-4 h-4 text-blue-300" />}
                     </button>
 
                     {isExpanded && available && (
-                      <div className="px-4 pb-4 border-t border-sky-100">
+                      <div className="px-4 pb-4 border-t border-blue-800">
                         {opt.type !== "flexi" && tour && tour.stops.length > 0 && (
                           <div className="mt-3 mb-4">
-                            <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">Itinerary</p>
+                            <p className="text-xs font-semibold text-blue-200 uppercase tracking-wide mb-2">Itinerary</p>
                             <div className="space-y-2">
                               {tour.stops.map((stop, i) => (
                                 <div key={stop.id} className="flex items-start gap-2">
-                                  <div className="w-5 h-5 rounded-full bg-sky-100 border border-sky-300 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-sky-600 text-[9px] font-bold">{i + 1}</span>
+                                  <div className="w-5 h-5 rounded-full bg-white/10 border border-white/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <span className="text-white text-[9px] font-bold">{i + 1}</span>
                                   </div>
                                   <div>
-                                    <p className="text-blue-900 text-sm">{stop.name}</p>
-                                    <p className="text-slate-400 text-xs">{stop.durationMinutes} min</p>
+                                    <p className="text-white text-sm">{stop.name}</p>
+                                    <p className="text-blue-300 text-xs">{stop.durationMinutes} min</p>
                                   </div>
                                 </div>
                               ))}
                             </div>
-                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-sky-100">
+                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-blue-800">
                               <div className="flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                <span className="text-slate-500 text-xs">
+                                <Clock className="w-3.5 h-3.5 text-blue-300" />
+                                <span className="text-blue-200 text-xs">
                                   {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <Users className="w-3.5 h-3.5 text-slate-400" />
-                                <span className="text-slate-500 text-xs">Max {tour.maxGuests}</span>
+                                <Users className="w-3.5 h-3.5 text-blue-300" />
+                                <span className="text-blue-200 text-xs">Max {tour.maxGuests}</span>
                               </div>
                             </div>
                           </div>
                         )}
                         {opt.type !== "flexi" && tour && tour.stops.length === 0 && (
-                          <p className="text-slate-400 text-xs mt-3 mb-2">No itinerary listed — contact driver for details.</p>
+                          <p className="text-blue-300 text-xs mt-3 mb-2">No itinerary listed — contact driver for details.</p>
                         )}
 
                         {/* Booking form */}
                         <form onSubmit={handleSubmit} className="space-y-3 mt-3">
                           <div>
-                            <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
+                            <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide flex items-center gap-1 mb-1.5">
                               <Calendar className="w-3 h-3" /> Date *
                             </label>
                             <input
@@ -362,54 +362,54 @@ export default function DriverDetailClient() {
                               onChange={(e) => setTourDate(e.target.value)}
                               required
                               min={new Date().toISOString().split("T")[0]}
-                              className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-sky-50 text-blue-900 focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm"
+                              className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-800 text-white focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                             />
                           </div>
 
                           {opt.type !== "flexi" && tour && (
                             <div>
-                              <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
+                              <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide flex items-center gap-1 mb-1.5">
                                 <Users className="w-3 h-3" /> Guests
                               </label>
                               <div className="flex items-center gap-3">
                                 <button type="button" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">−</button>
-                                <span className="text-blue-900 font-bold w-6 text-center">{guestCount}</span>
+                                  className="w-9 h-9 rounded-full border border-blue-700 bg-blue-800 text-white flex items-center justify-center text-lg hover:border-white">−</button>
+                                <span className="text-white font-bold w-6 text-center">{guestCount}</span>
                                 <button type="button" onClick={() => setGuestCount(Math.min(tour.maxGuests, guestCount + 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">+</button>
-                                <span className="text-slate-400 text-xs">max {tour.maxGuests}</span>
+                                  className="w-9 h-9 rounded-full border border-blue-700 bg-blue-800 text-white flex items-center justify-center text-lg hover:border-white">+</button>
+                                <span className="text-blue-300 text-xs">max {tour.maxGuests}</span>
                               </div>
                             </div>
                           )}
 
                           {opt.type === "flexi" && (
                             <div>
-                              <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
+                              <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide flex items-center gap-1 mb-1.5">
                                 <Clock className="w-3 h-3" /> Hours Required
                               </label>
                               <div className="flex items-center gap-3">
                                 <button type="button" onClick={() => setHoursRequested(Math.max(1, hoursRequested - 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">−</button>
-                                <span className="text-blue-900 font-bold w-8 text-center">{hoursRequested}h</span>
+                                  className="w-9 h-9 rounded-full border border-blue-700 bg-blue-800 text-white flex items-center justify-center text-lg hover:border-white">−</button>
+                                <span className="text-white font-bold w-8 text-center">{hoursRequested}h</span>
                                 <button type="button" onClick={() => setHoursRequested(Math.min(12, hoursRequested + 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">+</button>
+                                  className="w-9 h-9 rounded-full border border-blue-700 bg-blue-800 text-white flex items-center justify-center text-lg hover:border-white">+</button>
                               </div>
-                              <div className="mt-2 bg-sky-50 rounded-xl px-3 py-2 flex items-center justify-between border border-sky-100">
-                                <span className="text-slate-500 text-xs">{hoursRequested} hrs × ₹{flexiRate}/hr</span>
-                                <span className="text-sky-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
+                              <div className="mt-2 bg-blue-800 rounded-xl px-3 py-2 flex items-center justify-between">
+                                <span className="text-blue-200 text-xs">{hoursRequested} hrs × ₹{flexiRate}/hr</span>
+                                <span className="text-white font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
                               </div>
                             </div>
                           )}
 
                           {opt.type !== "flexi" && tour && (
-                            <div className="bg-sky-50 rounded-xl px-3 py-2 flex items-center justify-between border border-sky-100">
-                              <span className="text-slate-500 text-xs">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
-                              <span className="text-sky-600 font-bold">₹{(guestCount * tour.pricePerPerson).toLocaleString("en-IN")}</span>
+                            <div className="bg-blue-800 rounded-xl px-3 py-2 flex items-center justify-between">
+                              <span className="text-blue-200 text-xs">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
+                              <span className="text-white font-bold">₹{(guestCount * tour.pricePerPerson).toLocaleString("en-IN")}</span>
                             </div>
                           )}
 
                           <div>
-                            <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
+                            <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide flex items-center gap-1 mb-1.5">
                               <MessageSquare className="w-3 h-3" /> Special Requests
                             </label>
                             <textarea
@@ -417,7 +417,7 @@ export default function DriverDetailClient() {
                               onChange={(e) => setSpecialRequests(e.target.value)}
                               rows={2}
                               placeholder="Any special requirements?"
-                              className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-sky-50 text-blue-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm resize-none"
+                              className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm resize-none"
                             />
                           </div>
 
@@ -426,7 +426,7 @@ export default function DriverDetailClient() {
                           <button
                             type="submit"
                             disabled={submitting || !tourDate}
-                            className="w-full py-3.5 bg-sky-500 text-white font-bold rounded-2xl hover:bg-sky-400 disabled:opacity-50 transition-colors"
+                            className="w-full py-3.5 bg-white text-blue-900 font-bold rounded-2xl hover:bg-blue-50 disabled:opacity-50 transition-colors"
                           >
                             {submitting ? "Sending request…" : "Send Booking Request"}
                           </button>
@@ -441,16 +441,16 @@ export default function DriverDetailClient() {
 
           {/* Success state */}
           {submitted && (
-            <div className="bg-white rounded-3xl p-6 border border-sky-300 shadow-sm text-center">
+            <div className="bg-blue-900 rounded-3xl p-6 border border-white/30 text-center">
               <div className="text-5xl mb-3">🙏</div>
-              <h2 className="text-blue-900 font-bold text-lg">Request Sent!</h2>
-              <p className="text-slate-500 text-sm mt-2">
-                Waiting for <span className="text-blue-900 font-semibold">{driver.name}</span> to accept your request.
+              <h2 className="text-white font-bold text-lg">Request Sent!</h2>
+              <p className="text-blue-200 text-sm mt-2">
+                Waiting for <span className="text-white font-semibold">{driver.name}</span> to accept your request.
               </p>
-              <p className="text-slate-400 text-xs mt-1">You will be notified once the driver confirms.</p>
+              <p className="text-blue-300 text-xs mt-1">You will be notified once the driver confirms.</p>
               <button
                 onClick={() => router.push("/traveller/bookings")}
-                className="mt-4 px-6 py-2.5 bg-sky-500 text-white font-bold rounded-2xl hover:bg-sky-400 transition-colors text-sm"
+                className="mt-4 px-6 py-2.5 bg-white text-blue-900 font-bold rounded-2xl hover:bg-blue-50 transition-colors text-sm"
               >
                 View My Bookings
               </button>
