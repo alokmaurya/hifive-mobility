@@ -26,4 +26,9 @@ export interface Driver {
   totalGuestsHosted: number;
   licenseNumber: string;
   isVerified: boolean;
+  age?: number;
+  smokingAllowed: boolean;
+  carPhotoUrl?: string;
+  isAvailable: boolean;
+  hourlyRate: number;
 }

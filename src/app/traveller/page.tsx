@@ -1,37 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Search } from "lucide-react";
+import { MapPin, Search, ChevronDown } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
-
-const POPULAR = [
-  { city: "Manali", state: "Himachal Pradesh" },
-  { city: "Goa", state: "Goa" },
-  { city: "Jaipur", state: "Rajasthan" },
-  { city: "Ooty", state: "Tamil Nadu" },
-  { city: "Coorg", state: "Karnataka" },
-  { city: "Rishikesh", state: "Uttarakhand" },
-];
+import { useCityStateOptions } from "@/hooks/useCityStateOptions";
 
 export default function TravellerHomePage() {
   const router = useRouter();
-  const [city, setCity]   = useState("");
-  const [state, setState] = useState("");
+  const { states, citiesForState, loading } = useCityStateOptions();
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedCity, setSelectedCity]   = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    setCities(citiesForState(selectedState));
+    setSelectedCity("");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedState]);
 
   function search(e: React.FormEvent) {
     e.preventDefault();
-    if (!city.trim()) return;
-    const params = new URLSearchParams({ city: city.trim() });
-    if (state.trim()) params.set("state", state.trim());
-    router.push(`/traveller/explore?${params}`);
-  }
-
-  function pickPopular(c: string, s: string) {
-    setCity(c);
-    setState(s);
-    const params = new URLSearchParams({ city: c, state: s });
+    if (!selectedCity) return;
+    const params = new URLSearchParams({ city: selectedCity });
+    if (selectedState) params.set("state", selectedState);
     router.push(`/traveller/explore?${params}`);
   }
 
@@ -50,61 +43,78 @@ export default function TravellerHomePage() {
             <h1 className="text-3xl font-bold text-white mt-3 leading-tight">
               Where do you want<br />to explore?
             </h1>
-            <p className="text-zinc-400 text-sm mt-2">Find local sightseeing tours by city</p>
+            <p className="text-zinc-400 text-sm mt-2">Find sightseeing drivers by city</p>
           </div>
         </div>
 
         {/* Search */}
         <div className="px-4 max-w-md mx-auto -mt-2">
           <form onSubmit={search} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 space-y-3">
+            {/* State dropdown */}
+            <div>
+              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">State *</label>
+              <div className="relative">
+                <select
+                  value={selectedState}
+                  onChange={(e) => setSelectedState(e.target.value)}
+                  required
+                  className="w-full appearance-none px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm pr-10"
+                >
+                  <option value="">Select state…</option>
+                  {loading && <option disabled>Loading…</option>}
+                  {states.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* City dropdown */}
             <div>
               <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">City *</label>
-              <input
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="e.g. Manali, Goa, Jaipur"
-                required
-                className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
-              />
+              <div className="relative">
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  required
+                  disabled={!selectedState || cities.length === 0}
+                  className="w-full appearance-none px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm pr-10 disabled:opacity-50"
+                >
+                  <option value="">{!selectedState ? "Select state first" : "Select city…"}</option>
+                  {cities.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+              </div>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">State (optional)</label>
-              <input
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder="e.g. Himachal Pradesh"
-                className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
-              />
-            </div>
+
             <button
               type="submit"
-              className="w-full py-3.5 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition-colors flex items-center justify-center gap-2"
+              disabled={!selectedCity}
+              className="w-full py-3.5 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               <Search className="w-4 h-4" />
-              Search Tours
+              Find Drivers
             </button>
           </form>
         </div>
 
-        {/* Popular destinations */}
-        <div className="px-4 max-w-md mx-auto mt-8">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide mb-3">Popular Destinations</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {POPULAR.map(({ city: c, state: s }) => (
-              <button
-                key={c}
-                onClick={() => pickPopular(c, s)}
-                className="bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3.5 text-left hover:border-yellow-400/40 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
-                  <span className="text-white font-semibold text-sm">{c}</span>
-                </div>
-                <p className="text-zinc-500 text-xs mt-0.5 ml-5.5">{s}</p>
-              </button>
-            ))}
+        {/* Hint */}
+        {!loading && states.length === 0 && (
+          <div className="px-4 max-w-md mx-auto mt-8 text-center">
+            <p className="text-zinc-600 text-sm">No published tours yet. Check back soon!</p>
           </div>
-        </div>
+        )}
+
+        {!loading && states.length > 0 && (
+          <div className="px-4 max-w-md mx-auto mt-6">
+            <p className="text-zinc-600 text-xs text-center">
+              Drivers available in {states.length} state{states.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        )}
       </div>
       <TravellerBottomNav />
     </RequireTravellerAuth>

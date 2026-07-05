@@ -63,6 +63,11 @@ function ProfileContent() {
       isAc: profile?.isAc ?? true,
       luggageCapacityBags: profile?.luggageCapacityBags ?? 2,
       isPetFriendly: profile?.isPetFriendly ?? false,
+      age: profile?.age,
+      smokingAllowed: profile?.smokingAllowed ?? false,
+      carPhotoUrl: profile?.carPhotoUrl ?? "",
+      isAvailable: profile?.isAvailable ?? true,
+      hourlyRate: profile?.hourlyRate ?? 0,
     });
     setEditingVehicle(true);
   }
@@ -292,7 +297,61 @@ function ProfileContent() {
                 >
                   <PawPrint className="w-4 h-4" /> Pet Friendly
                 </button>
+                <button
+                  onClick={() => setVehicle(v => ({ ...v, smokingAllowed: !v.smokingAllowed }))}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
+                    vehicle.smokingAllowed ? "border-orange-400 bg-orange-400/10 text-orange-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
+                  }`}
+                >
+                  🚬 Smoking OK
+                </button>
               </div>
+
+              {/* Availability + hourly rate */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Age</label>
+                  <input
+                    type="number"
+                    value={vehicle.age ?? ""}
+                    onChange={(e) => setVehicle(v => ({ ...v, age: e.target.value ? Number(e.target.value) : undefined }))}
+                    placeholder="e.g. 32"
+                    min={18} max={80}
+                    className="w-full px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400/50"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Hourly Rate (₹)</label>
+                  <input
+                    type="number"
+                    value={vehicle.hourlyRate ?? 0}
+                    onChange={(e) => setVehicle(v => ({ ...v, hourlyRate: Number(e.target.value) }))}
+                    placeholder="0"
+                    min={0}
+                    className="w-full px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400/50"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Photo URL</label>
+                <input
+                  type="url"
+                  value={vehicle.carPhotoUrl ?? ""}
+                  onChange={(e) => setVehicle(v => ({ ...v, carPhotoUrl: e.target.value }))}
+                  placeholder="https://… (direct image link)"
+                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400/50"
+                />
+              </div>
+
+              <button
+                onClick={() => setVehicle(v => ({ ...v, isAvailable: !v.isAvailable }))}
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
+                  vehicle.isAvailable ? "border-green-400 bg-green-400/10 text-green-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
+                }`}
+              >
+                {vehicle.isAvailable ? "✓ Available for bookings" : "✗ Not available"}
+              </button>
 
               <div className="flex gap-2 pt-1">
                 <button

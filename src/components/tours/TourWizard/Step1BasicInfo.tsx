@@ -1,6 +1,5 @@
 import type { TourCategory, TourDraft } from "@/types/tour";
 import type { Driver } from "@/types/driver";
-import { CATEGORY_META } from "@/lib/utils";
 import { buildTourName } from "@/hooks/useTours";
 
 interface Props {
@@ -10,7 +9,11 @@ interface Props {
   onCategory: (cat: TourCategory) => void;
 }
 
-const CATEGORIES = Object.entries(CATEGORY_META) as [TourCategory, typeof CATEGORY_META[string]][];
+const TOUR_TYPES: { key: TourCategory; emoji: string; label: string; desc: string }[] = [
+  { key: "city_sightseeing",       emoji: "🏙️", label: "City Tour",       desc: "Sightseeing within the city" },
+  { key: "outer_city_sightseeing", emoji: "🛣️", label: "Outer City Tour",  desc: "Day trips outside the city" },
+  { key: "flexi",                  emoji: "⏱️", label: "Flexi (Hourly)",   desc: "Hourly cab — traveller picks hours" },
+];
 
 export default function Step1BasicInfo({ draft, profile, onField, onCategory }: Props) {
   const previewName = draft.city.trim()
@@ -44,7 +47,6 @@ export default function Step1BasicInfo({ draft, profile, onField, onCategory }: 
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {/* State */}
         <div>
           <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">State</label>
           <input
@@ -55,7 +57,6 @@ export default function Step1BasicInfo({ draft, profile, onField, onCategory }: 
             className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
           />
         </div>
-        {/* Country */}
         <div>
           <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Country</label>
           <input
@@ -77,26 +78,27 @@ export default function Step1BasicInfo({ draft, profile, onField, onCategory }: 
         </div>
       )}
 
-      {/* Category */}
+      {/* Tour Type */}
       <div>
-        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-2">Category <span className="text-red-400">*</span></label>
-        <div className="grid grid-cols-4 gap-2">
-          {CATEGORIES.map(([key, meta]) => {
+        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-2">Tour Type <span className="text-red-400">*</span></label>
+        <div className="space-y-2">
+          {TOUR_TYPES.map(({ key, emoji, label, desc }) => {
             const active = draft.category === key;
             return (
               <button
                 key={key}
                 onClick={() => onCategory(key)}
-                className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-left ${
                   active
                     ? "border-yellow-400 bg-yellow-400/10"
                     : "border-zinc-700 bg-zinc-800 hover:border-zinc-600"
                 }`}
               >
-                <span className="text-2xl">{meta.emoji}</span>
-                <span className={`text-[10px] font-medium ${active ? "text-yellow-400" : "text-zinc-500"}`}>
-                  {meta.label}
-                </span>
+                <span className="text-2xl">{emoji}</span>
+                <div>
+                  <p className={`text-sm font-semibold ${active ? "text-yellow-400" : "text-white"}`}>{label}</p>
+                  <p className="text-xs text-zinc-500">{desc}</p>
+                </div>
               </button>
             );
           })}

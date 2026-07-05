@@ -28,6 +28,11 @@ function mapDriver(row: Record<string, unknown>): Driver {
     totalGuestsHosted: (row.total_guests_hosted as number) ?? 0,
     licenseNumber: "",
     isVerified: (row.is_verified as boolean) ?? false,
+    age: (row.age as number) ?? undefined,
+    smokingAllowed: (row.smoking_allowed as boolean) ?? false,
+    carPhotoUrl: (row.car_photo_url as string) ?? undefined,
+    isAvailable: (row.is_available as boolean) ?? true,
+    hourlyRate: Number(row.hourly_rate ?? 0),
   };
 }
 
@@ -68,6 +73,11 @@ export function useProfile() {
         years_experience: updates.yearsExperience,
         languages: updates.languages,
         specialties: updates.specialties,
+        age: updates.age,
+        smoking_allowed: updates.smokingAllowed,
+        car_photo_url: updates.carPhotoUrl,
+        is_available: updates.isAvailable,
+        hourly_rate: updates.hourlyRate,
       })
       .eq("id", user.id);
     if (error) throw error;

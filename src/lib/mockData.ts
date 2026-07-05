@@ -23,6 +23,9 @@ export const mockDriver: Driver = {
   totalGuestsHosted: 1847,
   licenseNumber: "UP-2016-0034521",
   isVerified: true,
+  smokingAllowed: false,
+  isAvailable: true,
+  hourlyRate: 800,
 };
 
 export const mockTours: Tour[] = [
@@ -39,7 +42,7 @@ export const mockTours: Tour[] = [
       { id: "s3", name: "Agra Fort", description: "UNESCO World Heritage fortress", durationMinutes: 75, order: 3 },
       { id: "s4", name: "Kinari Bazaar", description: "Local market for souvenirs", durationMinutes: 45, order: 4 },
     ],
-    schedule: { startTime: "06:00", daysOfWeek: [0, 2, 4, 6] },
+    schedule: { startTime: "06:00", endTime: "18:00", daysOfWeek: [0, 2, 4, 6] },
     pricePerPerson: 1200,
     currency: "₹",
     maxGuests: 6,
@@ -64,7 +67,7 @@ export const mockTours: Tour[] = [
       { id: "s8", name: "ISKCON Vrindavan", description: "Grand spiritual complex", durationMinutes: 45, order: 4 },
       { id: "s9", name: "Prem Mandir", description: "Stunning marble temple lit at night", durationMinutes: 45, order: 5 },
     ],
-    schedule: { startTime: "07:00", daysOfWeek: [1, 3, 5] },
+    schedule: { startTime: "07:00", endTime: "18:00", daysOfWeek: [1, 3, 5] },
     pricePerPerson: 900,
     currency: "₹",
     maxGuests: 6,
@@ -88,7 +91,7 @@ export const mockTours: Tour[] = [
       { id: "s12", name: "Panch Mahal", description: "5-storey pavilion with 176 columns", durationMinutes: 45, order: 3 },
       { id: "s13", name: "Diwan-i-Khas", description: "Hall of Private Audience", durationMinutes: 30, order: 4 },
     ],
-    schedule: { startTime: "09:00", daysOfWeek: [2, 5, 6] },
+    schedule: { startTime: "09:00", endTime: "18:00", daysOfWeek: [2, 5, 6] },
     pricePerPerson: 750,
     currency: "₹",
     maxGuests: 6,

@@ -1,12 +1,118 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { MapPin, Users, Clock, Star, ChevronLeft, Search } from "lucide-react";
+import { MapPin, Star, Users, Briefcase, ChevronLeft, PawPrint, Cigarette, Car, CheckCircle, XCircle } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
-import type { Tour } from "@/types/tour";
+import { useDriversByCity } from "@/hooks/useDriversByCity";
+import { useCityStateOptions } from "@/hooks/useCityStateOptions";
+import type { Driver } from "@/types/driver";
+
+const FUEL_LABEL: Record<string, string> = { petrol: "Petrol", diesel: "Diesel", cng: "CNG" };
+const VEHICLE_LABEL: Record<string, string> = { hatchback: "Hatchback", sedan: "Sedan", suv: "SUV", van: "Van", tempo: "Tempo" };
+
+function DriverCard({ driver, city, state }: { driver: Driver; city: string; state: string }) {
+  const router = useRouter();
+  return (
+    <button
+      onClick={() => router.push(`/traveller/driver?id=${driver.id}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`)}
+      className="w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-4 text-left hover:border-yellow-400/30 transition-colors"
+    >
+      {/* Header: name + availability */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-zinc-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <span className="text-xl font-bold text-white">{driver.name.charAt(0).toUpperCase()}</span>
+          </div>
+          <div>
+            <p className="text-white font-bold text-base">{driver.name}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              {driver.age && <span className="text-zinc-400 text-xs">Age {driver.age}</span>}
+              {driver.age && <span className="text-zinc-700">•</span>}
+              <div className="flex items-center gap-0.5">
+                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                <span className="text-yellow-400 text-xs font-bold">{driver.rating.toFixed(1)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${
+          driver.isAvailable
+            ? "bg-green-500/10 text-green-400"
+            : "bg-red-500/10 text-red-400"
+        }`}>
+          {driver.isAvailable ? "Available" : "Busy"}
+        </span>
+      </div>
+
+      {/* Car photo placeholder + plate */}
+      <div className="bg-zinc-800 rounded-2xl h-28 flex items-center justify-center mb-3 relative overflow-hidden">
+        {driver.carPhotoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={driver.carPhotoUrl} alt="Car" className="w-full h-full object-cover" />
+        ) : (
+          <div className="flex flex-col items-center gap-1">
+            <Car className="w-10 h-10 text-zinc-600" />
+            <span className="text-zinc-600 text-xs">{driver.carBrand || "Car"} {driver.vehicleModel}</span>
+          </div>
+        )}
+        {driver.vehiclePlate && (
+          <div className="absolute bottom-2 right-2 bg-zinc-950/80 px-2.5 py-1 rounded-lg">
+            <span className="text-white text-xs font-mono font-bold">{driver.vehiclePlate}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Car details */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="bg-zinc-800 rounded-xl px-3 py-2">
+          <p className="text-zinc-500 text-[10px] uppercase tracking-wide">Vehicle</p>
+          <p className="text-white text-xs font-semibold mt-0.5">
+            {driver.carBrand} {driver.vehicleModel}
+          </p>
+          <p className="text-zinc-400 text-[10px]">{VEHICLE_LABEL[driver.vehicleType] ?? driver.vehicleType} · {FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
+        </div>
+        <div className="bg-zinc-800 rounded-xl px-3 py-2">
+          <p className="text-zinc-500 text-[10px] uppercase tracking-wide">Capacity</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <Users className="w-3 h-3 text-zinc-400" />
+            <span className="text-white text-xs font-semibold">{driver.vehicleCapacity} seats</span>
+          </div>
+          <div className="flex items-center gap-1 mt-0.5">
+            <Briefcase className="w-3 h-3 text-zinc-400" />
+            <span className="text-zinc-400 text-[10px]">{driver.luggageCapacityBags} bags</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Amenities row */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-1">
+          {driver.isAc
+            ? <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+            : <XCircle className="w-3.5 h-3.5 text-zinc-600" />}
+          <span className={`text-xs ${driver.isAc ? "text-green-400" : "text-zinc-600"}`}>AC</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-yellow-400" : "text-zinc-600"}`} />
+          <span className={`text-xs ${driver.isPetFriendly ? "text-yellow-400" : "text-zinc-600"}`}>
+            {driver.isPetFriendly ? "Pet friendly" : "No pets"}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-zinc-600"}`} />
+          <span className={`text-xs ${driver.smokingAllowed ? "text-orange-400" : "text-zinc-600"}`}>
+            {driver.smokingAllowed ? "Smoking ok" : "No smoking"}
+          </span>
+        </div>
+        <div className="ml-auto text-right">
+          <span className="text-zinc-500 text-[10px]">{driver.totalToursRun} trips</span>
+        </div>
+      </div>
+    </button>
+  );
+}
 
 export default function ExploreClient() {
   const searchParams = useSearchParams();
@@ -14,52 +120,23 @@ export default function ExploreClient() {
   const city  = searchParams.get("city") ?? "";
   const state = searchParams.get("state") ?? "";
 
-  const [tours, setTours]     = useState<Tour[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [cityInput, setCityInput]   = useState(city);
-  const [stateInput, setStateInput] = useState(state);
+  const { drivers, loading } = useDriversByCity(city, state);
+  const { states, citiesForState } = useCityStateOptions();
+  const [selState, setSelState] = useState(state);
+  const [selCity, setSelCity]   = useState(city);
+  const [cities, setCities]     = useState<string[]>([]);
 
   useEffect(() => {
-    if (!city) { setLoading(false); return; }
-    setLoading(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q = (supabase as any)
-      .from("tours")
-      .select("*, tour_stops(*)")
-      .eq("status", "published")
-      .ilike("city", `%${city}%`);
-    if (state) q = q.ilike("state", `%${state}%`);
-    q.order("created_at", { ascending: false }).then(({ data }: { data: Record<string, unknown>[] | null }) => {
-      setTours(
-        (data ?? []).map((r) => ({
-          id: r.id as string,
-          driverId: r.driver_id as string,
-          name: r.name as string,
-          city: r.city as string,
-          state: (r.state as string) ?? "",
-          country: (r.country as string) ?? "India",
-          category: r.category as Tour["category"],
-          description: r.description as string,
-          stops: [],
-          schedule: { startTime: r.start_time as string, daysOfWeek: (r.days_of_week as number[]) ?? [] },
-          pricePerPerson: Number(r.price_per_person),
-          maxGuests: r.max_guests as number,
-          status: r.status as Tour["status"],
-          rating: Number(r.rating ?? 0),
-          reviewCount: Number(r.total_reviews ?? 0),
-          createdAt: r.created_at as string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any))
-      );
-      setLoading(false);
-    });
-  }, [city, state]);
+    setCities(citiesForState(selState));
+    if (selState !== state) setSelCity("");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selState]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!cityInput.trim()) return;
-    const params = new URLSearchParams({ city: cityInput.trim() });
-    if (stateInput.trim()) params.set("state", stateInput.trim());
+    if (!selCity) return;
+    const params = new URLSearchParams({ city: selCity });
+    if (selState) params.set("state", selState);
     router.push(`/traveller/explore?${params}`);
   }
 
@@ -73,22 +150,24 @@ export default function ExploreClient() {
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
             <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="flex-1 flex gap-2">
-                <input
-                  value={cityInput}
-                  onChange={(e) => setCityInput(e.target.value)}
-                  placeholder="City"
-                  className="flex-1 px-3 py-2.5 rounded-2xl border border-zinc-700 bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
-                />
-                <input
-                  value={stateInput}
-                  onChange={(e) => setStateInput(e.target.value)}
-                  placeholder="State"
-                  className="flex-1 px-3 py-2.5 rounded-2xl border border-zinc-700 bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
-                />
-              </div>
-              <button type="submit" className="px-4 py-2.5 bg-yellow-400 text-black rounded-2xl hover:bg-yellow-300 transition-colors">
-                <Search className="w-4 h-4" />
+              <select
+                value={selState}
+                onChange={(e) => setSelState(e.target.value)}
+                className="flex-1 px-3 py-2.5 rounded-2xl border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
+              >
+                <option value="">All States</option>
+                {states.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <select
+                value={selCity}
+                onChange={(e) => setSelCity(e.target.value)}
+                className="flex-1 px-3 py-2.5 rounded-2xl border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
+              >
+                <option value="">Select city</option>
+                {(selState ? citiesForState(selState) : cities).map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <button type="submit" disabled={!selCity} className="px-4 py-2.5 bg-yellow-400 text-black rounded-2xl hover:bg-yellow-300 disabled:opacity-50 transition-colors">
+                <MapPin className="w-4 h-4" />
               </button>
             </form>
           </div>
@@ -97,13 +176,14 @@ export default function ExploreClient() {
         <div className="px-4 max-w-md mx-auto mt-4">
           {city && (
             <p className="text-zinc-400 text-sm mb-4">
-              {loading ? "Searching…" : `${tours.length} tour${tours.length !== 1 ? "s" : ""} in `}
-              {!loading && <span className="text-white font-semibold">{city}{state ? `, ${state}` : ""}</span>}
+              {loading ? "Searching…" : (
+                <>{drivers.length} driver{drivers.length !== 1 ? "s" : ""} in <span className="text-white font-semibold">{city}{state ? `, ${state}` : ""}</span></>
+              )}
             </p>
           )}
 
           {!city && !loading && (
-            <p className="text-zinc-500 text-sm text-center mt-8">Enter a city above to find tours</p>
+            <p className="text-zinc-500 text-sm text-center mt-8">Select a city above to find drivers</p>
           )}
 
           {loading && (
@@ -112,55 +192,17 @@ export default function ExploreClient() {
             </div>
           )}
 
-          {!loading && tours.length === 0 && city && (
+          {!loading && drivers.length === 0 && city && (
             <div className="text-center mt-12">
               <MapPin className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-400">No published tours found in {city}.</p>
+              <p className="text-zinc-400">No drivers with tours in {city}.</p>
               <p className="text-zinc-600 text-sm mt-1">Try a different city or check back later.</p>
             </div>
           )}
 
           <div className="space-y-4">
-            {tours.map((tour) => (
-              <button
-                key={tour.id}
-                onClick={() => router.push(`/traveller/tour?id=${tour.id}`)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-4 text-left hover:border-yellow-400/30 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold text-sm leading-snug">{tour.name}</h3>
-                    <div className="flex items-center gap-1.5 mt-1.5">
-                      <MapPin className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                      <span className="text-zinc-400 text-xs">{tour.city}{tour.state ? `, ${tour.state}` : ""}</span>
-                    </div>
-                    {tour.description && (
-                      <p className="text-zinc-500 text-xs mt-2 line-clamp-2">{tour.description}</p>
-                    )}
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-yellow-400 font-bold text-base">₹{tour.pricePerPerson.toLocaleString("en-IN")}</div>
-                    <div className="text-zinc-500 text-xs">per person</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-zinc-800">
-                  {(tour.rating ?? 0) > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                      <span className="text-white text-xs font-semibold">{(tour.rating ?? 0).toFixed(1)}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3 h-3 text-zinc-500" />
-                    <span className="text-zinc-400 text-xs">Up to {tour.maxGuests}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-zinc-500" />
-                    <span className="text-zinc-400 text-xs">{tour.schedule?.startTime}</span>
-                  </div>
-                  <span className="ml-auto text-yellow-400/70 text-xs font-semibold capitalize">{tour.category}</span>
-                </div>
-              </button>
+            {drivers.map((driver) => (
+              <DriverCard key={driver.id} driver={driver} city={city} state={state} />
             ))}
           </div>
         </div>

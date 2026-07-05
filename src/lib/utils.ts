@@ -42,6 +42,9 @@ export const CATEGORY_META: Record<
   string,
   { label: string; emoji: string; color: string }
 > = {
+  city_sightseeing:       { label: "City Tour",       emoji: "🏙️", color: "bg-yellow-100 text-yellow-700" },
+  outer_city_sightseeing: { label: "Outer City Tour",  emoji: "🛣️", color: "bg-green-100 text-green-700" },
+  flexi:                  { label: "Flexi (Hourly)",   emoji: "⏱️", color: "bg-blue-100 text-blue-700" },
   heritage: { label: "Heritage", emoji: "🏛️", color: "bg-amber-100 text-amber-700" },
   nature:   { label: "Nature",   emoji: "🌿", color: "bg-green-100 text-green-700" },
   food:     { label: "Food",     emoji: "🍜", color: "bg-red-100 text-red-700" },

@@ -1,6 +1,9 @@
 export type TourStatus = "draft" | "published" | "paused" | "past";
 
 export type TourCategory =
+  | "city_sightseeing"
+  | "outer_city_sightseeing"
+  | "flexi"
   | "heritage"
   | "nature"
   | "food"
@@ -21,6 +24,7 @@ export interface TourStop {
 
 export interface TourSchedule {
   startTime: string;
+  endTime: string;
   daysOfWeek: number[];
   specificDates?: string[];
 }
@@ -46,6 +50,8 @@ export interface Tour {
   estimatedDurationMinutes: number;
   rating?: number;
   reviewCount?: number;
+  hourlyRate?: number;
+  tourType?: TourCategory;
 }
 
 export interface Guest {
@@ -95,7 +101,9 @@ export type TourDraft = {
   description: string;
   stops: Omit<TourStop, "id">[];
   startTime: string;
+  endTime: string;
   daysOfWeek: number[];
   pricePerPerson: number | "";
+  hourlyRate: number | "";
   maxGuests: number;
 };

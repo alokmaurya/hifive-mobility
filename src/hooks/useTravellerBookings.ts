@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import type { TravellerBooking } from "@/types/traveller";
-import type { Tour } from "@/types/tour";
+import type { TravellerBooking, TourType } from "@/types/traveller";
 
 export function useTravellerBookings() {
   const { user } = useAuth();
@@ -17,18 +16,21 @@ export function useTravellerBookings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
       .from("bookings")
-      .select("*, tours(name, city)")
+      .select("*, drivers(name), tours(city)")
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 
     setBookings(
       (data ?? []).map((r: Record<string, unknown>) => ({
         id: r.id as string,
-        tourId: r.tour_id as string,
-        tourName: (r.tours as { name?: string; city?: string } | null)?.name ?? "",
-        tourCity: (r.tours as { name?: string; city?: string } | null)?.city ?? "",
+        tourId: r.tour_id as string | undefined,
+        driverId: r.driver_id as string,
+        driverName: (r.drivers as { name?: string } | null)?.name ?? "",
+        tourCity: (r.tours as { city?: string } | null)?.city ?? (r.city as string) ?? "",
         tourDate: r.tour_date as string,
-        guestCount: r.guest_count as number,
+        tourType: (r.tour_type as TourType) ?? "city_sightseeing",
+        guestCount: (r.guest_count as number) ?? 1,
+        hoursRequested: r.hours_requested as number | undefined,
         totalAmount: Number(r.total_amount),
         currency: "₹",
         status: r.status as TravellerBooking["status"],
@@ -41,13 +43,20 @@ export function useTravellerBookings() {
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
-  async function createBooking(tour: Tour, guestCount: number, tourDate: string, specialRequests?: string) {
+  async function createTourBooking(
+    tourId: string,
+    driverId: string,
+    tourType: TourType,
+    guestCount: number,
+    tourDate: string,
+    totalAmount: number,
+    specialRequests?: string,
+  ) {
     if (!user) throw new Error("Not authenticated");
-    const totalAmount = guestCount * tour.pricePerPerson;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).from("bookings").insert({
-      tour_id: tour.id,
-      driver_id: tour.driverId,
+      tour_id: tourId,
+      driver_id: driverId,
       traveller_id: user.id,
       guest_name: "",
       guest_count: guestCount,
@@ -55,6 +64,34 @@ export function useTravellerBookings() {
       total_amount: totalAmount,
       special_requests: specialRequests || null,
       status: "pending",
+      tour_type: tourType,
+    });
+    if (error) throw error;
+    await fetchBookings();
+  }
+
+  async function createFlexiBooking(
+    driverId: string,
+    hoursRequested: number,
+    hourlyRate: number,
+    tourDate: string,
+    specialRequests?: string,
+  ) {
+    if (!user) throw new Error("Not authenticated");
+    const totalAmount = hoursRequested * hourlyRate;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from("bookings").insert({
+      driver_id: driverId,
+      traveller_id: user.id,
+      guest_name: "",
+      guest_count: 1,
+      tour_date: tourDate,
+      total_amount: totalAmount,
+      special_requests: specialRequests || null,
+      status: "pending",
+      tour_type: "flexi",
+      hours_requested: hoursRequested,
+      hourly_rate: hourlyRate,
     });
     if (error) throw error;
     await fetchBookings();
@@ -70,5 +107,5 @@ export function useTravellerBookings() {
     await fetchBookings();
   }
 
-  return { bookings, loading, refresh: fetchBookings, createBooking, cancelBooking };
+  return { bookings, loading, refresh: fetchBookings, createTourBooking, createFlexiBooking, cancelBooking };
 }

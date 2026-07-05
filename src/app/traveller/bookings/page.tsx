@@ -5,12 +5,19 @@ import { CalendarDays, MapPin, Users, Clock, ChevronRight } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
 import { useTravellerBookings } from "@/hooks/useTravellerBookings";
+import type { TourType } from "@/types/traveller";
 
 const STATUS_STYLES: Record<string, string> = {
   pending:   "bg-yellow-400/10 text-yellow-400",
   confirmed: "bg-green-500/10 text-green-400",
   cancelled: "bg-red-500/10 text-red-400",
   completed: "bg-zinc-700 text-zinc-300",
+};
+
+const TOUR_TYPE_LABELS: Record<TourType, string> = {
+  city_sightseeing:       "🏙️ City Tour",
+  outer_city_sightseeing: "🛣️ Outer City Tour",
+  flexi:                  "⏱️ Flexi",
 };
 
 export default function TravellerBookingsPage() {
@@ -43,12 +50,12 @@ export default function TravellerBookingsPage() {
             <div className="text-center mt-16">
               <CalendarDays className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
               <p className="text-zinc-400">No bookings yet</p>
-              <p className="text-zinc-600 text-sm mt-1">Explore tours and make your first booking</p>
+              <p className="text-zinc-600 text-sm mt-1">Explore drivers and make your first booking</p>
               <button
                 onClick={() => router.push("/traveller")}
                 className="mt-4 px-6 py-2.5 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition-colors text-sm"
               >
-                Explore Tours
+                Find Drivers
               </button>
             </div>
           )}
@@ -58,19 +65,19 @@ export default function TravellerBookingsPage() {
               <div key={b.id} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <button
-                      onClick={() => router.push(`/traveller/tour?id=${b.tourId}`)}
-                      className="text-white font-semibold text-sm leading-snug hover:text-yellow-400 transition-colors text-left flex items-center gap-1"
-                    >
-                      {b.tourName}
-                      <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />
-                    </button>
-                    <div className="flex items-center gap-1 mt-1">
-                      <MapPin className="w-3 h-3 text-zinc-500" />
-                      <span className="text-zinc-500 text-xs">{b.tourCity}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white font-semibold text-sm">{b.driverName}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
                     </div>
+                    <p className="text-xs text-yellow-400/80 mt-0.5">{TOUR_TYPE_LABELS[b.tourType] ?? b.tourType}</p>
+                    {b.tourCity && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <MapPin className="w-3 h-3 text-zinc-500" />
+                        <span className="text-zinc-500 text-xs">{b.tourCity}</span>
+                      </div>
+                    )}
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${STATUS_STYLES[b.status] ?? "bg-zinc-700 text-zinc-300"}`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize flex-shrink-0 ${STATUS_STYLES[b.status] ?? "bg-zinc-700 text-zinc-300"}`}>
                     {b.status}
                   </span>
                 </div>
@@ -80,10 +87,17 @@ export default function TravellerBookingsPage() {
                     <CalendarDays className="w-3.5 h-3.5 text-zinc-500" />
                     <span className="text-zinc-400 text-xs">{b.tourDate}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-zinc-500" />
-                    <span className="text-zinc-400 text-xs">{b.guestCount} guest{b.guestCount > 1 ? "s" : ""}</span>
-                  </div>
+                  {b.tourType === "flexi" && b.hoursRequested ? (
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                      <span className="text-zinc-400 text-xs">{b.hoursRequested} hrs</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-zinc-500" />
+                      <span className="text-zinc-400 text-xs">{b.guestCount} guest{b.guestCount > 1 ? "s" : ""}</span>
+                    </div>
+                  )}
                   <div className="ml-auto text-yellow-400 font-bold text-sm">
                     {b.currency}{b.totalAmount.toLocaleString("en-IN")}
                   </div>
@@ -94,12 +108,15 @@ export default function TravellerBookingsPage() {
                 )}
 
                 {b.status === "pending" && (
-                  <button
-                    onClick={() => handleCancel(b.id)}
-                    className="mt-3 text-xs text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    Cancel booking
-                  </button>
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-yellow-400/60 text-xs">Waiting for driver to accept…</p>
+                    <button
+                      onClick={() => handleCancel(b.id)}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 )}
 
                 <p className="text-zinc-700 text-xs mt-2">
