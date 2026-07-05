@@ -13,22 +13,21 @@ import RequireAuth from "@/components/ui/RequireAuth";
 import { useTours } from "@/hooks/useTours";
 import type { Tour } from "@/types/tour";
 
-type Tab = "published" | "draft" | "past";
+type Tab = "published" | "draft" | "paused" | "past";
 
 function MyToursContent() {
   const router = useRouter();
-  const { tours, loading, updateTourStatus, deleteTour } = useTours();
+  const { tours, loading, updateTourStatus, deleteTour, duplicateTour } = useTours();
   const [tab, setTab] = useState<Tab>("published");
   const [selected, setSelected] = useState<Tour | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const filtered = tours.filter((t) =>
-    tab === "past" ? t.status === "past" : t.status === tab
-  );
+  const filtered = tours.filter((t) => t.status === tab);
 
   const tabs: { key: Tab; label: string; count: number }[] = [
     { key: "published", label: "Published", count: tours.filter((t) => t.status === "published").length },
     { key: "draft",     label: "Drafts",    count: tours.filter((t) => t.status === "draft").length },
+    { key: "paused",    label: "Paused",    count: tours.filter((t) => t.status === "paused").length },
     { key: "past",      label: "Past",      count: tours.filter((t) => t.status === "past").length },
   ];
 
@@ -44,6 +43,7 @@ function MyToursContent() {
       if (action === "pause")   await updateTourStatus(selected.id, "paused");
       if (action === "resume")  await updateTourStatus(selected.id, "published");
       if (action === "delete")  await deleteTour(selected.id);
+      if (action === "dup")     await duplicateTour(selected.id);
     } catch {}
     setActionLoading(false);
     setSelected(null);
@@ -90,8 +90,8 @@ function MyToursContent() {
           ))
         ) : (
           <EmptyState
-            emoji={tab === "draft" ? "✏️" : tab === "past" ? "📖" : "🗺️"}
-            title={tab === "draft" ? "No drafts" : tab === "past" ? "No past tours" : "No active tours"}
+            emoji={tab === "draft" ? "✏️" : tab === "past" ? "📖" : tab === "paused" ? "⏸️" : "🗺️"}
+            title={tab === "draft" ? "No drafts" : tab === "past" ? "No past tours" : tab === "paused" ? "No paused tours" : "No active tours"}
             description={tab === "published" ? "Create and publish your first sightseeing tour" : undefined}
             action={
               tab === "published" ? (
