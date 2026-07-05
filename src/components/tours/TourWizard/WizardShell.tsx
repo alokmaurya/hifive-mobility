@@ -30,9 +30,11 @@ const emptyDraft: TourDraft = {
   description: "",
   stops: [],
   startTime: "08:00",
+  endTime: "18:00",
   daysOfWeek: [],
   pricePerPerson: "",
-  maxGuests: 4,
+  hourlyRate: "",
+  maxGuests: 8,
 };
 
 function reducer(state: TourDraft, action: Action): TourDraft {

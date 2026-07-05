@@ -26,7 +26,7 @@ export default function TourDetailClient() {
   const [tourDate, setTourDate]               = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
 
-  const { createBooking } = useTravellerBookings();
+  const { createTourBooking } = useTravellerBookings();
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -68,7 +68,13 @@ export default function TourDetailClient() {
     setBooking(true);
     setBookError(null);
     try {
-      await createBooking(tour, guestCount, tourDate, specialRequests || undefined);
+      await createTourBooking(
+        tour.id, tour.driverId,
+        (tour.tourType as "city_sightseeing" | "outer_city_sightseeing" | "flexi") ?? "city_sightseeing",
+        guestCount, tourDate,
+        guestCount * tour.pricePerPerson,
+        specialRequests || undefined,
+      );
       setBookSuccess(true);
     } catch (err: unknown) {
       setBookError(err instanceof Error ? err.message : "Booking failed");

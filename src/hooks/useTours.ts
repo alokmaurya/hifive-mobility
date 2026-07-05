@@ -26,9 +26,12 @@ function mapTour(row: Record<string, unknown>): Tour {
         order: s.stop_order as number,
       })),
     schedule: {
-      startTime: row.start_time as string,
+      startTime: (row.start_time as string) ?? "08:00",
+      endTime: (row.end_time as string) ?? "16:00",
       daysOfWeek: (row.days_of_week as number[]) ?? [],
     },
+    tourType: (row.tour_type as Tour["tourType"]) ?? "city_sightseeing",
+    hourlyRate: Number(row.hourly_rate ?? 0),
     pricePerPerson: Number(row.price_per_person),
     currency: "₹",
     maxGuests: row.max_guests as number,
@@ -111,8 +114,11 @@ export function useTours() {
         price_per_person: Number(draft.pricePerPerson),
         max_guests: draft.maxGuests,
         start_time: draft.startTime,
+        end_time: draft.endTime || "18:00",
         days_of_week: draft.daysOfWeek,
         estimated_duration_minutes: totalMinutes,
+        tour_type: draft.category || "city_sightseeing",
+        hourly_rate: Number(draft.hourlyRate) || 0,
       })
       .select()
       .single();
@@ -163,8 +169,11 @@ export function useTours() {
       price_per_person: Number(draft.pricePerPerson),
       max_guests: draft.maxGuests,
       start_time: draft.startTime,
+      end_time: draft.endTime || "18:00",
       days_of_week: draft.daysOfWeek,
       estimated_duration_minutes: totalMinutes,
+      tour_type: draft.category || "city_sightseeing",
+      hourly_rate: Number(draft.hourlyRate) || 0,
     }).eq("id", tourId);
     if (tErr) throw tErr;
 

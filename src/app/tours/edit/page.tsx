@@ -37,8 +37,10 @@ function EditTourContent() {
     description: tour.description,
     stops: tour.stops.map((s) => ({ name: s.name, durationMinutes: s.durationMinutes, order: s.order })),
     startTime: tour.schedule.startTime,
+    endTime: tour.schedule.endTime || "18:00",
     daysOfWeek: tour.schedule.daysOfWeek,
     pricePerPerson: tour.pricePerPerson,
+    hourlyRate: tour.hourlyRate ?? "",
     maxGuests: tour.maxGuests,
   };
 

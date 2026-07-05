@@ -6,13 +6,18 @@ export interface Traveller {
   createdAt: string;
 }
 
+export type TourType = "city_sightseeing" | "outer_city_sightseeing" | "flexi";
+
 export interface TravellerBooking {
   id: string;
-  tourId: string;
-  tourName: string;
+  tourId?: string;
+  driverId: string;
+  driverName: string;
   tourCity: string;
   tourDate: string;
+  tourType: TourType;
   guestCount: number;
+  hoursRequested?: number;
   totalAmount: number;
   currency: string;
   status: "pending" | "confirmed" | "cancelled";
