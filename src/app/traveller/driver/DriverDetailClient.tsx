@@ -70,7 +70,6 @@ export default function DriverDetailClient() {
   const [selectedOption, setSelectedOption] = useState<TourType | null>(null);
   const [expanded, setExpanded]             = useState<TourType | null>(null);
 
-  // Booking form state
   const [tourDate, setTourDate]               = useState("");
   const [guestCount, setGuestCount]           = useState(1);
   const [hoursRequested, setHoursRequested]   = useState(4);
@@ -200,9 +199,9 @@ export default function DriverDetailClient() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-white font-bold text-lg">{driver.name}</h1>
+                  <h1 className="text-blue-900 font-bold text-lg">{driver.name}</h1>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                    driver.isAvailable ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
+                    driver.isAvailable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"
                   }`}>
                     {driver.isAvailable ? "Available" : "Busy"}
                   </span>
@@ -315,7 +314,6 @@ export default function DriverDetailClient() {
                       {isExpanded ? <ChevronUp className="w-4 h-4 text-blue-300" /> : <ChevronDown className="w-4 h-4 text-blue-300" />}
                     </button>
 
-                    {/* Expanded: itinerary for city/outer, flexi for flexi */}
                     {isExpanded && available && (
                       <div className="px-4 pb-4 border-t border-blue-800">
                         {opt.type !== "flexi" && tour && tour.stops.length > 0 && (
@@ -423,7 +421,7 @@ export default function DriverDetailClient() {
                             />
                           </div>
 
-                          {submitError && <p className="text-red-400 text-xs">{submitError}</p>}
+                          {submitError && <p className="text-red-500 text-xs">{submitError}</p>}
 
                           <button
                             type="submit"

@@ -112,7 +112,7 @@ export default function TravellerBookingsPage() {
                     <p className="text-white/60 text-xs">Waiting for driver to accept…</p>
                     <button
                       onClick={() => handleCancel(b.id)}
-                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                      className="text-xs text-red-500 hover:text-red-400 transition-colors"
                     >
                       Cancel
                     </button>

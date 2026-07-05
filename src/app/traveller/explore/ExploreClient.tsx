@@ -26,7 +26,7 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
             <span className="text-xl font-bold text-white">{driver.name.charAt(0).toUpperCase()}</span>
           </div>
           <div>
-            <p className="text-white font-bold text-base">{driver.name}</p>
+            <p className="text-blue-900 font-bold text-base">{driver.name}</p>
             <div className="flex items-center gap-2 mt-0.5">
               {driver.age && <span className="text-blue-200 text-xs">Age {driver.age}</span>}
               {driver.age && <span className="text-blue-700">•</span>}
@@ -39,8 +39,8 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
         </div>
         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${
           driver.isAvailable
-            ? "bg-green-500/10 text-green-400"
-            : "bg-red-500/10 text-red-400"
+            ? "bg-green-100 text-green-600"
+            : "bg-red-100 text-red-500"
         }`}>
           {driver.isAvailable ? "Available" : "Busy"}
         </span>
@@ -177,7 +177,7 @@ export default function ExploreClient() {
           {city && (
             <p className="text-blue-200 text-sm mb-4">
               {loading ? "Searching…" : (
-                <>{drivers.length} driver{drivers.length !== 1 ? "s" : ""} in <span className="text-white font-semibold">{city}{state ? `, ${state}` : ""}</span></>
+                <>{drivers.length} driver{drivers.length !== 1 ? "s" : ""} in <span className="text-blue-900 font-semibold">{city}{state ? `, ${state}` : ""}</span></>
               )}
             </p>
           )}

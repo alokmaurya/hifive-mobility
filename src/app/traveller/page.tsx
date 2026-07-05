@@ -101,7 +101,6 @@ export default function TravellerHomePage() {
           </form>
         </div>
 
-        {/* Hint */}
         {!loading && states.length === 0 && (
           <div className="px-4 max-w-md mx-auto mt-8 text-center">
             <p className="text-blue-400 text-sm">No published tours yet. Check back soon!</p>

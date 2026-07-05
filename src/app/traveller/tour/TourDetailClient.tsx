@@ -200,7 +200,7 @@ export default function TourDetailClient() {
                       onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
                       className="w-10 h-10 rounded-full border border-blue-700 bg-blue-800 text-white hover:border-white transition-colors flex items-center justify-center text-lg"
                     >−</button>
-                    <span className="text-white font-bold text-lg w-8 text-center">{guestCount}</span>
+                    <span className="text-blue-900 font-bold text-lg w-8 text-center">{guestCount}</span>
                     <button
                       type="button"
                       onClick={() => setGuestCount(Math.min(tour.maxGuests, guestCount + 1))}
@@ -227,7 +227,7 @@ export default function TourDetailClient() {
                   <span className="text-white font-bold text-lg">₹{totalAmount.toLocaleString("en-IN")}</span>
                 </div>
 
-                {bookError && <p className="text-sm text-red-400 text-center">{bookError}</p>}
+                {bookError && <p className="text-sm text-red-500 text-center">{bookError}</p>}
 
                 <button
                   type="submit"
