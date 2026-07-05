@@ -17,48 +17,48 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
   return (
     <button
       onClick={() => router.push(`/traveller/driver?id=${driver.id}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`)}
-      className="w-full bg-zinc-900 border border-zinc-800 rounded-3xl p-4 text-left hover:border-yellow-400/30 transition-colors"
+      className="w-full bg-white border border-sky-200 rounded-3xl p-4 text-left hover:border-sky-400 hover:shadow-md transition-all"
     >
       {/* Header: name + availability */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-zinc-700 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <span className="text-xl font-bold text-white">{driver.name.charAt(0).toUpperCase()}</span>
+          <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <span className="text-xl font-bold text-blue-700">{driver.name.charAt(0).toUpperCase()}</span>
           </div>
           <div>
-            <p className="text-white font-bold text-base">{driver.name}</p>
+            <p className="text-blue-900 font-bold text-base">{driver.name}</p>
             <div className="flex items-center gap-2 mt-0.5">
-              {driver.age && <span className="text-zinc-400 text-xs">Age {driver.age}</span>}
-              {driver.age && <span className="text-zinc-700">•</span>}
+              {driver.age && <span className="text-slate-500 text-xs">Age {driver.age}</span>}
+              {driver.age && <span className="text-slate-300">•</span>}
               <div className="flex items-center gap-0.5">
-                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                <span className="text-yellow-400 text-xs font-bold">{driver.rating.toFixed(1)}</span>
+                <Star className="w-3 h-3 text-sky-500 fill-sky-500" />
+                <span className="text-sky-500 text-xs font-bold">{driver.rating.toFixed(1)}</span>
               </div>
             </div>
           </div>
         </div>
         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${
           driver.isAvailable
-            ? "bg-green-500/10 text-green-400"
-            : "bg-red-500/10 text-red-400"
+            ? "bg-green-100 text-green-600"
+            : "bg-red-100 text-red-500"
         }`}>
           {driver.isAvailable ? "Available" : "Busy"}
         </span>
       </div>
 
       {/* Car photo placeholder + plate */}
-      <div className="bg-zinc-800 rounded-2xl h-28 flex items-center justify-center mb-3 relative overflow-hidden">
+      <div className="bg-sky-50 rounded-2xl h-28 flex items-center justify-center mb-3 relative overflow-hidden border border-sky-100">
         {driver.carPhotoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={driver.carPhotoUrl} alt="Car" className="w-full h-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-1">
-            <Car className="w-10 h-10 text-zinc-600" />
-            <span className="text-zinc-600 text-xs">{driver.carBrand || "Car"} {driver.vehicleModel}</span>
+            <Car className="w-10 h-10 text-sky-300" />
+            <span className="text-slate-400 text-xs">{driver.carBrand || "Car"} {driver.vehicleModel}</span>
           </div>
         )}
         {driver.vehiclePlate && (
-          <div className="absolute bottom-2 right-2 bg-zinc-950/80 px-2.5 py-1 rounded-lg">
+          <div className="absolute bottom-2 right-2 bg-blue-950/80 px-2.5 py-1 rounded-lg">
             <span className="text-white text-xs font-mono font-bold">{driver.vehiclePlate}</span>
           </div>
         )}
@@ -66,22 +66,22 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
 
       {/* Car details */}
       <div className="grid grid-cols-2 gap-2 mb-3">
-        <div className="bg-zinc-800 rounded-xl px-3 py-2">
-          <p className="text-zinc-500 text-[10px] uppercase tracking-wide">Vehicle</p>
-          <p className="text-white text-xs font-semibold mt-0.5">
+        <div className="bg-sky-50 rounded-xl px-3 py-2 border border-sky-100">
+          <p className="text-slate-400 text-[10px] uppercase tracking-wide">Vehicle</p>
+          <p className="text-blue-900 text-xs font-semibold mt-0.5">
             {driver.carBrand} {driver.vehicleModel}
           </p>
-          <p className="text-zinc-400 text-[10px]">{VEHICLE_LABEL[driver.vehicleType] ?? driver.vehicleType} · {FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
+          <p className="text-slate-500 text-[10px]">{VEHICLE_LABEL[driver.vehicleType] ?? driver.vehicleType} · {FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
         </div>
-        <div className="bg-zinc-800 rounded-xl px-3 py-2">
-          <p className="text-zinc-500 text-[10px] uppercase tracking-wide">Capacity</p>
+        <div className="bg-sky-50 rounded-xl px-3 py-2 border border-sky-100">
+          <p className="text-slate-400 text-[10px] uppercase tracking-wide">Capacity</p>
           <div className="flex items-center gap-1 mt-0.5">
-            <Users className="w-3 h-3 text-zinc-400" />
-            <span className="text-white text-xs font-semibold">{driver.vehicleCapacity} seats</span>
+            <Users className="w-3 h-3 text-slate-500" />
+            <span className="text-blue-900 text-xs font-semibold">{driver.vehicleCapacity} seats</span>
           </div>
           <div className="flex items-center gap-1 mt-0.5">
-            <Briefcase className="w-3 h-3 text-zinc-400" />
-            <span className="text-zinc-400 text-[10px]">{driver.luggageCapacityBags} bags</span>
+            <Briefcase className="w-3 h-3 text-slate-400" />
+            <span className="text-slate-500 text-[10px]">{driver.luggageCapacityBags} bags</span>
           </div>
         </div>
       </div>
@@ -90,24 +90,24 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-1">
           {driver.isAc
-            ? <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-            : <XCircle className="w-3.5 h-3.5 text-zinc-600" />}
-          <span className={`text-xs ${driver.isAc ? "text-green-400" : "text-zinc-600"}`}>AC</span>
+            ? <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            : <XCircle className="w-3.5 h-3.5 text-slate-300" />}
+          <span className={`text-xs ${driver.isAc ? "text-green-600" : "text-slate-300"}`}>AC</span>
         </div>
         <div className="flex items-center gap-1">
-          <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-yellow-400" : "text-zinc-600"}`} />
-          <span className={`text-xs ${driver.isPetFriendly ? "text-yellow-400" : "text-zinc-600"}`}>
+          <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-sky-500" : "text-slate-300"}`} />
+          <span className={`text-xs ${driver.isPetFriendly ? "text-sky-600" : "text-slate-300"}`}>
             {driver.isPetFriendly ? "Pet friendly" : "No pets"}
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-zinc-600"}`} />
-          <span className={`text-xs ${driver.smokingAllowed ? "text-orange-400" : "text-zinc-600"}`}>
+          <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-slate-300"}`} />
+          <span className={`text-xs ${driver.smokingAllowed ? "text-orange-500" : "text-slate-300"}`}>
             {driver.smokingAllowed ? "Smoking ok" : "No smoking"}
           </span>
         </div>
         <div className="ml-auto text-right">
-          <span className="text-zinc-500 text-[10px]">{driver.totalToursRun} trips</span>
+          <span className="text-slate-400 text-[10px]">{driver.totalToursRun} trips</span>
         </div>
       </div>
     </button>
@@ -142,18 +142,18 @@ export default function ExploreClient() {
 
   return (
     <RequireTravellerAuth>
-      <div className="min-h-screen bg-zinc-950 pb-20">
+      <div className="min-h-screen bg-white pb-20">
         {/* Header */}
-        <div className="bg-zinc-900 border-b border-zinc-800 px-4 pt-10 pb-4">
+        <div className="bg-blue-950 px-4 pt-10 pb-4">
           <div className="max-w-md mx-auto">
-            <button onClick={() => router.push("/traveller")} className="flex items-center gap-1 text-zinc-400 hover:text-white text-sm mb-3">
+            <button onClick={() => router.push("/traveller")} className="flex items-center gap-1 text-blue-300 hover:text-white text-sm mb-3">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
             <form onSubmit={handleSearch} className="flex gap-2">
               <select
                 value={selState}
                 onChange={(e) => setSelState(e.target.value)}
-                className="flex-1 px-3 py-2.5 rounded-2xl border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
+                className="flex-1 px-3 py-2.5 rounded-2xl border border-blue-800 bg-blue-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm"
               >
                 <option value="">All States</option>
                 {states.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -161,12 +161,12 @@ export default function ExploreClient() {
               <select
                 value={selCity}
                 onChange={(e) => setSelCity(e.target.value)}
-                className="flex-1 px-3 py-2.5 rounded-2xl border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
+                className="flex-1 px-3 py-2.5 rounded-2xl border border-blue-800 bg-blue-900 text-white focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm"
               >
                 <option value="">Select city</option>
                 {(selState ? citiesForState(selState) : cities).map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
-              <button type="submit" disabled={!selCity} className="px-4 py-2.5 bg-yellow-400 text-black rounded-2xl hover:bg-yellow-300 disabled:opacity-50 transition-colors">
+              <button type="submit" disabled={!selCity} className="px-4 py-2.5 bg-sky-500 text-white rounded-2xl hover:bg-sky-400 disabled:opacity-50 transition-colors">
                 <MapPin className="w-4 h-4" />
               </button>
             </form>
@@ -175,28 +175,28 @@ export default function ExploreClient() {
 
         <div className="px-4 max-w-md mx-auto mt-4">
           {city && (
-            <p className="text-zinc-400 text-sm mb-4">
+            <p className="text-slate-500 text-sm mb-4">
               {loading ? "Searching…" : (
-                <>{drivers.length} driver{drivers.length !== 1 ? "s" : ""} in <span className="text-white font-semibold">{city}{state ? `, ${state}` : ""}</span></>
+                <>{drivers.length} driver{drivers.length !== 1 ? "s" : ""} in <span className="text-blue-900 font-semibold">{city}{state ? `, ${state}` : ""}</span></>
               )}
             </p>
           )}
 
           {!city && !loading && (
-            <p className="text-zinc-500 text-sm text-center mt-8">Select a city above to find drivers</p>
+            <p className="text-slate-400 text-sm text-center mt-8">Select a city above to find drivers</p>
           )}
 
           {loading && (
             <div className="flex justify-center mt-12">
-              <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
           {!loading && drivers.length === 0 && city && (
             <div className="text-center mt-12">
-              <MapPin className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-400">No drivers with tours in {city}.</p>
-              <p className="text-zinc-600 text-sm mt-1">Try a different city or check back later.</p>
+              <MapPin className="w-10 h-10 text-sky-200 mx-auto mb-3" />
+              <p className="text-slate-500">No drivers with tours in {city}.</p>
+              <p className="text-slate-400 text-sm mt-1">Try a different city or check back later.</p>
             </div>
           )}
 
