@@ -66,7 +66,7 @@ export function useTours() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchTours = useCallback(async () => {
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
     setLoading(true);
     const { data, error } = await supabase
       .from("tours")
@@ -207,5 +207,51 @@ export function useTours() {
     await fetchTours();
   }
 
-  return { tours, loading, error, refresh: fetchTours, createTour, updateTour, updateTourStatus, deleteTour };
+  async function duplicateTour(tourId: string) {
+    if (!user) throw new Error("Not authenticated");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { data: src, error: srcErr } = await db
+      .from("tours")
+      .select("*, tour_stops(*)")
+      .eq("id", tourId)
+      .single();
+    if (srcErr || !src) throw srcErr ?? new Error("Tour not found");
+
+    const { data: newTour, error: tErr } = await db.from("tours").insert({
+      driver_id: user.id,
+      name: `${src.name} (Copy)`,
+      city: src.city,
+      state: src.state,
+      country: src.country,
+      category: src.category,
+      description: src.description,
+      status: "draft",
+      price_per_person: src.price_per_person,
+      max_guests: src.max_guests,
+      start_time: src.start_time,
+      end_time: src.end_time,
+      days_of_week: src.days_of_week,
+      estimated_duration_minutes: src.estimated_duration_minutes,
+      tour_type: src.tour_type,
+      hourly_rate: src.hourly_rate,
+    }).select().single();
+    if (tErr || !newTour) throw tErr ?? new Error("Failed to duplicate tour");
+
+    const stops = (src.tour_stops ?? []) as Record<string, unknown>[];
+    if (stops.length > 0) {
+      await db.from("tour_stops").insert(
+        stops.map((s) => ({
+          tour_id: newTour.id,
+          name: s.name,
+          duration_minutes: s.duration_minutes,
+          stop_order: s.stop_order,
+        }))
+      );
+    }
+    await fetchTours();
+    return newTour.id as string;
+  }
+
+  return { tours, loading, error, refresh: fetchTours, createTour, updateTour, updateTourStatus, deleteTour, duplicateTour };
 }

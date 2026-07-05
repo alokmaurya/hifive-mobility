@@ -40,7 +40,7 @@ function EditTourContent({ tourId }: { tourId: string }) {
     maxGuests: tour.maxGuests,
   };
 
-  return <WizardShell tourId={tourId} seedDraft={seedDraft} />;
+  return <WizardShell tourId={tourId} seedDraft={seedDraft} currentStatus={tour.status} />;
 }
 
 export default function EditTourClient({ tourId }: { tourId: string }) {

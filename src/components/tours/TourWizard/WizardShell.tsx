@@ -80,9 +80,10 @@ function canProceed(step: number, draft: TourDraft): boolean {
 interface WizardShellProps {
   tourId?: string;
   seedDraft?: TourDraft;
+  currentStatus?: "draft" | "published" | "paused" | "past";
 }
 
-export default function WizardShell({ tourId, seedDraft }: WizardShellProps = {}) {
+export default function WizardShell({ tourId, seedDraft, currentStatus }: WizardShellProps = {}) {
   const router = useRouter();
   const { createTour, updateTour } = useTours();
   const { profile } = useProfile();
@@ -189,7 +190,7 @@ export default function WizardShell({ tourId, seedDraft }: WizardShellProps = {}
         ) : (
           <div className="flex gap-3">
             <button
-              onClick={() => handleSave("draft")}
+              onClick={() => handleSave(tourId && currentStatus === "published" ? "published" : "draft")}
               disabled={saving}
               className="flex-1 py-3.5 rounded-2xl border-2 border-zinc-700 text-sm font-bold text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 transition-colors"
             >
