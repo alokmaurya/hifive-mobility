@@ -9,7 +9,10 @@ interface Props {
   profile: Driver | null;
 }
 
+const isFlexi = (draft: TourDraft) => draft.category === "flexi";
+
 export default function Step4Preview({ draft, profile }: Props) {
+  const flexi = isFlexi(draft);
   const cat = CATEGORY_META[draft.category] ?? { emoji: "🗺️", label: "Tour", color: "" };
   const totalMinutes = draft.stops.reduce((s, stop) => s + stop.durationMinutes, 0);
   const estimatedEnd = addMinutesToTime(draft.startTime, totalMinutes + draft.stops.length * 15);
@@ -51,16 +54,33 @@ export default function Step4Preview({ draft, profile }: Props) {
 
           {/* Key info */}
           <div className="grid grid-cols-3 gap-2 mt-3">
-            <div className="bg-zinc-800 rounded-xl p-2 text-center">
-              <Clock className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
-              <p className="text-xs text-zinc-500">Duration</p>
-              <p className="text-xs font-bold text-white">{formatDuration(totalMinutes)}</p>
-            </div>
-            <div className="bg-zinc-800 rounded-xl p-2 text-center">
-              <MapPin className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
-              <p className="text-xs text-zinc-500">Stops</p>
-              <p className="text-xs font-bold text-white">{draft.stops.length}</p>
-            </div>
+            {flexi ? (
+              <>
+                <div className="bg-zinc-800 rounded-xl p-2 text-center">
+                  <Clock className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
+                  <p className="text-xs text-zinc-500">Type</p>
+                  <p className="text-xs font-bold text-white">Flexible</p>
+                </div>
+                <div className="bg-zinc-800 rounded-xl p-2 text-center">
+                  <Clock className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
+                  <p className="text-xs text-zinc-500">Rate</p>
+                  <p className="text-xs font-bold text-white">₹{Number(draft.hourlyRate).toLocaleString("en-IN")}/hr</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-zinc-800 rounded-xl p-2 text-center">
+                  <Clock className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
+                  <p className="text-xs text-zinc-500">Duration</p>
+                  <p className="text-xs font-bold text-white">{formatDuration(totalMinutes)}</p>
+                </div>
+                <div className="bg-zinc-800 rounded-xl p-2 text-center">
+                  <MapPin className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
+                  <p className="text-xs text-zinc-500">Stops</p>
+                  <p className="text-xs font-bold text-white">{draft.stops.length}</p>
+                </div>
+              </>
+            )}
             <div className="bg-zinc-800 rounded-xl p-2 text-center">
               <Users className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
               <p className="text-xs text-zinc-500">Max</p>
@@ -97,9 +117,19 @@ export default function Step4Preview({ draft, profile }: Props) {
                 <p className="text-sm font-bold text-white">{formatTime(draft.startTime)} – {formatTime(estimatedEnd)}</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-zinc-500">Price</p>
-                <p className="text-xl font-bold text-yellow-400">₹{Number(draft.pricePerPerson).toLocaleString("en-IN")}</p>
-                <p className="text-xs text-zinc-500">per person</p>
+                {flexi ? (
+                  <>
+                    <p className="text-xs text-zinc-500">Hourly Rate</p>
+                    <p className="text-xl font-bold text-yellow-400">₹{Number(draft.hourlyRate).toLocaleString("en-IN")}</p>
+                    <p className="text-xs text-zinc-500">per hour</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-zinc-500">Price</p>
+                    <p className="text-xl font-bold text-yellow-400">₹{Number(draft.pricePerPerson).toLocaleString("en-IN")}</p>
+                    <p className="text-xs text-zinc-500">per person</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -128,9 +158,11 @@ export default function Step4Preview({ draft, profile }: Props) {
           { ok: draft.city.length > 0, label: "City entered" },
           { ok: draft.category !== "", label: "Category selected" },
           { ok: draft.description.length > 20, label: "Description added" },
-          { ok: draft.stops.length >= 1, label: "At least 1 stop added" },
+          ...(!flexi ? [{ ok: draft.stops.length >= 1, label: "At least 1 stop added" }] : []),
           { ok: draft.daysOfWeek.length > 0, label: "Running days set" },
-          { ok: Number(draft.pricePerPerson) > 0, label: "Price per person set" },
+          ...(flexi
+            ? [{ ok: Number(draft.hourlyRate) > 0, label: "Hourly rate set" }]
+            : [{ ok: Number(draft.pricePerPerson) > 0, label: "Price per person set" }]),
           { ok: !!(profile?.vehicleModel), label: "Vehicle details in profile" },
         ].map((item, i) => (
           <div key={i} className={`flex items-center gap-2 text-sm ${item.ok ? "text-yellow-400" : "text-zinc-600"}`}>
