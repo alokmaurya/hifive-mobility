@@ -31,4 +31,5 @@ export interface Driver {
   carPhotoUrl?: string;
   isAvailable: boolean;
   hourlyRate: number;
+  phone?: string;
 }
