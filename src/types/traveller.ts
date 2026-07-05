@@ -20,7 +20,7 @@ export interface TravellerBooking {
   hoursRequested?: number;
   totalAmount: number;
   currency: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled" | "completed";
   specialRequests?: string;
   bookedAt: string;
 }

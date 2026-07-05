@@ -161,7 +161,7 @@ export default function DriverDetailClient() {
 
   if (loadingPage) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
@@ -179,9 +179,9 @@ export default function DriverDetailClient() {
     <RequireTravellerAuth>
       <div className="min-h-screen bg-white pb-24">
         {/* Header */}
-        <div className="bg-blue-950 px-4 pt-10 pb-4">
+        <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-4 pt-10 pb-4">
           <div className="max-w-md mx-auto">
-            <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-300 hover:text-white text-sm mb-2">
+            <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-300 hover:text-sky-200 text-sm mb-2">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
             <div className="flex items-center gap-1 text-blue-300 text-xs">
@@ -230,7 +230,7 @@ export default function DriverDetailClient() {
                 </div>
               )}
               {driver.vehiclePlate && (
-                <div className="absolute bottom-2 right-2 bg-blue-950/80 px-3 py-1 rounded-lg border border-blue-800">
+                <div className="absolute bottom-2 right-2 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900/80 px-3 py-1 rounded-lg border border-blue-800">
                   <span className="text-white text-sm font-mono font-bold tracking-wider">{driver.vehiclePlate}</span>
                 </div>
               )}
@@ -289,7 +289,7 @@ export default function DriverDetailClient() {
 
                 return (
                   <div key={opt.type} className={`bg-white rounded-3xl border-2 transition-all overflow-hidden shadow-sm ${
-                    isSelected ? "border-sky-500" : "border-sky-200"
+                    isSelected ? "border-indigo-500" : "border-sky-200"
                   }`}>
                     <button
                       onClick={() => {
@@ -427,7 +427,7 @@ export default function DriverDetailClient() {
                           <button
                             type="submit"
                             disabled={submitting || !tourDate}
-                            className="w-full py-3.5 bg-sky-500 text-white font-bold rounded-2xl hover:bg-sky-400 disabled:opacity-50 transition-colors"
+                            className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 disabled:opacity-50 transition-colors"
                           >
                             {submitting ? "Sending request…" : "Send Booking Request"}
                           </button>
@@ -451,7 +451,7 @@ export default function DriverDetailClient() {
               <p className="text-slate-400 text-xs mt-1">You will be notified once the driver confirms.</p>
               <button
                 onClick={() => router.push("/traveller/bookings")}
-                className="mt-4 px-6 py-2.5 bg-sky-500 text-white font-bold rounded-2xl hover:bg-sky-400 transition-colors text-sm"
+                className="mt-4 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 transition-colors text-sm"
               >
                 View My Bookings
               </button>
