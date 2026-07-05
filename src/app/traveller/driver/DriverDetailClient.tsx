@@ -171,7 +171,8 @@ export default function DriverDetailClient() {
     </div>
   );
 
-  const flexiRate = driver.hourlyRate;
+  const flexiTour = getTourForType("flexi");
+  const flexiRate = flexiTour?.hourlyRate || driver.hourlyRate;
   const flexiTotal = hoursRequested * flexiRate;
 
   return (
@@ -284,7 +285,7 @@ export default function DriverDetailClient() {
                 const tour = getTourForType(opt.type);
                 const isSelected = selectedOption === opt.type;
                 const isExpanded = expanded === opt.type;
-                const available = opt.type === "flexi" ? (flexiRate > 0) : !!tour;
+                const available = opt.type === "flexi" ? (!!flexiTour || flexiRate > 0) : !!tour;
 
                 return (
                   <div key={opt.type} className={`bg-white rounded-3xl border-2 transition-all overflow-hidden shadow-sm ${

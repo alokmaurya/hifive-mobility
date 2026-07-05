@@ -74,7 +74,7 @@ const isFlexi = (draft: TourDraft) => draft.category === "flexi";
 
 function canProceed(step: number, draft: TourDraft): boolean {
   if (step === 0) return draft.city.trim().length > 0 && draft.category !== "" && draft.description.trim().length > 0;
-  if (step === 1) return draft.stops.length >= 1;
+  if (step === 1) return isFlexi(draft) || draft.stops.length >= 1;
   if (step === 2) {
     const daysOk = draft.daysOfWeek.length > 0;
     const priceOk = isFlexi(draft)
@@ -168,7 +168,17 @@ export default function WizardShell({ tourId, seedDraft, currentStatus }: Wizard
             onCategory={(cat) => dispatch({ type: "SET_FIELD", field: "category", value: cat as TourCategory })}
           />
         )}
-        {step === 1 && (
+        {step === 1 && isFlexi(draft) && (
+          <div className="p-4 flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
+            <div className="text-5xl">⏱️</div>
+            <p className="text-xl font-bold text-white">No Itinerary Needed</p>
+            <p className="text-sm text-zinc-400 max-w-xs">
+              Flexi tours are open-ended — travellers pick how many hours they need. There are no fixed stops to plan.
+            </p>
+            <p className="text-xs text-zinc-600 mt-2">Click Continue to set your hourly rate and availability.</p>
+          </div>
+        )}
+        {step === 1 && !isFlexi(draft) && (
           <Step2Stops
             stops={draft.stops}
             onAdd={(name, dur) => dispatch({ type: "ADD_STOP", name, duration: dur })}
