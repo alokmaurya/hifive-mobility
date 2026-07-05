@@ -8,10 +8,10 @@ import { useTravellerBookings } from "@/hooks/useTravellerBookings";
 import type { TourType } from "@/types/traveller";
 
 const STATUS_STYLES: Record<string, string> = {
-  pending:   "bg-white/10 text-white",
+  pending:   "bg-yellow-400/10 text-yellow-400",
   confirmed: "bg-green-500/10 text-green-400",
   cancelled: "bg-red-500/10 text-red-400",
-  completed: "bg-blue-700 text-zinc-300",
+  completed: "bg-zinc-700 text-zinc-300",
 };
 
 const TOUR_TYPE_LABELS: Record<TourType, string> = {
@@ -31,29 +31,29 @@ export default function TravellerBookingsPage() {
 
   return (
     <RequireTravellerAuth>
-      <div className="min-h-screen bg-blue-950 pb-20">
-        <div className="bg-blue-900 border-b border-blue-800 px-4 pt-10 pb-4">
+      <div className="min-h-screen bg-zinc-950 pb-20">
+        <div className="bg-zinc-900 border-b border-zinc-800 px-4 pt-10 pb-4">
           <div className="max-w-md mx-auto">
             <h1 className="text-xl font-bold text-white">My Bookings</h1>
-            <p className="text-blue-200 text-sm mt-0.5">Your tour reservations</p>
+            <p className="text-zinc-400 text-sm mt-0.5">Your tour reservations</p>
           </div>
         </div>
 
         <div className="px-4 max-w-md mx-auto mt-4">
           {loading && (
             <div className="flex justify-center mt-12">
-              <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
           {!loading && bookings.length === 0 && (
             <div className="text-center mt-16">
-              <CalendarDays className="w-12 h-12 text-blue-700 mx-auto mb-3" />
-              <p className="text-blue-200">No bookings yet</p>
-              <p className="text-blue-400 text-sm mt-1">Explore drivers and make your first booking</p>
+              <CalendarDays className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+              <p className="text-zinc-400">No bookings yet</p>
+              <p className="text-zinc-600 text-sm mt-1">Explore drivers and make your first booking</p>
               <button
                 onClick={() => router.push("/traveller")}
-                className="mt-4 px-6 py-2.5 bg-white text-blue-900 font-bold rounded-2xl hover:bg-blue-50 transition-colors text-sm"
+                className="mt-4 px-6 py-2.5 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 transition-colors text-sm"
               >
                 Find Drivers
               </button>
@@ -62,54 +62,54 @@ export default function TravellerBookingsPage() {
 
           <div className="space-y-3">
             {bookings.map((b) => (
-              <div key={b.id} className="bg-blue-900 border border-blue-800 rounded-3xl p-4">
+              <div key={b.id} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="text-white font-semibold text-sm">{b.driverName}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-blue-400" />
+                      <ChevronRight className="w-3.5 h-3.5 text-zinc-600" />
                     </div>
-                    <p className="text-xs text-white/80 mt-0.5">{TOUR_TYPE_LABELS[b.tourType] ?? b.tourType}</p>
+                    <p className="text-xs text-yellow-400/80 mt-0.5">{TOUR_TYPE_LABELS[b.tourType] ?? b.tourType}</p>
                     {b.tourCity && (
                       <div className="flex items-center gap-1 mt-1">
-                        <MapPin className="w-3 h-3 text-blue-300" />
-                        <span className="text-blue-300 text-xs">{b.tourCity}</span>
+                        <MapPin className="w-3 h-3 text-zinc-500" />
+                        <span className="text-zinc-500 text-xs">{b.tourCity}</span>
                       </div>
                     )}
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize flex-shrink-0 ${STATUS_STYLES[b.status] ?? "bg-blue-700 text-zinc-300"}`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize flex-shrink-0 ${STATUS_STYLES[b.status] ?? "bg-zinc-700 text-zinc-300"}`}>
                     {b.status}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-blue-800">
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-zinc-800">
                   <div className="flex items-center gap-1">
-                    <CalendarDays className="w-3.5 h-3.5 text-blue-300" />
-                    <span className="text-blue-200 text-xs">{b.tourDate}</span>
+                    <CalendarDays className="w-3.5 h-3.5 text-zinc-500" />
+                    <span className="text-zinc-400 text-xs">{b.tourDate}</span>
                   </div>
                   {b.tourType === "flexi" && b.hoursRequested ? (
                     <div className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-blue-300" />
-                      <span className="text-blue-200 text-xs">{b.hoursRequested} hrs</span>
+                      <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                      <span className="text-zinc-400 text-xs">{b.hoursRequested} hrs</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-blue-300" />
-                      <span className="text-blue-200 text-xs">{b.guestCount} guest{b.guestCount > 1 ? "s" : ""}</span>
+                      <Users className="w-3.5 h-3.5 text-zinc-500" />
+                      <span className="text-zinc-400 text-xs">{b.guestCount} guest{b.guestCount > 1 ? "s" : ""}</span>
                     </div>
                   )}
-                  <div className="ml-auto text-white font-bold text-sm">
+                  <div className="ml-auto text-yellow-400 font-bold text-sm">
                     {b.currency}{b.totalAmount.toLocaleString("en-IN")}
                   </div>
                 </div>
 
                 {b.specialRequests && (
-                  <p className="text-blue-400 text-xs mt-2 italic">"{b.specialRequests}"</p>
+                  <p className="text-zinc-600 text-xs mt-2 italic">"{b.specialRequests}"</p>
                 )}
 
                 {b.status === "pending" && (
                   <div className="mt-3 flex items-center justify-between">
-                    <p className="text-white/60 text-xs">Waiting for driver to accept…</p>
+                    <p className="text-yellow-400/60 text-xs">Waiting for driver to accept…</p>
                     <button
                       onClick={() => handleCancel(b.id)}
                       className="text-xs text-red-400 hover:text-red-300 transition-colors"
@@ -119,7 +119,7 @@ export default function TravellerBookingsPage() {
                   </div>
                 )}
 
-                <p className="text-blue-700 text-xs mt-2">
+                <p className="text-zinc-700 text-xs mt-2">
                   <Clock className="w-2.5 h-2.5 inline mr-1" />
                   Booked {new Date(b.bookedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                 </p>

@@ -32,41 +32,41 @@ export default function TravellerSignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-950 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-3">
-            <MapPin className="w-7 h-7 text-blue-900" />
+          <div className="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center mb-3">
+            <MapPin className="w-7 h-7 text-black" />
           </div>
           <h1 className="text-2xl font-bold text-white">Join HiFive Tours</h1>
-          <p className="text-sm text-blue-200 mt-1">Discover amazing sightseeing tours</p>
+          <p className="text-sm text-zinc-400 mt-1">Discover amazing sightseeing tours</p>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide block mb-1.5">Full Name</label>
+            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Full Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="Your name"
-              className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-900 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+              className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-900 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide block mb-1.5">Email</label>
+            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@example.com"
-              className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-900 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+              className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-900 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-blue-200 uppercase tracking-wide block mb-1.5">Password</label>
+            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Password</label>
             <input
               type="password"
               value={password}
@@ -74,7 +74,7 @@ export default function TravellerSignupPage() {
               required
               minLength={6}
               placeholder="Min 6 characters"
-              className="w-full px-4 py-3 rounded-2xl border border-blue-700 bg-blue-900 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+              className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-900 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-yellow-400/50 text-sm"
             />
           </div>
 
@@ -83,22 +83,22 @@ export default function TravellerSignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-white text-blue-900 font-bold rounded-2xl hover:bg-blue-50 disabled:opacity-50 transition-colors"
+            className="w-full py-3.5 bg-yellow-400 text-black font-bold rounded-2xl hover:bg-yellow-300 disabled:opacity-50 transition-colors"
           >
             {loading ? "Creating account…" : "Create Account"}
           </button>
         </form>
 
-        <p className="text-sm text-blue-300 text-center mt-6">
+        <p className="text-sm text-zinc-500 text-center mt-6">
           Already have an account?{" "}
-          <Link href="/traveller/auth/login" className="text-white font-semibold hover:underline">
+          <Link href="/traveller/auth/login" className="text-yellow-400 font-semibold hover:underline">
             Sign in
           </Link>
         </p>
 
-        <p className="text-xs text-blue-400 text-center mt-3">
+        <p className="text-xs text-zinc-600 text-center mt-3">
           Are you a driver?{" "}
-          <Link href="/auth/login" className="text-blue-300 hover:text-blue-200 underline">
+          <Link href="/auth/login" className="text-zinc-500 hover:text-zinc-400 underline">
             Driver login
           </Link>
         </p>
