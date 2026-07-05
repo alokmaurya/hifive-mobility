@@ -153,7 +153,7 @@ export default function DriverDetailClient() {
       }
       setSubmitted(true);
     } catch (err: unknown) {
-      setSubmitError(err instanceof Error ? err.message : "Booking failed");
+      setSubmitError((err as { message?: string })?.message ?? "Booking failed");
     } finally {
       setSubmitting(false);
     }
