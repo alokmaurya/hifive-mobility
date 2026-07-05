@@ -33,6 +33,7 @@ function mapDriver(row: Record<string, unknown>): Driver {
     carPhotoUrl: (row.car_photo_url as string) ?? undefined,
     isAvailable: (row.is_available as boolean) ?? true,
     hourlyRate: Number(row.hourly_rate ?? 0),
+    phone: (row.phone as string) ?? undefined,
   };
 }
 
@@ -78,6 +79,7 @@ export function useProfile() {
         car_photo_url: updates.carPhotoUrl,
         is_available: updates.isAvailable,
         hourly_rate: updates.hourlyRate,
+        phone: updates.phone,
       })
       .eq("id", user.id);
     if (error) throw error;
