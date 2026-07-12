@@ -30,11 +30,11 @@ export default function TravellerBottomNav() {
                     : ""
                 }`}>
                   <Icon
-                    className={`w-5 h-5 transition-colors duration-200 ${active ? "text-indigo-600" : "text-slate-300"}`}
+                    className={`w-5 h-5 transition-colors duration-200 ${active ? "text-indigo-600" : "text-slate-500"}`}
                     strokeWidth={active ? 2.5 : 2}
                   />
                 </div>
-                <span className={`text-[10px] font-bold transition-colors duration-200 ${active ? "text-indigo-600" : "text-slate-300"}`}>
+                <span className={`text-[10px] font-bold transition-colors duration-200 ${active ? "text-indigo-600" : "text-slate-500"}`}>
                   {label}
                 </span>
                 {active && (
