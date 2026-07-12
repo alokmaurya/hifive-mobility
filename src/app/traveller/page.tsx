@@ -90,6 +90,38 @@ export default function TravellerHomePage() {
           </div>
         </div>
 
+        {/* ── Info banner ── */}
+        {!loading && states.length > 0 && (
+          <div className="bg-slate-100 border-b border-slate-200 px-4 py-3">
+            <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <h2 className="text-slate-800 font-extrabold text-sm leading-tight">
+                  Your next{" "}
+                  <span className="text-indigo-600">adventure</span>{" "}
+                  awaits
+                </h2>
+                <p className="text-slate-500 text-xs mt-0.5">Book local sightseeing drivers. Explore India your way.</p>
+              </div>
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <Compass className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="text-slate-600 text-xs font-semibold">{states.length} states</span>
+                </div>
+                <div className="w-px h-3.5 bg-slate-300" />
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-slate-600 text-xs font-semibold">Instant booking</span>
+                </div>
+                <div className="w-px h-3.5 bg-slate-300" />
+                <div className="flex items-center gap-1.5">
+                  <Mountain className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-slate-600 text-xs font-semibold">Local experts</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Main content: two-column ── */}
         <div className="px-4 max-w-5xl mx-auto mt-5">
           <div className="flex flex-col md:flex-row gap-5">
@@ -213,35 +245,6 @@ export default function TravellerHomePage() {
             </div>
           </div>
 
-          {/* ── Info banner ── */}
-          {!loading && states.length > 0 && (
-            <div className="mt-5 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 rounded-3xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-              <div>
-                <h2 className="text-white font-extrabold text-base leading-tight">
-                  Your next{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-300">adventure</span>{" "}
-                  awaits
-                </h2>
-                <p className="text-blue-300 text-xs mt-1">Book local sightseeing drivers. Explore India your way.</p>
-              </div>
-              <div className="flex items-center gap-5 shrink-0">
-                <div className="flex items-center gap-1.5">
-                  <Compass className="w-4 h-4 text-sky-400" />
-                  <span className="text-sky-300 text-xs font-semibold">{states.length} states</span>
-                </div>
-                <div className="w-px h-4 bg-blue-800" />
-                <div className="flex items-center gap-1.5">
-                  <Zap className="w-4 h-4 text-indigo-400" />
-                  <span className="text-indigo-300 text-xs font-semibold">Instant booking</span>
-                </div>
-                <div className="w-px h-4 bg-blue-800" />
-                <div className="flex items-center gap-1.5">
-                  <Mountain className="w-4 h-4 text-blue-400" />
-                  <span className="text-blue-300 text-xs font-semibold">Local experts</span>
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
       </div>
