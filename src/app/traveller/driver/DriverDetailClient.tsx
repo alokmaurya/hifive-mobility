@@ -177,10 +177,10 @@ export default function DriverDetailClient() {
 
   return (
     <RequireTravellerAuth>
-      <div className="min-h-screen bg-white pb-24">
+      <div className="min-h-screen bg-slate-50 pb-24">
         {/* Header */}
         <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-4 pt-10 pb-4">
-          <div className="max-w-md mx-auto">
+          <div className="max-w-5xl mx-auto">
             <button onClick={() => router.back()} className="flex items-center gap-1 text-blue-300 hover:text-sky-200 text-sm mb-2">
               <ChevronLeft className="w-4 h-4" /> Back
             </button>
@@ -191,272 +191,303 @@ export default function DriverDetailClient() {
           </div>
         </div>
 
-        <div className="px-4 max-w-md mx-auto mt-4 space-y-4">
-          {/* Driver card */}
-          <div className="bg-white rounded-3xl p-4 border border-sky-200 shadow-sm">
-            <div className="flex items-start gap-3 mb-3">
-              <div className="w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl font-bold text-blue-700">{driver.name.charAt(0).toUpperCase()}</span>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h1 className="text-blue-900 font-bold text-lg">{driver.name}</h1>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                    driver.isAvailable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"
-                  }`}>
-                    {driver.isAvailable ? "Available" : "Busy"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 mt-1 flex-wrap">
-                  {driver.age && <span className="text-slate-400 text-xs">Age {driver.age}</span>}
-                  <div className="flex items-center gap-0.5">
-                    <Star className="w-3 h-3 text-sky-500 fill-sky-500" />
-                    <span className="text-sky-500 text-xs font-bold">{driver.rating.toFixed(1)}</span>
+        <div className="px-4 max-w-5xl mx-auto mt-5">
+          <div className="flex flex-col lg:flex-row gap-5 items-start">
+
+            {/* ── LEFT: Driver profile + cab details ── */}
+            <div className="w-full lg:w-5/12 space-y-4">
+
+              {/* Driver identity card */}
+              <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                {/* Avatar + name/age/status */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-sky-100 rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-100">
+                    <span className="text-2xl font-extrabold text-indigo-600">{driver.name.charAt(0).toUpperCase()}</span>
                   </div>
-                  <span className="text-slate-400 text-xs">{driver.totalToursRun} trips</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Car photo */}
-            <div className="bg-sky-50 rounded-2xl h-36 flex items-center justify-center mb-3 relative overflow-hidden">
-              {driver.carPhotoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={driver.carPhotoUrl} alt="Car" className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center gap-1.5">
-                  <Car className="w-12 h-12 text-sky-300" />
-                  <span className="text-slate-400 text-sm font-semibold">{driver.carBrand} {driver.vehicleModel}</span>
-                </div>
-              )}
-              {driver.vehiclePlate && (
-                <div className="absolute bottom-2 right-2 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900/80 px-3 py-1 rounded-lg border border-blue-800">
-                  <span className="text-white text-sm font-mono font-bold tracking-wider">{driver.vehiclePlate}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Vehicle details */}
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="bg-sky-50 rounded-xl px-2 py-2 text-center border border-sky-100">
-                <p className="text-slate-400 text-[9px] uppercase tracking-wide">Type</p>
-                <p className="text-blue-900 text-xs font-semibold mt-0.5 capitalize">{driver.vehicleType}</p>
-              </div>
-              <div className="bg-sky-50 rounded-xl px-2 py-2 text-center border border-sky-100">
-                <p className="text-slate-400 text-[9px] uppercase tracking-wide">Fuel</p>
-                <p className="text-blue-900 text-xs font-semibold mt-0.5">{FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
-              </div>
-              <div className="bg-sky-50 rounded-xl px-2 py-2 text-center border border-sky-100">
-                <p className="text-slate-400 text-[9px] uppercase tracking-wide">Seats</p>
-                <p className="text-blue-900 text-xs font-semibold mt-0.5">{driver.vehicleCapacity}</p>
-              </div>
-            </div>
-
-            {/* Amenities */}
-            <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-sky-100">
-              <div className="flex items-center gap-1">
-                {driver.isAc ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <XCircle className="w-3.5 h-3.5 text-slate-300" />}
-                <span className={`text-xs ${driver.isAc ? "text-green-600" : "text-slate-400"}`}>AC</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-500 text-xs">{driver.luggageCapacityBags} bags</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-blue-700" : "text-slate-300"}`} />
-                <span className={`text-xs ${driver.isPetFriendly ? "text-blue-700" : "text-slate-400"}`}>
-                  {driver.isPetFriendly ? "Pet friendly" : "No pets"}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-slate-300"}`} />
-                <span className={`text-xs ${driver.smokingAllowed ? "text-orange-500" : "text-slate-400"}`}>
-                  {driver.smokingAllowed ? "Smoking ok" : "No smoking"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tour type options */}
-          {!submitted && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Choose Tour Type</h2>
-              {TOUR_OPTIONS.map((opt) => {
-                const tour = getTourForType(opt.type);
-                const isSelected = selectedOption === opt.type;
-                const isExpanded = expanded === opt.type;
-                const available = opt.type === "flexi" ? (!!flexiTour || flexiRate > 0) : !!tour;
-
-                return (
-                  <div key={opt.type} className={`bg-white rounded-3xl border-2 transition-all overflow-hidden shadow-sm ${
-                    isSelected ? "border-indigo-500" : "border-sky-200"
-                  }`}>
-                    <button
-                      onClick={() => {
-                        setSelectedOption(opt.type);
-                        setExpanded(isExpanded ? null : opt.type);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-4 text-left"
-                    >
-                      <span className="text-2xl">{opt.emoji}</span>
-                      <div className="flex-1">
-                        <p className="font-semibold text-sm text-blue-900">{opt.label}</p>
-                        <p className="text-slate-400 text-xs">{opt.desc}</p>
-                        {!available && <p className="text-red-400 text-xs mt-0.5">Not offered by this driver</p>}
-                        {available && opt.type !== "flexi" && tour && (
-                          <p className="text-slate-500 text-xs mt-0.5">
-                            ₹{tour.pricePerPerson.toLocaleString("en-IN")}/person · {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
-                          </p>
-                        )}
-                        {available && opt.type === "flexi" && (
-                          <p className="text-slate-500 text-xs mt-0.5">₹{flexiRate}/hr</p>
-                        )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="text-slate-900 font-extrabold text-lg leading-tight">{driver.name}</h1>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        driver.isAvailable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"
+                      }`}>
+                        {driver.isAvailable ? "Available" : "Busy"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                      {driver.age && (
+                        <span className="text-slate-500 text-xs font-medium">Age {driver.age}</span>
+                      )}
+                      {driver.yearsExperience > 0 && (
+                        <span className="text-slate-400 text-xs">{driver.yearsExperience} yrs exp</span>
+                      )}
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span className="text-slate-700 text-xs font-bold">{driver.rating.toFixed(1)}</span>
                       </div>
-                      {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
-                    </button>
+                      <span className="text-slate-400 text-xs">{driver.totalToursRun} trips</span>
+                    </div>
+                  </div>
+                </div>
 
-                    {isExpanded && available && (
-                      <div className="px-4 pb-4 border-t border-sky-100">
-                        {opt.type !== "flexi" && tour && tour.stops.length > 0 && (
-                          <div className="mt-3 mb-4">
-                            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Itinerary</p>
-                            <div className="space-y-2">
-                              {tour.stops.map((stop, i) => (
-                                <div key={stop.id} className="flex items-start gap-2">
-                                  <div className="w-5 h-5 rounded-full bg-sky-100 border border-sky-300 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                    <span className="text-sky-600 text-[9px] font-bold">{i + 1}</span>
+                {/* Bio */}
+                {driver.bio && (
+                  <p className="text-slate-500 text-xs leading-relaxed mb-4 border-t border-slate-50 pt-3">{driver.bio}</p>
+                )}
+
+                {/* Verified badge */}
+                {driver.isVerified && (
+                  <div className="flex items-center gap-1.5 mb-4">
+                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
+                    <span className="text-indigo-600 text-xs font-semibold">Verified Driver</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Cab details card */}
+              <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-3">Cab Details</p>
+
+                {/* Car photo */}
+                <div className="bg-slate-50 rounded-2xl h-40 flex items-center justify-center mb-4 relative overflow-hidden border border-slate-100">
+                  {driver.carPhotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={driver.carPhotoUrl} alt="Car" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Car className="w-14 h-14 text-slate-300" />
+                      <span className="text-slate-400 text-sm font-semibold">{driver.carBrand} {driver.vehicleModel}</span>
+                    </div>
+                  )}
+                  {driver.vehiclePlate && (
+                    <div className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-sm px-3 py-1 rounded-lg border border-slate-700">
+                      <span className="text-white text-sm font-mono font-bold tracking-wider">{driver.vehiclePlate}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Specs grid */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
+                    <p className="text-slate-400 text-[9px] uppercase tracking-wide">Type</p>
+                    <p className="text-slate-800 text-xs font-bold mt-0.5 capitalize">{driver.vehicleType}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
+                    <p className="text-slate-400 text-[9px] uppercase tracking-wide">Fuel</p>
+                    <p className="text-slate-800 text-xs font-bold mt-0.5">{FUEL_LABEL[driver.fuelType] ?? driver.fuelType}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
+                    <p className="text-slate-400 text-[9px] uppercase tracking-wide">Seats</p>
+                    <p className="text-slate-800 text-xs font-bold mt-0.5">{driver.vehicleCapacity}</p>
+                  </div>
+                </div>
+
+                {/* Amenities */}
+                <div className="flex items-center gap-4 flex-wrap pt-3 border-t border-slate-100">
+                  <div className="flex items-center gap-1">
+                    {driver.isAc ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <XCircle className="w-3.5 h-3.5 text-slate-300" />}
+                    <span className={`text-xs font-medium ${driver.isAc ? "text-green-600" : "text-slate-400"}`}>AC</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-slate-500 text-xs">{driver.luggageCapacityBags} bags</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <PawPrint className={`w-3.5 h-3.5 ${driver.isPetFriendly ? "text-indigo-500" : "text-slate-300"}`} />
+                    <span className={`text-xs ${driver.isPetFriendly ? "text-indigo-600 font-medium" : "text-slate-400"}`}>
+                      {driver.isPetFriendly ? "Pet friendly" : "No pets"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Cigarette className={`w-3.5 h-3.5 ${driver.smokingAllowed ? "text-orange-400" : "text-slate-300"}`} />
+                    <span className={`text-xs ${driver.smokingAllowed ? "text-orange-500 font-medium" : "text-slate-400"}`}>
+                      {driver.smokingAllowed ? "Smoking ok" : "No smoking"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── RIGHT: Choose Tour Type ── */}
+            <div className="w-full lg:flex-1">
+              {!submitted ? (
+                <div className="space-y-3">
+                  <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Choose Tour Type</p>
+                  {TOUR_OPTIONS.map((opt) => {
+                    const tour = getTourForType(opt.type);
+                    const isSelected = selectedOption === opt.type;
+                    const isExpanded = expanded === opt.type;
+                    const available = opt.type === "flexi" ? (!!flexiTour || flexiRate > 0) : !!tour;
+
+                    return (
+                      <div key={opt.type} className={`bg-white rounded-3xl border-2 transition-all overflow-hidden shadow-sm ${
+                        isSelected ? "border-indigo-500 shadow-indigo-100" : "border-slate-100"
+                      }`}>
+                        <button
+                          onClick={() => {
+                            setSelectedOption(opt.type);
+                            setExpanded(isExpanded ? null : opt.type);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-4 text-left"
+                        >
+                          <span className="text-2xl">{opt.emoji}</span>
+                          <div className="flex-1">
+                            <p className="font-bold text-sm text-slate-900">{opt.label}</p>
+                            <p className="text-slate-400 text-xs mt-0.5">{opt.desc}</p>
+                            {!available && <p className="text-red-400 text-xs mt-0.5">Not offered by this driver</p>}
+                            {available && opt.type !== "flexi" && tour && (
+                              <p className="text-indigo-500 text-xs font-semibold mt-0.5">
+                                ₹{tour.pricePerPerson.toLocaleString("en-IN")}/person · {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
+                              </p>
+                            )}
+                            {available && opt.type === "flexi" && (
+                              <p className="text-indigo-500 text-xs font-semibold mt-0.5">₹{flexiRate}/hr</p>
+                            )}
+                          </div>
+                          {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                        </button>
+
+                        {isExpanded && available && (
+                          <div className="px-4 pb-4 border-t border-slate-100">
+                            {opt.type !== "flexi" && tour && tour.stops.length > 0 && (
+                              <div className="mt-3 mb-4">
+                                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Itinerary</p>
+                                <div className="space-y-2">
+                                  {tour.stops.map((stop, i) => (
+                                    <div key={stop.id} className="flex items-start gap-2">
+                                      <div className="w-5 h-5 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span className="text-indigo-500 text-[9px] font-bold">{i + 1}</span>
+                                      </div>
+                                      <div>
+                                        <p className="text-slate-800 text-sm">{stop.name}</p>
+                                        <p className="text-slate-400 text-xs">{stop.durationMinutes} min</p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5 text-indigo-400" />
+                                    <span className="text-slate-500 text-xs">
+                                      {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
+                                    </span>
                                   </div>
-                                  <div>
-                                    <p className="text-blue-900 text-sm">{stop.name}</p>
-                                    <p className="text-slate-400 text-xs">{stop.durationMinutes} min</p>
+                                  <div className="flex items-center gap-1">
+                                    <Users className="w-3.5 h-3.5 text-indigo-400" />
+                                    <span className="text-slate-500 text-xs">Max {tour.maxGuests}</span>
                                   </div>
                                 </div>
-                              ))}
-                            </div>
-                            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-sky-100">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-3.5 h-3.5 text-sky-400" />
-                                <span className="text-slate-500 text-xs">
-                                  {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
-                                </span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Users className="w-3.5 h-3.5 text-sky-400" />
-                                <span className="text-slate-500 text-xs">Max {tour.maxGuests}</span>
+                            )}
+                            {opt.type !== "flexi" && tour && tour.stops.length === 0 && (
+                              <p className="text-slate-400 text-xs mt-3 mb-2">No itinerary listed — contact driver for details.</p>
+                            )}
+
+                            {/* Booking form */}
+                            <form onSubmit={handleSubmit} className="space-y-3 mt-3">
+                              <div>
+                                <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                  <Calendar className="w-3 h-3" /> Date *
+                                </label>
+                                <input
+                                  type="date"
+                                  value={tourDate}
+                                  onChange={(e) => setTourDate(e.target.value)}
+                                  required
+                                  min={new Date().toISOString().split("T")[0]}
+                                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
+                                />
                               </div>
-                            </div>
+
+                              {opt.type !== "flexi" && tour && (
+                                <div>
+                                  <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                    <Users className="w-3 h-3" /> Guests
+                                  </label>
+                                  <div className="flex items-center gap-3">
+                                    <button type="button" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">−</button>
+                                    <span className="text-slate-900 font-bold w-6 text-center">{guestCount}</span>
+                                    <button type="button" onClick={() => setGuestCount(Math.min(tour.maxGuests, guestCount + 1))}
+                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">+</button>
+                                    <span className="text-slate-400 text-xs">max {tour.maxGuests}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {opt.type === "flexi" && (
+                                <div>
+                                  <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                    <Clock className="w-3 h-3" /> Hours Required
+                                  </label>
+                                  <div className="flex items-center gap-3">
+                                    <button type="button" onClick={() => setHoursRequested(Math.max(1, hoursRequested - 1))}
+                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">−</button>
+                                    <span className="text-slate-900 font-bold w-8 text-center">{hoursRequested}h</span>
+                                    <button type="button" onClick={() => setHoursRequested(Math.min(12, hoursRequested + 1))}
+                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">+</button>
+                                  </div>
+                                  <div className="mt-2 bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
+                                    <span className="text-slate-500 text-xs">{hoursRequested} hrs × ₹{flexiRate}/hr</span>
+                                    <span className="text-indigo-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {opt.type !== "flexi" && tour && (
+                                <div className="bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
+                                  <span className="text-slate-500 text-xs">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
+                                  <span className="text-indigo-600 font-bold">₹{(guestCount * tour.pricePerPerson).toLocaleString("en-IN")}</span>
+                                </div>
+                              )}
+
+                              <div>
+                                <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                  <MessageSquare className="w-3 h-3" /> Special Requests
+                                </label>
+                                <textarea
+                                  value={specialRequests}
+                                  onChange={(e) => setSpecialRequests(e.target.value)}
+                                  rows={2}
+                                  placeholder="Any special requirements?"
+                                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm resize-none"
+                                />
+                              </div>
+
+                              {submitError && <p className="text-red-500 text-xs">{submitError}</p>}
+
+                              <button
+                                type="submit"
+                                disabled={submitting || !tourDate}
+                                className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 disabled:opacity-50 transition-opacity shadow-md shadow-indigo-100"
+                              >
+                                {submitting ? "Sending request…" : "Send Booking Request"}
+                              </button>
+                            </form>
                           </div>
                         )}
-                        {opt.type !== "flexi" && tour && tour.stops.length === 0 && (
-                          <p className="text-slate-400 text-xs mt-3 mb-2">No itinerary listed — contact driver for details.</p>
-                        )}
-
-                        {/* Booking form */}
-                        <form onSubmit={handleSubmit} className="space-y-3 mt-3">
-                          <div>
-                            <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
-                              <Calendar className="w-3 h-3" /> Date *
-                            </label>
-                            <input
-                              type="date"
-                              value={tourDate}
-                              onChange={(e) => setTourDate(e.target.value)}
-                              required
-                              min={new Date().toISOString().split("T")[0]}
-                              className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-sky-50 text-blue-900 focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm"
-                            />
-                          </div>
-
-                          {opt.type !== "flexi" && tour && (
-                            <div>
-                              <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
-                                <Users className="w-3 h-3" /> Guests
-                              </label>
-                              <div className="flex items-center gap-3">
-                                <button type="button" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">−</button>
-                                <span className="text-blue-900 font-bold w-6 text-center">{guestCount}</span>
-                                <button type="button" onClick={() => setGuestCount(Math.min(tour.maxGuests, guestCount + 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">+</button>
-                                <span className="text-slate-400 text-xs">max {tour.maxGuests}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {opt.type === "flexi" && (
-                            <div>
-                              <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
-                                <Clock className="w-3 h-3" /> Hours Required
-                              </label>
-                              <div className="flex items-center gap-3">
-                                <button type="button" onClick={() => setHoursRequested(Math.max(1, hoursRequested - 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">−</button>
-                                <span className="text-blue-900 font-bold w-8 text-center">{hoursRequested}h</span>
-                                <button type="button" onClick={() => setHoursRequested(Math.min(12, hoursRequested + 1))}
-                                  className="w-9 h-9 rounded-full border border-sky-200 bg-sky-50 text-blue-900 flex items-center justify-center text-lg hover:border-sky-400">+</button>
-                              </div>
-                              <div className="mt-2 bg-sky-50 rounded-xl px-3 py-2 flex items-center justify-between border border-sky-100">
-                                <span className="text-slate-500 text-xs">{hoursRequested} hrs × ₹{flexiRate}/hr</span>
-                                <span className="text-sky-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {opt.type !== "flexi" && tour && (
-                            <div className="bg-sky-50 rounded-xl px-3 py-2 flex items-center justify-between border border-sky-100">
-                              <span className="text-slate-500 text-xs">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
-                              <span className="text-sky-600 font-bold">₹{(guestCount * tour.pricePerPerson).toLocaleString("en-IN")}</span>
-                            </div>
-                          )}
-
-                          <div>
-                            <label className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1 mb-1.5">
-                              <MessageSquare className="w-3 h-3" /> Special Requests
-                            </label>
-                            <textarea
-                              value={specialRequests}
-                              onChange={(e) => setSpecialRequests(e.target.value)}
-                              rows={2}
-                              placeholder="Any special requirements?"
-                              className="w-full px-4 py-3 rounded-2xl border border-sky-200 bg-sky-50 text-blue-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400/50 text-sm resize-none"
-                            />
-                          </div>
-
-                          {submitError && <p className="text-red-500 text-xs">{submitError}</p>}
-
-                          <button
-                            type="submit"
-                            disabled={submitting || !tourDate}
-                            className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 disabled:opacity-50 transition-colors"
-                          >
-                            {submitting ? "Sending request…" : "Send Booking Request"}
-                          </button>
-                        </form>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm text-center">
+                  <div className="text-5xl mb-3">🙏</div>
+                  <h2 className="text-slate-900 font-extrabold text-xl">Request Sent!</h2>
+                  <p className="text-slate-500 text-sm mt-2">
+                    Waiting for <span className="text-indigo-600 font-semibold">{driver.name}</span> to accept your request.
+                  </p>
+                  <p className="text-slate-400 text-xs mt-1">You will be notified once the driver confirms.</p>
+                  <button
+                    onClick={() => router.push("/traveller/bookings")}
+                    className="mt-5 px-6 py-3 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 transition-opacity text-sm shadow-md shadow-indigo-100"
+                  >
+                    View My Bookings
+                  </button>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Success state */}
-          {submitted && (
-            <div className="bg-white rounded-3xl p-6 border border-sky-200 shadow-sm text-center">
-              <div className="text-5xl mb-3">🙏</div>
-              <h2 className="text-blue-900 font-bold text-lg">Request Sent!</h2>
-              <p className="text-slate-500 text-sm mt-2">
-                Waiting for <span className="text-blue-900 font-semibold">{driver.name}</span> to accept your request.
-              </p>
-              <p className="text-slate-400 text-xs mt-1">You will be notified once the driver confirms.</p>
-              <button
-                onClick={() => router.push("/traveller/bookings")}
-                className="mt-4 px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 transition-colors text-sm"
-              >
-                View My Bookings
-              </button>
-            </div>
-          )}
+          </div>
         </div>
       </div>
       <TravellerBottomNav />
