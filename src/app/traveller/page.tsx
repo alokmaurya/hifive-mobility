@@ -177,20 +177,7 @@ export default function TravellerHomePage() {
                 </button>
               </form>
 
-              {/* Category pills */}
-              <div>
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">Tour types</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {HIGHLIGHTS.map((h) => (
-                    <div key={h.label} className="bg-white rounded-2xl py-3 px-1 flex flex-col items-center gap-1.5 border border-slate-100 shadow-sm">
-                      <span className="text-xl">{h.icon}</span>
-                      <span className="text-[9px] font-semibold text-slate-500 text-center leading-tight">{h.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {!loading && states.length === 0 && (
+                {!loading && states.length === 0 && (
                 <div className="text-center py-6">
                   <MapPin className="w-8 h-8 text-slate-200 mx-auto mb-2" />
                   <p className="text-slate-400 text-sm">No tours available yet.</p>
@@ -242,6 +229,20 @@ export default function TravellerHomePage() {
             </div>
 
           </div>
+
+          {/* ── Tour types: centered below both columns ── */}
+          <div className="mt-6">
+            <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest text-center mb-3">Tour types</p>
+            <div className="flex justify-center gap-3 flex-wrap">
+              {HIGHLIGHTS.map((h) => (
+                <div key={h.label} className="bg-white rounded-2xl py-3 px-5 flex flex-col items-center gap-1.5 border border-slate-100 shadow-sm min-w-[72px]">
+                  <span className="text-2xl">{h.icon}</span>
+                  <span className="text-[10px] font-semibold text-slate-500 text-center leading-tight">{h.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
       <TravellerBottomNav />
