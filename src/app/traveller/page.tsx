@@ -86,37 +86,7 @@ export default function TravellerHomePage() {
               <span className="text-white font-extrabold text-sm tracking-tight whitespace-nowrap">HiFive Tours</span>
             </div>
 
-            {/* Center: headline + stats */}
-            <div className="flex-1 text-center px-2">
-              <h1 className="text-base font-extrabold text-white leading-tight">
-                Your next{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-300">adventure</span>{" "}
-                awaits
-              </h1>
-              {!loading && states.length > 0 && (
-                <div className="flex items-center justify-center gap-3 mt-1">
-                  <div className="flex items-center gap-1">
-                    <Compass className="w-3 h-3 text-sky-400" />
-                    <span className="text-sky-300 text-[10px] font-medium">{states.length} states</span>
-                  </div>
-                  <div className="w-0.5 h-0.5 rounded-full bg-blue-700" />
-                  <div className="flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-indigo-400" />
-                    <span className="text-indigo-300 text-[10px] font-medium">Instant booking</span>
-                  </div>
-                  <div className="w-0.5 h-0.5 rounded-full bg-blue-700" />
-                  <div className="flex items-center gap-1">
-                    <Mountain className="w-3 h-3 text-blue-400" />
-                    <span className="text-blue-300 text-[10px] font-medium">Local experts</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right: tagline */}
-            <p className="text-blue-300 text-[10px] text-right leading-snug shrink-0 max-w-[100px] hidden sm:block">
-              Book local sightseeing drivers.<br />Explore India your way.
-            </p>
+            <div className="flex-1" />
           </div>
         </div>
 
@@ -242,6 +212,36 @@ export default function TravellerHomePage() {
               ))}
             </div>
           </div>
+
+          {/* ── Info banner ── */}
+          {!loading && states.length > 0 && (
+            <div className="mt-5 bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-900 rounded-3xl px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+              <div>
+                <h2 className="text-white font-extrabold text-base leading-tight">
+                  Your next{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-300">adventure</span>{" "}
+                  awaits
+                </h2>
+                <p className="text-blue-300 text-xs mt-1">Book local sightseeing drivers. Explore India your way.</p>
+              </div>
+              <div className="flex items-center gap-5 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <Compass className="w-4 h-4 text-sky-400" />
+                  <span className="text-sky-300 text-xs font-semibold">{states.length} states</span>
+                </div>
+                <div className="w-px h-4 bg-blue-800" />
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-4 h-4 text-indigo-400" />
+                  <span className="text-indigo-300 text-xs font-semibold">Instant booking</span>
+                </div>
+                <div className="w-px h-4 bg-blue-800" />
+                <div className="flex items-center gap-1.5">
+                  <Mountain className="w-4 h-4 text-blue-400" />
+                  <span className="text-blue-300 text-xs font-semibold">Local experts</span>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
