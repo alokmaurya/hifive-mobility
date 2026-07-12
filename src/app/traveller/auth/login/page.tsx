@@ -30,14 +30,18 @@ export default function TravellerLoginPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-4 pt-16 pb-20 flex flex-col items-center relative overflow-hidden">
+      <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-5 pt-8 pb-14 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20" style={{backgroundImage:"radial-gradient(circle at 30% 40%, #6366f1 0%, transparent 55%), radial-gradient(circle at 75% 70%, #0ea5e9 0%, transparent 50%)"}} />
-        <div className="relative flex flex-col items-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-sky-400 to-indigo-500 rounded-2xl flex items-center justify-center mb-4 shadow-xl shadow-indigo-900/50">
-            <MapPin className="w-8 h-8 text-white" />
+        <div className="relative flex items-center justify-between">
+          {/* Left: logo + name */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/50">
+              <MapPin className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-lg font-extrabold text-white tracking-tight">HiFive Tours</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">HiFive Tours</h1>
-          <p className="text-blue-300 text-sm mt-1">Discover amazing sightseeing tours</p>
+          {/* Right: tagline */}
+          <p className="text-blue-300 text-xs text-right leading-snug max-w-[120px]">Discover amazing sightseeing tours</p>
         </div>
       </div>
 
