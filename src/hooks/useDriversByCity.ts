@@ -42,23 +42,38 @@ export function useDriversByCity(city: string, state: string) {
   useEffect(() => {
     if (!city) { setDrivers([]); return; }
     setLoading(true);
-    // Get distinct driver_ids from published tours in this city
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q = (supabase as any)
       .from("tours")
-      .select("driver_id")
+      .select("driver_id, tour_type")
       .eq("status", "published")
       .ilike("city", `%${city}%`);
     if (state) q = q.ilike("state", `%${state}%`);
-    q.then(async ({ data: tourRows }: { data: { driver_id: string }[] | null }) => {
-      const driverIds = [...new Set((tourRows ?? []).map((r) => r.driver_id))];
+    q.then(async ({ data: tourRows }: { data: { driver_id: string; tour_type: string }[] | null }) => {
+      const rows = tourRows ?? [];
+      const driverIds = [...new Set(rows.map((r) => r.driver_id))];
       if (driverIds.length === 0) { setDrivers([]); setLoading(false); return; }
+
+      // Build a map of driver_id -> set of tour types
+      const tourTypesMap: Record<string, string[]> = {};
+      rows.forEach((r) => {
+        if (!tourTypesMap[r.driver_id]) tourTypesMap[r.driver_id] = [];
+        if (r.tour_type && !tourTypesMap[r.driver_id].includes(r.tour_type)) {
+          tourTypesMap[r.driver_id].push(r.tour_type);
+        }
+      });
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: driverRows } = await (supabase as any)
         .from("drivers")
         .select("*")
         .in("id", driverIds);
-      setDrivers((driverRows ?? []).map(mapDriver));
+      setDrivers(
+        ((driverRows ?? []) as Record<string, unknown>[]).map((row) => ({
+          ...mapDriver(row),
+          tourTypes: tourTypesMap[row.id as string] ?? [],
+        }))
+      );
       setLoading(false);
     });
   }, [city, state]);

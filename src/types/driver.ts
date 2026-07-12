@@ -32,4 +32,5 @@ export interface Driver {
   isAvailable: boolean;
   hourlyRate: number;
   phone?: string;
+  tourTypes?: string[];
 }
