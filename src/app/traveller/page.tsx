@@ -39,50 +39,57 @@ export default function TravellerHomePage() {
     <RequireTravellerAuth>
       <div className="min-h-screen bg-slate-50 pb-24">
         {/* Hero */}
-        <div className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-4 pt-14 pb-20 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-4 pt-5 pb-16 overflow-hidden">
           {/* Decorative blobs */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-sky-500/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/10 rounded-full translate-y-1/2 -translate-x-1/3 blur-2xl" />
 
-          <div className="relative max-w-md mx-auto">
-            {/* Brand */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-9 h-9 bg-gradient-to-br from-sky-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
-                <MapPin className="w-4 h-4 text-white" />
+          <div className="relative max-w-2xl mx-auto">
+            {/* Slim top bar: logo left | tagline right */}
+            <div className="flex items-center justify-between mb-5">
+              {/* Left: logo + name */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-sky-400 to-indigo-500 rounded-lg flex items-center justify-center shadow-md">
+                  <MapPin className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-white font-extrabold text-sm tracking-tight">HiFive Tours</span>
               </div>
-              <span className="text-sky-300 font-bold text-sm tracking-widest uppercase">HiFive Tours</span>
+              {/* Right: tagline */}
+              <p className="text-blue-300 text-xs text-right leading-snug max-w-[130px]">
+                Book local sightseeing drivers.<br />Explore India your way.
+              </p>
             </div>
 
-            <h1 className="text-4xl font-extrabold text-white leading-tight">
-              Your next<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-300">
-                adventure
-              </span>{" "}
-              awaits
-            </h1>
-            <p className="text-blue-300 text-sm mt-3 leading-relaxed">
-              Book local sightseeing drivers.<br />Explore India your way.
-            </p>
+            {/* Center: headline + stats */}
+            <div className="text-center">
+              <h1 className="text-3xl font-extrabold text-white leading-tight">
+                Your next{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-300">
+                  adventure
+                </span>{" "}
+                awaits
+              </h1>
 
-            {/* Stats row */}
-            {!loading && states.length > 0 && (
-              <div className="flex items-center gap-4 mt-5">
-                <div className="flex items-center gap-1.5">
-                  <Compass className="w-3.5 h-3.5 text-sky-400" />
-                  <span className="text-sky-300 text-xs font-medium">{states.length} states</span>
+              {/* Stats row */}
+              {!loading && states.length > 0 && (
+                <div className="flex items-center justify-center gap-4 mt-4">
+                  <div className="flex items-center gap-1.5">
+                    <Compass className="w-3.5 h-3.5 text-sky-400" />
+                    <span className="text-sky-300 text-xs font-medium">{states.length} states</span>
+                  </div>
+                  <div className="w-1 h-1 rounded-full bg-blue-700" />
+                  <div className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="text-indigo-300 text-xs font-medium">Instant booking</span>
+                  </div>
+                  <div className="w-1 h-1 rounded-full bg-blue-700" />
+                  <div className="flex items-center gap-1.5">
+                    <Mountain className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-blue-300 text-xs font-medium">Local experts</span>
+                  </div>
                 </div>
-                <div className="w-1 h-1 rounded-full bg-blue-700" />
-                <div className="flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-indigo-400" />
-                  <span className="text-indigo-300 text-xs font-medium">Instant booking</span>
-                </div>
-                <div className="w-1 h-1 rounded-full bg-blue-700" />
-                <div className="flex items-center gap-1.5">
-                  <Mountain className="w-3.5 h-3.5 text-blue-400" />
-                  <span className="text-blue-300 text-xs font-medium">Local experts</span>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
