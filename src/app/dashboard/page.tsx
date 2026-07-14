@@ -93,9 +93,9 @@ function DashboardContent() {
           {loading ? (
             <div className="h-44 bg-zinc-900 rounded-2xl border border-zinc-800 animate-pulse" />
           ) : publishedTours.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
-              {publishedTours.map((tour) => (
-                <TourCard key={tour.id} tour={tour} compact />
+            <div className="space-y-3">
+              {publishedTours.map((tour, idx) => (
+                <TourCard key={tour.id} tour={tour} seqNum={idx + 1} />
               ))}
               <Link
                 href="/tours/new"

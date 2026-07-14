@@ -85,8 +85,8 @@ function MyToursContent() {
             ))}
           </div>
         ) : filtered.length > 0 ? (
-          filtered.map((tour) => (
-            <TourCard key={tour.id} tour={tour} onActionMenu={setSelected} />
+          filtered.map((tour, idx) => (
+            <TourCard key={tour.id} tour={tour} seqNum={idx + 1} onActionMenu={setSelected} />
           ))
         ) : (
           <EmptyState

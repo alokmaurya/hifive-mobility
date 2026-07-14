@@ -6,7 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { Tour } from "@/types/tour";
 import type { TourDraft } from "@/types/tour";
 
-function mapTour(row: Record<string, unknown>): Tour {
+type DriverProfile = { name: string; rating: number; vehicle_model: string; vehicle_capacity: number; fuel_type: string; cab_photo: string };
+
+function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null): Tour {
   const stops = (row.tour_stops as Record<string, unknown>[] | undefined) ?? [];
   return {
     id: row.id as string,
@@ -33,6 +35,8 @@ function mapTour(row: Record<string, unknown>): Tour {
     tourType: (row.tour_type as Tour["tourType"]) ?? "city_sightseeing",
     hourlyRate: Number(row.hourly_rate ?? 0),
     pricePerPerson: Number(row.full_cab_price ?? row.price_per_person ?? 0),
+    fullCabPrice: Number(row.full_cab_price ?? row.price_per_person ?? 0),
+    overtimeRatePerHour: Number(row.overtime_rate_per_hour ?? 0),
     currency: "₹",
     maxGuests: row.max_guests as number,
     currentBookings: row.current_bookings as number,
@@ -41,6 +45,21 @@ function mapTour(row: Record<string, unknown>): Tour {
     estimatedDurationMinutes: row.estimated_duration_minutes as number,
     rating: row.rating != null ? Number(row.rating) : undefined,
     reviewCount: row.review_count as number,
+    isAc: (row.is_ac as boolean) ?? true,
+    isPetFriendly: (row.is_pet_friendly as boolean) ?? false,
+    smokingAllowed: (row.smoking_allowed as boolean) ?? false,
+    offersHourly: (row.offers_hourly as boolean) ?? false,
+    offersAirportDrop: (row.offers_airport_drop as boolean) ?? false,
+    offersRailwayDrop: (row.offers_railway_drop as boolean) ?? false,
+    offersBusDrop: (row.offers_bus_drop as boolean) ?? false,
+    airportDropPrice: Number(row.airport_drop_price ?? 0),
+    railwayDropPrice: Number(row.railway_drop_price ?? 0),
+    busStationDropPrice: Number(row.bus_station_drop_price ?? 0),
+    driverName: driver?.name ?? "",
+    vehicleModel: driver?.vehicle_model ?? "",
+    vehicleCapacity: driver?.vehicle_capacity ?? 0,
+    fuelType: driver?.fuel_type ?? "petrol",
+    cabPhoto: driver?.cab_photo ?? "",
   };
 }
 
@@ -48,10 +67,10 @@ async function fetchDriverProfile(userId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from("drivers")
-    .select("name, rating, vehicle_model, vehicle_capacity, fuel_type")
+    .select("name, rating, vehicle_model, vehicle_capacity, fuel_type, cab_photo")
     .eq("id", userId)
     .single();
-  return data as { name: string; rating: number; vehicle_model: string; vehicle_capacity: number; fuel_type: string } | null;
+  return data as DriverProfile | null;
 }
 
 export function buildTourName(city: string, driverName: string, rating: number, vehicleModel: string, vehicleCapacity: number, fuelType: string): string {
@@ -68,15 +87,18 @@ export function useTours() {
   const fetchTours = useCallback(async () => {
     if (!user) { setLoading(false); return; }
     setLoading(true);
-    const { data, error } = await supabase
-      .from("tours")
-      .select("*, tour_stops(*)")
-      .eq("driver_id", user.id)
-      .order("created_at", { ascending: false });
+    const [{ data, error }, driver] = await Promise.all([
+      supabase
+        .from("tours")
+        .select("*, tour_stops(*)")
+        .eq("driver_id", user.id)
+        .order("created_at", { ascending: true }),
+      fetchDriverProfile(user.id),
+    ]);
     if (error) {
       setError(error.message);
     } else {
-      setTours((data ?? []).map((r) => mapTour(r as Record<string, unknown>)));
+      setTours((data ?? []).map((r) => mapTour(r as Record<string, unknown>, driver)));
     }
     setLoading(false);
   }, [user]);

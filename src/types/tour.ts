@@ -42,6 +42,8 @@ export interface Tour {
   stops: TourStop[];
   schedule: TourSchedule;
   pricePerPerson: number;
+  fullCabPrice?: number;
+  overtimeRatePerHour?: number;
   currency: string;
   maxGuests: number;
   currentBookings: number;
@@ -52,6 +54,24 @@ export interface Tour {
   reviewCount?: number;
   hourlyRate?: number;
   tourType?: TourCategory;
+  // Cab options
+  isAc?: boolean;
+  isPetFriendly?: boolean;
+  smokingAllowed?: boolean;
+  // Flexi pricing
+  offersHourly?: boolean;
+  offersAirportDrop?: boolean;
+  offersRailwayDrop?: boolean;
+  offersBusDrop?: boolean;
+  airportDropPrice?: number;
+  railwayDropPrice?: number;
+  busStationDropPrice?: number;
+  // Driver / vehicle info (attached from driver profile)
+  driverName?: string;
+  vehicleModel?: string;
+  vehicleCapacity?: number;
+  fuelType?: string;
+  cabPhoto?: string;
 }
 
 export interface Guest {

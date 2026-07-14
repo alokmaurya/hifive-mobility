@@ -38,6 +38,27 @@ export function getOccupancyPercent(current: number, max: number): number {
 
 export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const TOUR_TYPE_CODE: Record<string, string> = {
+  city_sightseeing: "X1",
+  outer_city_sightseeing: "X2",
+  flexi: "X3",
+};
+
+export function buildTourCode(
+  city: string,
+  driverName: string,
+  category: string,
+  vehicleModel: string,
+  seqNum: number,
+): string {
+  const c = (city ?? "").replace(/\s+/g, "").slice(0, 2).toUpperCase().padEnd(2, "X");
+  const d = (driverName ?? "").replace(/\s+/g, "").slice(0, 2).toUpperCase().padEnd(2, "X");
+  const t = TOUR_TYPE_CODE[category] ?? "X1";
+  const v = (vehicleModel ?? "").replace(/\s+/g, "").slice(0, 8).toUpperCase() || "CAR";
+  const n = String(seqNum).padStart(2, "0");
+  return `${c}${d}-${t}-${v}-${n}`;
+}
+
 export const CATEGORY_META: Record<
   string,
   { label: string; emoji: string; color: string }
