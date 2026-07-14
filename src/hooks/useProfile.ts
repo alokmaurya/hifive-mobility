@@ -30,17 +30,31 @@ function mapDriver(row: Record<string, unknown>): Driver {
     isVerified: (row.is_verified as boolean) ?? false,
     age: (row.age as number) ?? undefined,
     smokingAllowed: (row.smoking_allowed as boolean) ?? false,
-    carPhotoUrl: (row.car_photo_url as string) ?? undefined,
+    photoUrl: (row.photo_url as string) || undefined,
+    cabPhoto: (row.cab_photo as string) || undefined,
+    carPhotoUrl: (row.cab_photo as string) || undefined,
     isAvailable: (row.is_available as boolean) ?? true,
     hourlyRate: Number(row.hourly_rate ?? 0),
     phone: (row.phone as string) ?? undefined,
   };
 }
 
+const BUCKET = "driver-photos";
+
+async function uploadToStorage(userId: string, path: string, file: File): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const storage = (supabase as any).storage.from(BUCKET);
+  const { error } = await storage.upload(path, file, { upsert: true, contentType: file.type });
+  if (error) throw new Error(error.message ?? "Upload failed");
+  const { data } = storage.getPublicUrl(path);
+  return (data?.publicUrl as string) ?? "";
+}
+
 export function useProfile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Driver | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState<"photo" | "cab" | null>(null);
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -76,7 +90,8 @@ export function useProfile() {
         specialties: updates.specialties,
         age: updates.age,
         smoking_allowed: updates.smokingAllowed,
-        car_photo_url: updates.carPhotoUrl,
+        cab_photo: updates.cabPhoto ?? updates.carPhotoUrl,
+        photo_url: updates.photoUrl,
         is_available: updates.isAvailable,
         hourly_rate: updates.hourlyRate,
         phone: updates.phone,
@@ -86,5 +101,35 @@ export function useProfile() {
     await fetchProfile();
   }
 
-  return { profile, loading, refresh: fetchProfile, updateProfile };
+  async function uploadDriverPhoto(file: File) {
+    if (!user) throw new Error("Not authenticated");
+    setUploading("photo");
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${user.id}/profile.${ext}`;
+      const url = await uploadToStorage(user.id, path, file);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("drivers") as any).update({ photo_url: url }).eq("id", user.id);
+      await fetchProfile();
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  async function uploadCabPhoto(file: File) {
+    if (!user) throw new Error("Not authenticated");
+    setUploading("cab");
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${user.id}/cab.${ext}`;
+      const url = await uploadToStorage(user.id, path, file);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("drivers") as any).update({ cab_photo: url }).eq("id", user.id);
+      await fetchProfile();
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  return { profile, loading, uploading, refresh: fetchProfile, updateProfile, uploadDriverPhoto, uploadCabPhoto };
 }

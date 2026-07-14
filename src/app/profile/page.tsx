@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check, Fuel, Package, PawPrint, Wind } from "lucide-react";
+import { useRef, useState } from "react";
+import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check, Fuel, Package, PawPrint, Wind, Camera, Loader2 } from "lucide-react";
 import AppHeader from "@/components/ui/AppHeader";
 import BottomNav from "@/components/ui/BottomNav";
 import RequireAuth from "@/components/ui/RequireAuth";
@@ -13,28 +13,70 @@ import type { Driver, FuelType, VehicleType } from "@/types/driver";
 
 const VEHICLE_TYPES: { value: VehicleType; label: string }[] = [
   { value: "hatchback", label: "Hatchback" },
-  { value: "sedan", label: "Sedan" },
-  { value: "suv", label: "SUV" },
-  { value: "van", label: "Van" },
-  { value: "tempo", label: "Tempo" },
+  { value: "sedan",     label: "Sedan" },
+  { value: "suv",       label: "SUV" },
+  { value: "van",       label: "Van" },
+  { value: "tempo",     label: "Tempo" },
 ];
 
 const FUEL_TYPES: { value: FuelType; label: string }[] = [
   { value: "petrol", label: "Petrol" },
   { value: "diesel", label: "Diesel" },
-  { value: "cng", label: "CNG" },
+  { value: "cng",    label: "CNG" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "ev",     label: "Electric (EV)" },
 ];
 
-function ProfileContent() {
-  const { profile, loading, updateProfile } = useProfile();
-  const { signOut } = useAuth();
+function PhotoUploadButton({
+  onFile,
+  uploading,
+  className = "",
+  label = "Upload",
+}: {
+  onFile: (f: File) => void;
+  uploading: boolean;
+  className?: string;
+  label?: string;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = "";
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => ref.current?.click()}
+        disabled={uploading}
+        className={className}
+      >
+        {uploading
+          ? <Loader2 className="w-4 h-4 animate-spin" />
+          : <><Camera className="w-4 h-4" /><span className="text-xs font-semibold">{label}</span></>
+        }
+      </button>
+    </>
+  );
+}
 
-  // bio / name edit
+function ProfileContent() {
+  const { profile, loading, uploading, updateProfile, uploadDriverPhoto, uploadCabPhoto } = useProfile();
+  const { signOut } = useAuth();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const [editingBio, setEditingBio] = useState(false);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
 
-  // vehicle edit
   const [editingVehicle, setEditingVehicle] = useState(false);
   const [vehicle, setVehicle] = useState<Partial<Driver>>({});
   const [saving, setSaving] = useState(false);
@@ -65,7 +107,6 @@ function ProfileContent() {
       isPetFriendly: profile?.isPetFriendly ?? false,
       age: profile?.age,
       smokingAllowed: profile?.smokingAllowed ?? false,
-      carPhotoUrl: profile?.carPhotoUrl ?? "",
       isAvailable: profile?.isAvailable ?? true,
       hourlyRate: profile?.hourlyRate ?? 0,
     });
@@ -77,6 +118,18 @@ function ProfileContent() {
     try { await updateProfile(vehicle); } catch {}
     setSaving(false);
     setEditingVehicle(false);
+  }
+
+  async function handleDriverPhotoUpload(file: File) {
+    setUploadError(null);
+    try { await uploadDriverPhoto(file); }
+    catch (e: unknown) { setUploadError((e as Error).message ?? "Upload failed"); }
+  }
+
+  async function handleCabPhotoUpload(file: File) {
+    setUploadError(null);
+    try { await uploadCabPhoto(file); }
+    catch (e: unknown) { setUploadError((e as Error).message ?? "Upload failed"); }
   }
 
   if (loading) {
@@ -98,12 +151,38 @@ function ProfileContent() {
       <AppHeader title="My Profile" />
 
       <div className="max-w-md mx-auto px-4 pt-4 space-y-4">
-        {/* Avatar & bio */}
+
+        {uploadError && (
+          <div className="bg-red-900/30 border border-red-700/50 rounded-2xl px-4 py-3 flex items-center justify-between gap-2">
+            <p className="text-red-400 text-sm">{uploadError}</p>
+            <button onClick={() => setUploadError(null)}><X className="w-4 h-4 text-red-400" /></button>
+          </div>
+        )}
+
+        {/* ── Avatar & bio ───────────────────────────────────────────── */}
         <div className="bg-zinc-900 rounded-3xl border border-zinc-800 p-5">
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-yellow-400 flex items-center justify-center text-3xl font-bold text-black shrink-0">
-              {profile?.name?.charAt(0).toUpperCase() ?? "?"}
+            {/* Driver photo with upload overlay */}
+            <div className="relative shrink-0">
+              {profile?.photoUrl ? (
+                <img
+                  src={profile.photoUrl}
+                  alt="Driver"
+                  className="w-20 h-20 rounded-2xl object-cover"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-3xl font-bold text-black">
+                  {profile?.name?.charAt(0).toUpperCase() ?? "?"}
+                </div>
+              )}
+              <PhotoUploadButton
+                onFile={handleDriverPhotoUpload}
+                uploading={uploading === "photo"}
+                label=""
+                className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-zinc-700 border-2 border-zinc-900 flex items-center justify-center hover:bg-zinc-600 transition-colors disabled:opacity-60"
+              />
             </div>
+
             <div className="flex-1 min-w-0">
               {editingBio ? (
                 <input
@@ -129,6 +208,14 @@ function ProfileContent() {
               <p className="text-sm text-zinc-500 mt-1">{profile?.yearsExperience} yrs experience</p>
             </div>
           </div>
+
+          {/* Driver photo upload hint when no photo */}
+          {!profile?.photoUrl && (
+            <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-zinc-800/60 rounded-xl border border-dashed border-zinc-700">
+              <Camera className="w-4 h-4 text-zinc-500 shrink-0" />
+              <p className="text-xs text-zinc-500">Tap the camera icon on your photo to upload a profile picture</p>
+            </div>
+          )}
 
           {editingBio ? (
             <>
@@ -161,7 +248,7 @@ function ProfileContent() {
           )}
         </div>
 
-        {/* Stats */}
+        {/* ── Stats ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-3 gap-2">
           {[
             { icon: Map,   label: "Tours Run",      value: profile?.totalToursRun ?? 0 },
@@ -178,7 +265,54 @@ function ProfileContent() {
           ))}
         </div>
 
-        {/* Vehicle details */}
+        {/* ── Cab photo ──────────────────────────────────────────────── */}
+        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+            <div className="flex items-center gap-2">
+              <Car className="w-4 h-4 text-zinc-500" />
+              <span className="text-sm font-bold text-white">Car Photo</span>
+            </div>
+            <PhotoUploadButton
+              onFile={handleCabPhotoUpload}
+              uploading={uploading === "cab"}
+              label="Upload Photo"
+              className="flex items-center gap-1.5 text-yellow-400 text-xs font-semibold px-3 py-1.5 rounded-lg bg-yellow-400/10 hover:bg-yellow-400/20 transition-colors disabled:opacity-60"
+            />
+          </div>
+
+          {profile?.cabPhoto ? (
+            <div className="relative">
+              <img
+                src={profile.cabPhoto}
+                alt="Cab"
+                className="w-full h-48 object-cover"
+              />
+              <PhotoUploadButton
+                onFile={handleCabPhotoUpload}
+                uploading={uploading === "cab"}
+                label="Change"
+                className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-black/80 transition-colors disabled:opacity-60"
+              />
+            </div>
+          ) : (
+            <div
+              className="h-36 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-zinc-800 mx-4 my-3 rounded-2xl cursor-pointer hover:border-yellow-400/40 transition-colors"
+              onClick={() => {
+                const inp = document.querySelector<HTMLInputElement>('[data-cab-upload]');
+                inp?.click();
+              }}
+            >
+              <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center">
+                <Car className="w-6 h-6 text-zinc-600" />
+              </div>
+              <p className="text-zinc-500 text-sm font-semibold">No car photo yet</p>
+              <p className="text-zinc-600 text-xs">Tap "Upload Photo" to add one</p>
+              <p className="text-zinc-600 text-[10px]">Include the number plate in the photo</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Vehicle details ────────────────────────────────────────── */}
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -194,10 +328,9 @@ function ProfileContent() {
 
           {editingVehicle ? (
             <div className="space-y-3">
-              {/* Car name + brand row */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Name / Model</label>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Model</label>
                   <input
                     value={vehicle.vehicleModel ?? ""}
                     onChange={(e) => setVehicle(v => ({ ...v, vehicleModel: e.target.value }))}
@@ -216,7 +349,6 @@ function ProfileContent() {
                 </div>
               </div>
 
-              {/* Plate */}
               <div>
                 <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Number Plate</label>
                 <input
@@ -227,7 +359,6 @@ function ProfileContent() {
                 />
               </div>
 
-              {/* Type + Fuel row */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Type</label>
@@ -255,13 +386,10 @@ function ProfileContent() {
                 </div>
               </div>
 
-              {/* Seats + Luggage row */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">No. of Seats</label>
-                  <input
-                    type="number"
-                    min={1} max={20}
+                  <input type="number" min={1} max={20}
                     value={vehicle.vehicleCapacity ?? 4}
                     onChange={(e) => setVehicle(v => ({ ...v, vehicleCapacity: Number(e.target.value) }))}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
@@ -269,9 +397,7 @@ function ProfileContent() {
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Luggage (bags)</label>
-                  <input
-                    type="number"
-                    min={0} max={20}
+                  <input type="number" min={0} max={20}
                     value={vehicle.luggageCapacityBags ?? 2}
                     onChange={(e) => setVehicle(v => ({ ...v, luggageCapacityBags: Number(e.target.value) }))}
                     className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
@@ -279,72 +405,49 @@ function ProfileContent() {
                 </div>
               </div>
 
-              {/* Toggles */}
               <div className="flex gap-2">
-                <button
-                  onClick={() => setVehicle(v => ({ ...v, isAc: !v.isAc }))}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
-                    vehicle.isAc ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
-                  }`}
-                >
-                  <Wind className="w-4 h-4" /> AC
-                </button>
-                <button
-                  onClick={() => setVehicle(v => ({ ...v, isPetFriendly: !v.isPetFriendly }))}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
-                    vehicle.isPetFriendly ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
-                  }`}
-                >
-                  <PawPrint className="w-4 h-4" /> Pet Friendly
-                </button>
-                <button
-                  onClick={() => setVehicle(v => ({ ...v, smokingAllowed: !v.smokingAllowed }))}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
-                    vehicle.smokingAllowed ? "border-orange-400 bg-orange-400/10 text-orange-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
-                  }`}
-                >
-                  🚬 Smoking OK
-                </button>
+                {[
+                  { key: "isAc",         icon: <Wind className="w-4 h-4" />, label: "AC",          active: vehicle.isAc,          color: "yellow" },
+                  { key: "isPetFriendly",icon: <PawPrint className="w-4 h-4" />, label: "Pets OK", active: vehicle.isPetFriendly, color: "yellow" },
+                  { key: "smokingAllowed",icon: <span>🚬</span>,            label: "Smoking",     active: vehicle.smokingAllowed, color: "orange" },
+                ].map(({ key, icon, label, active, color }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setVehicle(v => ({ ...v, [key]: !v[key as keyof typeof v] }))}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 text-xs font-semibold transition-colors ${
+                      active
+                        ? color === "orange" ? "border-orange-400 bg-orange-400/10 text-orange-400" : "border-yellow-400 bg-yellow-400/10 text-yellow-400"
+                        : "border-zinc-700 bg-zinc-800 text-zinc-500"
+                    }`}
+                  >
+                    {icon} {label}
+                  </button>
+                ))}
               </div>
 
-              {/* Availability + hourly rate */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Age</label>
-                  <input
-                    type="number"
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Driver Age</label>
+                  <input type="number" min={18} max={80}
                     value={vehicle.age ?? ""}
                     onChange={(e) => setVehicle(v => ({ ...v, age: e.target.value ? Number(e.target.value) : undefined }))}
                     placeholder="e.g. 32"
-                    min={18} max={80}
                     className="w-full px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400/50"
                   />
                 </div>
                 <div>
                   <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Hourly Rate (₹)</label>
-                  <input
-                    type="number"
+                  <input type="number" min={0}
                     value={vehicle.hourlyRate ?? 0}
                     onChange={(e) => setVehicle(v => ({ ...v, hourlyRate: Number(e.target.value) }))}
-                    placeholder="0"
-                    min={0}
                     className="w-full px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400/50"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Photo URL</label>
-                <input
-                  type="url"
-                  value={vehicle.carPhotoUrl ?? ""}
-                  onChange={(e) => setVehicle(v => ({ ...v, carPhotoUrl: e.target.value }))}
-                  placeholder="https://… (direct image link)"
-                  className="w-full px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-1 focus:ring-yellow-400/50"
-                />
-              </div>
-
               <button
+                type="button"
                 onClick={() => setVehicle(v => ({ ...v, isAvailable: !v.isAvailable }))}
                 className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 text-sm font-semibold transition-colors ${
                   vehicle.isAvailable ? "border-green-400 bg-green-400/10 text-green-400" : "border-zinc-700 bg-zinc-800 text-zinc-500"
@@ -354,20 +457,13 @@ function ProfileContent() {
               </button>
 
               <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setEditingVehicle(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5"
-                >
+                <button onClick={() => setEditingVehicle(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5">
                   <X className="w-4 h-4 text-zinc-400" />
                   <span className="text-sm font-semibold text-zinc-300">Cancel</span>
                 </button>
-                <button
-                  onClick={saveVehicleEdit}
-                  disabled={saving}
-                  className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
+                <button onClick={saveVehicleEdit} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5">
                   <Check className="w-4 h-4 text-black" />
-                  <span className="text-sm font-semibold text-black">{saving ? "Saving…" : "Save Vehicle"}</span>
+                  <span className="text-sm font-semibold text-black">{saving ? "Saving…" : "Save"}</span>
                 </button>
               </div>
             </div>
@@ -391,14 +487,17 @@ function ProfileContent() {
                   {profile?.isAc ? "✓ AC" : "No AC"}
                 </span>
                 <span className={`text-xs px-2 py-1 rounded-full font-medium ${profile?.isPetFriendly ? "bg-yellow-400/10 text-yellow-400" : "bg-zinc-800 text-zinc-600"}`}>
-                  {profile?.isPetFriendly ? "✓ Pet Friendly" : "No Pets"}
+                  {profile?.isPetFriendly ? "✓ Pets OK" : "No Pets"}
                 </span>
+                {profile?.smokingAllowed && (
+                  <span className="text-xs px-2 py-1 rounded-full font-medium bg-orange-400/10 text-orange-400">🚬 Smoking OK</span>
+                )}
               </div>
             </div>
           )}
         </div>
 
-        {/* Languages & Specialties */}
+        {/* ── Languages & Specialties ────────────────────────────────── */}
         {((profile?.languages?.length ?? 0) > 0 || (profile?.specialties?.length ?? 0) > 0) && (
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 space-y-4">
             {(profile?.languages?.length ?? 0) > 0 && (
@@ -434,13 +533,13 @@ function ProfileContent() {
           </div>
         )}
 
-        {/* Settings */}
+        {/* ── Settings ───────────────────────────────────────────────── */}
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
           {[
-            { label: "Bank & Payouts",       icon: "💳" },
-            { label: "Notifications",        icon: "🔔" },
-            { label: "Documents & License",  icon: "📄" },
-            { label: "Help & Support",       icon: "💬" },
+            { label: "Bank & Payouts",      icon: "💳" },
+            { label: "Notifications",       icon: "🔔" },
+            { label: "Documents & License", icon: "📄" },
+            { label: "Help & Support",      icon: "💬" },
           ].map(({ label, icon }) => (
             <button key={label} className="w-full flex items-center justify-between px-4 py-3.5 border-b border-zinc-800 last:border-none hover:bg-zinc-800 transition-colors">
               <div className="flex items-center gap-3">

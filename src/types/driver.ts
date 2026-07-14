@@ -1,6 +1,6 @@
 import type { TourCategory } from "./tour";
 
-export type FuelType = "petrol" | "diesel" | "cng";
+export type FuelType = "petrol" | "diesel" | "cng" | "hybrid" | "ev";
 export type VehicleType = "hatchback" | "sedan" | "suv" | "van" | "tempo";
 
 export interface Driver {
@@ -28,7 +28,9 @@ export interface Driver {
   isVerified: boolean;
   age?: number;
   smokingAllowed: boolean;
-  carPhotoUrl?: string;
+  photoUrl?: string;
+  cabPhoto?: string;
+  carPhotoUrl?: string; // alias kept for compat
   isAvailable: boolean;
   hourlyRate: number;
   phone?: string;
