@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Tour } from "@/types/tour";
 import type { TourDraft } from "@/types/tour";
+import { buildTourCode } from "@/lib/utils";
 
 type DriverProfile = { name: string; rating: number; vehicle_model: string; vehicle_capacity: number; fuel_type: string; cab_photo: string };
 
@@ -55,6 +56,7 @@ function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null): T
     airportDropPrice: Number(row.airport_drop_price ?? 0),
     railwayDropPrice: Number(row.railway_drop_price ?? 0),
     busStationDropPrice: Number(row.bus_station_drop_price ?? 0),
+    tourCode: (row.tour_code as string) || undefined,
     driverName: driver?.name ?? "",
     vehicleModel: driver?.vehicle_model ?? "",
     vehicleCapacity: driver?.vehicle_capacity ?? 0,
@@ -107,7 +109,17 @@ export function useTours() {
 
   async function createTour(draft: TourDraft, status: "draft" | "published" = "published") {
     if (!user) throw new Error("Not authenticated");
-    const driver = await fetchDriverProfile(user.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const [driver, { count: existingCount }] = await Promise.all([
+      fetchDriverProfile(user.id),
+      db.from("tours")
+        .select("id", { count: "exact", head: true })
+        .eq("driver_id", user.id)
+        .eq("category", draft.category as string),
+    ]);
+    const seqNum = (existingCount ?? 0) + 1;
+    const tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, driver?.vehicle_model ?? "", seqNum);
     const name = buildTourName(
       draft.city,
       driver?.name ?? "",
@@ -120,13 +132,12 @@ export function useTours() {
       draft.stops.reduce((s, stop) => s + stop.durationMinutes, 0) +
       draft.stops.length * 15;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
     const { data: tour, error: tErr } = await db
       .from("tours")
       .insert({
         driver_id: user.id,
         name,
+        tour_code: tourCode,
         city: draft.city,
         state: draft.state,
         country: draft.country || "India",
@@ -177,7 +188,22 @@ export function useTours() {
 
   async function updateTour(tourId: string, draft: TourDraft, status: "draft" | "published" = "published") {
     if (!user) throw new Error("Not authenticated");
-    const driver = await fetchDriverProfile(user.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const [driver, { data: existing }] = await Promise.all([
+      fetchDriverProfile(user.id),
+      db.from("tours").select("tour_code").eq("id", tourId).single(),
+    ]);
+    // Preserve existing tour_code; only generate one if missing (legacy row)
+    let tourCode = (existing?.tour_code as string) || "";
+    if (!tourCode) {
+      const { count: existingCount } = await db.from("tours")
+        .select("id", { count: "exact", head: true })
+        .eq("driver_id", user.id)
+        .eq("category", draft.category as string)
+        .neq("id", tourId);
+      tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, driver?.vehicle_model ?? "", (existingCount ?? 0) + 1);
+    }
     const name = buildTourName(
       draft.city,
       driver?.name ?? "",
@@ -190,10 +216,9 @@ export function useTours() {
       draft.stops.reduce((s, stop) => s + stop.durationMinutes, 0) +
       draft.stops.length * 15;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
     const { error: tErr } = await db.from("tours").update({
       name,
+      tour_code: tourCode,
       city: draft.city,
       state: draft.state,
       country: draft.country || "India",

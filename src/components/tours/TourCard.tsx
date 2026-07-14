@@ -33,7 +33,8 @@ const CAT_GRADIENT: Record<string, string> = {
 
 export default function TourCard({ tour, seqNum = 1, onActionMenu }: TourCardProps) {
   const cat = CATEGORY_META[tour.category];
-  const tourCode = buildTourCode(tour.city, tour.driverName ?? "", tour.category, tour.vehicleModel ?? "", seqNum);
+  // Use DB-stored code if available, fall back to computed (for legacy rows)
+  const tourCode = tour.tourCode || buildTourCode(tour.city, tour.driverName ?? "", tour.category, tour.vehicleModel ?? "", seqNum);
   const fuelInfo = FUEL_LABELS[(tour.fuelType ?? "petrol").toLowerCase()] ?? FUEL_LABELS.petrol;
   const isFlexi = tour.category === "flexi";
   const gradientClass = CAT_GRADIENT[tour.category] ?? "from-slate-900 via-zinc-900 to-slate-900";

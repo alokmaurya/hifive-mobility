@@ -66,6 +66,8 @@ export interface Tour {
   airportDropPrice?: number;
   railwayDropPrice?: number;
   busStationDropPrice?: number;
+  // Stored tour code, e.g. MABA-X1-DEZIRE-01
+  tourCode?: string;
   // Driver / vehicle info (attached from driver profile)
   driverName?: string;
   vehicleModel?: string;
