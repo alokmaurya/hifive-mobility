@@ -49,7 +49,7 @@ export default function TourDetailClient() {
             description: data.description as string,
             stops: [],
             schedule: { startTime: data.start_time as string, daysOfWeek: (data.days_of_week as number[]) ?? [] },
-            pricePerPerson: Number(data.price_per_person),
+            pricePerPerson: Number(data.full_cab_price ?? data.price_per_person ?? 0),
             maxGuests: data.max_guests as number,
             status: data.status as Tour["status"],
             rating: Number(data.rating ?? 0),
@@ -72,7 +72,7 @@ export default function TourDetailClient() {
         tour.id, tour.driverId,
         (tour.tourType as "city_sightseeing" | "outer_city_sightseeing" | "flexi") ?? "city_sightseeing",
         guestCount, tourDate,
-        guestCount * tour.pricePerPerson,
+        tour.pricePerPerson, // full cab price — fixed regardless of guest count
         specialRequests || undefined,
       );
       setBookSuccess(true);
@@ -83,7 +83,7 @@ export default function TourDetailClient() {
     }
   }
 
-  const totalAmount = tour ? guestCount * tour.pricePerPerson : 0;
+  const totalAmount = tour ? tour.pricePerPerson : 0;
 
   if (loading) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -123,7 +123,7 @@ export default function TourDetailClient() {
               </div>
               <div className="text-right">
                 <div className="text-sky-600 font-bold text-xl">₹{tour.pricePerPerson.toLocaleString("en-IN")}</div>
-                <div className="text-slate-400 text-xs">per person</div>
+                <div className="text-slate-400 text-xs">full cab</div>
               </div>
             </div>
 
@@ -223,7 +223,7 @@ export default function TourDetailClient() {
                 </div>
 
                 <div className="bg-sky-50 rounded-2xl px-4 py-3 flex items-center justify-between border border-sky-100">
-                  <span className="text-slate-500 text-sm">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
+                  <span className="text-slate-500 text-sm">Full Cab Price</span>
                   <span className="text-sky-600 font-bold text-lg">₹{totalAmount.toLocaleString("en-IN")}</span>
                 </div>
 

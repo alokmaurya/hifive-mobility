@@ -118,7 +118,7 @@ export default function DriverDetailClient() {
             endTime: (r.end_time as string) ?? "18:00",
             daysOfWeek: (r.days_of_week as number[]) ?? [],
           },
-          pricePerPerson: Number(r.price_per_person ?? 0),
+          pricePerPerson: Number(r.full_cab_price ?? r.price_per_person ?? 0),
           currency: "₹",
           maxGuests: (r.max_guests as number) ?? 8,
           currentBookings: 0,
@@ -148,7 +148,7 @@ export default function DriverDetailClient() {
       } else {
         const tour = getTourForType(selectedOption);
         if (!tour) throw new Error("No tour found for this type");
-        const total = guestCount * tour.pricePerPerson;
+        const total = tour.pricePerPerson; // full cab price — not multiplied by guest count
         await createTourBooking(tour.id, driver.id, selectedOption, guestCount, tourDate, total, specialRequests || undefined);
       }
       setSubmitted(true);
@@ -336,7 +336,7 @@ export default function DriverDetailClient() {
                             {!available && <p className="text-red-400 text-xs mt-0.5">Not offered by this driver</p>}
                             {available && opt.type !== "flexi" && tour && (
                               <p className="text-indigo-500 text-xs font-semibold mt-0.5">
-                                ₹{tour.pricePerPerson.toLocaleString("en-IN")}/person · {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
+                                ₹{tour.pricePerPerson.toLocaleString("en-IN")} full cab · {formatTime(tour.schedule.startTime)} – {formatTime(tour.schedule.endTime)}
                               </p>
                             )}
                             {available && opt.type === "flexi" && (
@@ -435,8 +435,8 @@ export default function DriverDetailClient() {
 
                               {opt.type !== "flexi" && tour && (
                                 <div className="bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
-                                  <span className="text-slate-500 text-xs">{guestCount} × ₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
-                                  <span className="text-indigo-600 font-bold">₹{(guestCount * tour.pricePerPerson).toLocaleString("en-IN")}</span>
+                                  <span className="text-slate-500 text-xs">Full Cab Price</span>
+                                  <span className="text-indigo-600 font-bold">₹{tour.pricePerPerson.toLocaleString("en-IN")}</span>
                                 </div>
                               )}
 
