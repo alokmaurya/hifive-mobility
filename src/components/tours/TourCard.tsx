@@ -33,43 +33,25 @@ const CAT_GRADIENT: Record<string, string> = {
 
 export default function TourCard({ tour, seqNum = 1, onActionMenu }: TourCardProps) {
   const cat = CATEGORY_META[tour.category];
-  // Use DB-stored code if available, fall back to computed (for legacy rows)
   const tourCode = tour.tourCode || buildTourCode(tour.city, tour.driverName ?? "", tour.category, tour.vehicleModel ?? "", seqNum);
   const fuelInfo = FUEL_LABELS[(tour.fuelType ?? "petrol").toLowerCase()] ?? FUEL_LABELS.petrol;
   const isFlexi = tour.category === "flexi";
   const gradientClass = CAT_GRADIENT[tour.category] ?? "from-slate-900 via-zinc-900 to-slate-900";
-
-  const activeDays = (tour.schedule.daysOfWeek ?? [])
-    .sort((a, b) => a - b)
-    .map((d) => DAY_LABELS[d]);
 
   return (
     <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden shadow-lg">
       {/* Car photo / placeholder */}
       <div className="relative h-36 overflow-hidden">
         {tour.cabPhoto ? (
-          <img
-            src={tour.cabPhoto}
-            alt="cab"
-            className="w-full h-full object-cover"
-          />
+          <img src={tour.cabPhoto} alt="cab" className="w-full h-full object-cover" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
             <span className="text-5xl opacity-60">{cat?.emoji ?? "🚗"}</span>
           </div>
         )}
-
-        {/* Status badge bottom-left */}
         <span className={`absolute bottom-2 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm ${STATUS_STYLES[tour.status]}`}>
           {tour.status.charAt(0).toUpperCase() + tour.status.slice(1)}
         </span>
-
-        {/* Tour type chip top-left */}
-        <span className="absolute top-2 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full bg-black/50 text-white backdrop-blur-sm">
-          {cat?.emoji} {cat?.label}
-        </span>
-
-        {/* Action menu top-right */}
         {onActionMenu && (
           <button
             onClick={(e) => { e.preventDefault(); onActionMenu(tour); }}
@@ -82,79 +64,87 @@ export default function TourCard({ tour, seqNum = 1, onActionMenu }: TourCardPro
 
       {/* Card body */}
       <div className="px-4 pt-3 pb-4 space-y-3">
-        {/* Tour ID + fuel type */}
-        <div>
-          <p className="text-white font-extrabold text-base tracking-tight leading-tight">
-            {tourCode}
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`text-xs font-semibold ${fuelInfo.color}`}>
-              ⛽ {fuelInfo.label}
-            </span>
+
+        {/* Header row: Tour name left · Car details right */}
+        <div className="flex items-start justify-between gap-3">
+          {/* Left: City + Tour Type (big), Tour ID (small) */}
+          <div className="min-w-0">
+            <p className="text-white font-extrabold text-base leading-snug">
+              {tour.city} <span className="text-zinc-400 font-semibold">{cat?.label}</span>
+            </p>
+            <p className="text-zinc-500 text-[11px] font-mono mt-0.5 tracking-wide">{tourCode}</p>
+          </div>
+
+          {/* Right: Car details */}
+          <div className="shrink-0 text-right space-y-0.5">
+            {tour.vehicleModel && (
+              <p className="text-zinc-300 text-xs font-semibold">{tour.vehicleModel}</p>
+            )}
+            <p className={`text-xs font-semibold ${fuelInfo.color}`}>⛽ {fuelInfo.label}</p>
             {tour.vehicleCapacity ? (
-              <span className="text-xs text-zinc-500">· {tour.vehicleCapacity} seater</span>
+              <p className="text-zinc-500 text-[11px]">{tour.vehicleCapacity} seater</p>
             ) : null}
-            {tour.isAc && <span className="text-xs text-sky-400">· ❄️ AC</span>}
-            {tour.isPetFriendly && <span className="text-xs text-green-400">· 🐾 Pets</span>}
-            {tour.smokingAllowed && <span className="text-xs text-orange-400">· 🚬 Smoking</span>}
+            <div className="flex items-center justify-end gap-1 mt-1 flex-wrap">
+              {tour.isAc && <span className="text-[10px] text-sky-400">❄️</span>}
+              {tour.isPetFriendly && <span className="text-[10px] text-green-400">🐾</span>}
+              {tour.smokingAllowed && <span className="text-[10px] text-orange-400">🚬</span>}
+            </div>
           </div>
         </div>
 
         <div className="h-px bg-zinc-800" />
 
         {/* Pricing */}
-        <div className="space-y-1.5">
-          {isFlexi ? (
-            <div className="flex flex-wrap gap-2">
-              {tour.offersHourly && tour.hourlyRate ? (
-                <span className="text-xs bg-violet-900/40 border border-violet-700/40 text-violet-300 px-2.5 py-1 rounded-full font-semibold">
-                  ⏱ {formatCurrency(tour.hourlyRate)}/hr
-                </span>
-              ) : null}
-              {tour.offersAirportDrop && tour.airportDropPrice ? (
-                <span className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2.5 py-1 rounded-full font-semibold">
-                  ✈️ {formatCurrency(tour.airportDropPrice)}
-                </span>
-              ) : null}
-              {tour.offersRailwayDrop && tour.railwayDropPrice ? (
-                <span className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2.5 py-1 rounded-full font-semibold">
-                  🚂 {formatCurrency(tour.railwayDropPrice)}
-                </span>
-              ) : null}
-              {tour.offersBusDrop && tour.busStationDropPrice ? (
-                <span className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2.5 py-1 rounded-full font-semibold">
-                  🚌 {formatCurrency(tour.busStationDropPrice)}
-                </span>
-              ) : null}
+        {isFlexi ? (
+          <div className="flex flex-wrap gap-2">
+            {tour.offersHourly && tour.hourlyRate ? (
+              <span className="text-xs bg-violet-900/40 border border-violet-700/40 text-violet-300 px-2.5 py-1 rounded-full font-semibold">
+                ⏱ {formatCurrency(tour.hourlyRate)}/hr
+              </span>
+            ) : null}
+            {tour.offersAirportDrop && tour.airportDropPrice ? (
+              <span className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2.5 py-1 rounded-full font-semibold">
+                ✈️ {formatCurrency(tour.airportDropPrice)}
+              </span>
+            ) : null}
+            {tour.offersRailwayDrop && tour.railwayDropPrice ? (
+              <span className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2.5 py-1 rounded-full font-semibold">
+                🚂 {formatCurrency(tour.railwayDropPrice)}
+              </span>
+            ) : null}
+            {tour.offersBusDrop && tour.busStationDropPrice ? (
+              <span className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2.5 py-1 rounded-full font-semibold">
+                🚌 {formatCurrency(tour.busStationDropPrice)}
+              </span>
+            ) : null}
+          </div>
+        ) : (
+          <div className="flex items-baseline justify-between">
+            <div>
+              <span className="text-yellow-400 font-extrabold text-xl">
+                {formatCurrency(tour.fullCabPrice ?? tour.pricePerPerson)}
+              </span>
+              <span className="text-zinc-500 text-xs ml-1">full cab</span>
             </div>
-          ) : (
-            <div className="flex items-baseline justify-between">
-              <div>
-                <span className="text-yellow-400 font-extrabold text-xl">
-                  {formatCurrency(tour.fullCabPrice ?? tour.pricePerPerson)}
-                </span>
-                <span className="text-zinc-500 text-xs ml-1">full cab</span>
-              </div>
-              {(tour.overtimeRatePerHour ?? 0) > 0 && (
-                <span className="text-zinc-400 text-xs">
-                  +{formatCurrency(tour.overtimeRatePerHour ?? 0)}/hr overtime
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+            {(tour.overtimeRatePerHour ?? 0) > 0 && (
+              <span className="text-zinc-400 text-xs">
+                +{formatCurrency(tour.overtimeRatePerHour ?? 0)}/hr overtime
+              </span>
+            )}
+          </div>
+        )}
 
-        {/* Days */}
-        {activeDays.length > 0 && (
+        {/* Days grid */}
+        {(tour.schedule.daysOfWeek ?? []).length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap">
             <Calendar className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex gap-1">
               {DAY_LABELS.map((day, idx) => {
                 const active = (tour.schedule.daysOfWeek ?? []).includes(idx);
                 return (
                   <span
                     key={day}
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md transition-colors ${
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                       active
                         ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/40"
                         : "bg-zinc-800 text-zinc-600"
