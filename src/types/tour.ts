@@ -97,6 +97,10 @@ export interface Booking {
   tourType?: string;
   hoursRequested?: number;
   travellerEmail?: string;
+  // Tour display info
+  tourCity?: string;
+  tourCategory?: string;
+  tourCode?: string;
 }
 
 export interface TourEarning {

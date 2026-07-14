@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Booking, BookingStatus } from "@/types/tour";
 
-function mapBooking(row: Record<string, unknown>, tourName?: string): Booking {
+function mapBooking(row: Record<string, unknown>, tourName?: string, tourCity?: string, tourCategory?: string, tourCode?: string): Booking {
   const traveller = row.travellers as { name?: string; phone?: string; email?: string } | null;
   const guestName = (traveller?.name?.trim() || (row.guest_name as string) || "").trim() || "Unknown Traveller";
   const guestPhone = traveller?.phone ?? (row.guest_phone as string) ?? "";
@@ -29,6 +29,9 @@ function mapBooking(row: Record<string, unknown>, tourName?: string): Booking {
     tourType: row.tour_type as string | undefined,
     hoursRequested: row.hours_requested as number | undefined,
     travellerEmail: traveller?.email,
+    tourCity: tourCity ?? "",
+    tourCategory: tourCategory ?? "",
+    tourCode: tourCode ?? "",
   };
 }
 
@@ -43,7 +46,7 @@ export function useBookings() {
     setLoading(true);
     const { data, error } = await supabase
       .from("bookings")
-      .select("*, tours(name), travellers(name, phone, email)")
+      .select("*, tours(name, city, category, tour_code), travellers(name, phone, email)")
       .eq("driver_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -53,8 +56,8 @@ export function useBookings() {
       setBookings(
         (data ?? []).map((r) => {
           const row = r as Record<string, unknown>;
-          const tourName = (row.tours as { name?: string } | null)?.name ?? "";
-          return mapBooking(row, tourName);
+          const tourRow = row.tours as { name?: string; city?: string; category?: string; tour_code?: string } | null;
+          return mapBooking(row, tourRow?.name, tourRow?.city, tourRow?.category, tourRow?.tour_code);
         })
       );
     }
