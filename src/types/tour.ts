@@ -101,12 +101,24 @@ export type TourDraft = {
   state: string;
   country: string;
   category: TourCategory | "";
-  description: string;
   stops: Omit<TourStop, "id">[];
   startTime: string;
   endTime: string;
   daysOfWeek: number[];
-  pricePerPerson: number | "";
+  // Pricing
+  fullCabPrice: number | "";
+  overtimeRatePerHour: number | "";
   hourlyRate: number | "";
-  maxGuests: number;
+  airportDropPrice: number | "";
+  railwayDropPrice: number | "";
+  busStationDropPrice: number | "";
+  // Flexi service toggles
+  offersAirportDrop: boolean;
+  offersRailwayDrop: boolean;
+  offersBusDrop: boolean;
+  offersHourly: boolean;
+  // Cab options
+  isAc: boolean;
+  isPetFriendly: boolean;
+  smokingAllowed: boolean;
 };

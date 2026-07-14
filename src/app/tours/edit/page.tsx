@@ -34,14 +34,16 @@ function EditTourContent() {
     state: tour.state,
     country: tour.country || "India",
     category: tour.category,
-    description: tour.description,
     stops: tour.stops.map((s) => ({ name: s.name, durationMinutes: s.durationMinutes, order: s.order })),
     startTime: tour.schedule.startTime,
     endTime: tour.schedule.endTime || "18:00",
     daysOfWeek: tour.schedule.daysOfWeek,
-    pricePerPerson: tour.pricePerPerson,
+    fullCabPrice: tour.pricePerPerson,
+    overtimeRatePerHour: "",
     hourlyRate: tour.hourlyRate ?? "",
-    maxGuests: tour.maxGuests,
+    airportDropPrice: "", railwayDropPrice: "", busStationDropPrice: "",
+    offersAirportDrop: false, offersRailwayDrop: false, offersBusDrop: false, offersHourly: true,
+    isAc: true, isPetFriendly: false, smokingAllowed: false,
   };
 
   return <WizardShell tourId={tourId} seedDraft={seedDraft} />;

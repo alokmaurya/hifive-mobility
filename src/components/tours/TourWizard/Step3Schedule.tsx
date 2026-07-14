@@ -1,153 +1,111 @@
+"use client";
+
+import { Clock, Calendar } from "lucide-react";
 import type { TourDraft } from "@/types/tour";
-import { formatTime, DAY_LABELS } from "@/lib/utils";
 
 interface Props {
   draft: TourDraft;
-  onField: (field: keyof TourDraft, value: string | number) => void;
-  onToggleDay: (day: number) => void;
+  dispatch: (a: { type: string; payload: unknown }) => void;
 }
 
-const isFlexi = (draft: TourDraft) => draft.category === "flexi";
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export default function Step3Schedule({ draft, onField, onToggleDay }: Props) {
-  const price = Number(draft.pricePerPerson) || 0;
-  const hourlyRate = Number(draft.hourlyRate) || 0;
-  const platformFee = Math.round(price * 0.1);
-  const youGet = price - platformFee;
-  const flexi = isFlexi(draft);
+function toggleDay(days: number[], day: number): number[] {
+  return days.includes(day) ? days.filter((d) => d !== day) : [...days, day].sort();
+}
+
+export default function Step3Schedule({ draft, dispatch }: Props) {
+  const isFlexi = draft.category === "flexi";
 
   return (
-    <div className="p-4 space-y-5">
+    <div className="space-y-6">
       <div>
-        <p className="text-xl font-bold text-white mb-1">Schedule & Pricing</p>
-        <p className="text-sm text-zinc-400">
-          {flexi ? "Set availability and hourly rate for your flexi cab." : "Set when your 8-hour tour runs and how much to charge per person."}
+        <h2 className="text-xl font-extrabold text-slate-900">
+          {isFlexi ? "Availability" : "Tour Schedule"}
+        </h2>
+        <p className="text-slate-500 text-sm mt-1">
+          {isFlexi
+            ? "Select which days you are available for bookings."
+            : "Set the tour timings and days you operate."}
         </p>
       </div>
 
-      {/* Start time (non-flexi shows start + end; flexi shows start only) */}
-      <div className={`grid gap-3 ${flexi ? "grid-cols-1" : "grid-cols-2"}`}>
-        <div>
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Start Time</label>
-          <input
-            type="time"
-            value={draft.startTime}
-            onChange={(e) => onField("startTime", e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
-          />
-        </div>
-        {!flexi && (
+      {!isFlexi && (
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">End Time</label>
+            <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-2">
+              <Clock className="w-3 h-3" /> Start Time *
+            </label>
+            <input
+              type="time"
+              value={draft.startTime}
+              onChange={(e) => dispatch({ type: "SET_FIELD", payload: { key: "startTime", value: e.target.value } })}
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm font-medium"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-2">
+              <Clock className="w-3 h-3" /> End Time *
+            </label>
             <input
               type="time"
               value={draft.endTime}
-              onChange={(e) => onField("endTime", e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+              onChange={(e) => dispatch({ type: "SET_FIELD", payload: { key: "endTime", value: e.target.value } })}
+              className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm font-medium"
             />
           </div>
-        )}
-      </div>
-
-      {!flexi && draft.startTime && draft.endTime && (
-        <p className="text-xs text-zinc-500">
-          Tour runs {formatTime(draft.startTime)} → {formatTime(draft.endTime)} (8-hour full day)
-        </p>
+        </div>
       )}
 
-      {/* Days of week */}
       <div>
-        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-2">Available on</label>
-        <div className="flex gap-2">
-          {DAY_LABELS.map((label, i) => {
+        <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-3">
+          <Calendar className="w-3 h-3" /> Days Available *
+        </label>
+        <div className="grid grid-cols-7 gap-1.5">
+          {DAYS.map((day, i) => {
             const active = draft.daysOfWeek.includes(i);
             return (
               <button
-                key={i}
-                onClick={() => onToggleDay(i)}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                key={day}
+                type="button"
+                onClick={() => dispatch({ type: "SET_FIELD", payload: { key: "daysOfWeek", value: toggleDay(draft.daysOfWeek, i) } })}
+                className={`py-2.5 rounded-xl text-xs font-bold transition-all ${
                   active
-                    ? "bg-yellow-400 text-black"
-                    : "bg-zinc-800 border border-zinc-700 text-zinc-500 hover:border-yellow-400/40"
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                 }`}
               >
-                {label.slice(0, 1)}
+                {day}
               </button>
             );
           })}
         </div>
+        {draft.daysOfWeek.length === 0 && (
+          <p className="text-slate-400 text-xs mt-2">Select at least one day.</p>
+        )}
         {draft.daysOfWeek.length > 0 && (
-          <p className="text-xs text-zinc-500 mt-1.5">
-            {draft.daysOfWeek.sort().map((d) => DAY_LABELS[d]).join(", ")}
+          <p className="text-indigo-600 text-xs font-semibold mt-2">
+            {draft.daysOfWeek.length === 7
+              ? "Every day"
+              : `${draft.daysOfWeek.length} day${draft.daysOfWeek.length > 1 ? "s" : ""} per week`}
           </p>
         )}
       </div>
 
-      {/* Pricing */}
-      {flexi ? (
-        <div>
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Hourly Rate</label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-sm">₹</span>
-            <input
-              type="number"
-              value={draft.hourlyRate}
-              onChange={(e) => onField("hourlyRate", e.target.value)}
-              placeholder="0"
-              min={0}
-              className="w-full pl-8 pr-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
-            />
-          </div>
-          {hourlyRate > 0 && (
-            <div className="mt-2 bg-blue-400/5 border border-blue-400/20 rounded-xl px-3 py-2 text-xs text-blue-400/80 space-y-0.5">
-              <div className="flex justify-between"><span>Hourly rate</span><span>₹{hourlyRate}/hr</span></div>
-              <div className="flex justify-between text-blue-400/50"><span>4 hrs example</span><span>₹{hourlyRate * 4}</span></div>
-              <div className="flex justify-between text-blue-400/50"><span>8 hrs example</span><span>₹{hourlyRate * 8}</span></div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div>
-          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Price Per Person</label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-sm">₹</span>
-            <input
-              type="number"
-              value={draft.pricePerPerson}
-              onChange={(e) => onField("pricePerPerson", e.target.value)}
-              placeholder="0"
-              min={0}
-              className="w-full pl-8 pr-4 py-3 rounded-2xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
-            />
-          </div>
-          {price > 0 && (
-            <div className="mt-2 bg-yellow-400/5 border border-yellow-400/20 rounded-xl px-3 py-2 text-xs text-yellow-400/80 space-y-0.5">
-              <div className="flex justify-between"><span>Price per person</span><span>₹{price}</span></div>
-              <div className="flex justify-between text-yellow-400/50"><span>Platform fee (10%)</span><span>-₹{platformFee}</span></div>
-              <div className="flex justify-between font-bold border-t border-yellow-400/20 pt-1 mt-1 text-yellow-400"><span>You receive</span><span>₹{youGet}/person</span></div>
-            </div>
-          )}
+      {!isFlexi && draft.startTime && draft.endTime && draft.startTime < draft.endTime && (
+        <div className="bg-slate-50 rounded-2xl px-4 py-3 border border-slate-200 flex items-center justify-between">
+          <span className="text-slate-500 text-sm">Tour duration</span>
+          <span className="text-slate-800 font-bold text-sm">
+            {(() => {
+              const [sh, sm] = draft.startTime.split(":").map(Number);
+              const [eh, em] = draft.endTime.split(":").map(Number);
+              const mins = (eh * 60 + em) - (sh * 60 + sm);
+              const h = Math.floor(mins / 60), m = mins % 60;
+              return `${h > 0 ? `${h} hr` : ""}${m > 0 ? ` ${m} min` : ""}`.trim();
+            })()}
+          </span>
         </div>
       )}
-
-      {/* Max guests */}
-      <div>
-        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wide block mb-1.5">Max Guests</label>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => onField("maxGuests", Math.max(1, draft.maxGuests - 1))}
-            className="w-10 h-10 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-300 text-lg font-bold transition-colors"
-          >−</button>
-          <div className="flex-1 text-center">
-            <span className="text-3xl font-bold text-white">{draft.maxGuests}</span>
-            <p className="text-xs text-zinc-500">guests max</p>
-          </div>
-          <button
-            onClick={() => onField("maxGuests", Math.min(20, draft.maxGuests + 1))}
-            className="w-10 h-10 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-300 text-lg font-bold transition-colors"
-          >+</button>
-        </div>
-      </div>
     </div>
   );
 }

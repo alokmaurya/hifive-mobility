@@ -1,235 +1,188 @@
 "use client";
 
 import { useReducer, useState } from "react";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { TourDraft, TourCategory } from "@/types/tour";
-import Step1BasicInfo from "./Step1BasicInfo";
-import Step2Stops from "./Step2Stops";
-import Step3Schedule from "./Step3Schedule";
-import Step4Preview from "./Step4Preview";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { useTours } from "@/hooks/useTours";
-import { useProfile } from "@/hooks/useProfile";
-
-const STEPS = ["Location", "Stops", "Schedule", "Preview"];
-
-type Action =
-  | { type: "SET_FIELD"; field: keyof TourDraft; value: TourDraft[keyof TourDraft] }
-  | { type: "ADD_STOP"; name: string; duration: number }
-  | { type: "REMOVE_STOP"; index: number }
-  | { type: "MOVE_STOP"; from: number; to: number }
-  | { type: "UPDATE_STOP_DURATION"; index: number; duration: number }
-  | { type: "TOGGLE_DAY"; day: number };
+import type { TourDraft } from "@/types/tour";
+import Step1Location from "./Step1Location";
+import Step2TourType from "./Step2TourType";
+import Step3Schedule from "./Step3Schedule";
+import Step4Pricing from "./Step4Pricing";
+import Step5CabOptions from "./Step5CabOptions";
+import Step6Itinerary from "./Step6Itinerary";
+import Step7Preview from "./Step7Preview";
 
 const emptyDraft: TourDraft = {
-  city: "",
-  state: "",
-  country: "India",
+  city: "", state: "", country: "India",
   category: "",
-  description: "",
   stops: [],
-  startTime: "08:00",
-  endTime: "18:00",
+  startTime: "08:00", endTime: "18:00",
   daysOfWeek: [],
-  pricePerPerson: "",
+  fullCabPrice: "", overtimeRatePerHour: "",
   hourlyRate: "",
-  maxGuests: 8,
+  airportDropPrice: "", railwayDropPrice: "", busStationDropPrice: "",
+  offersAirportDrop: false, offersRailwayDrop: false, offersBusDrop: false, offersHourly: true,
+  isAc: true, isPetFriendly: false, smokingAllowed: false,
 };
 
+type Action = { type: "SET_FIELD"; payload: { key: string; value: unknown } } | { type: "RESET" };
+
 function reducer(state: TourDraft, action: Action): TourDraft {
-  switch (action.type) {
-    case "SET_FIELD":
-      return { ...state, [action.field]: action.value };
-    case "ADD_STOP":
-      return {
-        ...state,
-        stops: [...state.stops, { name: action.name, durationMinutes: action.duration, order: state.stops.length + 1 }],
-      };
-    case "REMOVE_STOP":
-      return { ...state, stops: state.stops.filter((_, i) => i !== action.index) };
-    case "MOVE_STOP": {
-      const stops = [...state.stops];
-      const [item] = stops.splice(action.from, 1);
-      stops.splice(action.to, 0, item);
-      return { ...state, stops };
-    }
-    case "UPDATE_STOP_DURATION": {
-      const stops = [...state.stops];
-      stops[action.index] = { ...stops[action.index], durationMinutes: action.duration };
-      return { ...state, stops };
-    }
-    case "TOGGLE_DAY": {
-      const days = state.daysOfWeek.includes(action.day)
-        ? state.daysOfWeek.filter((d) => d !== action.day)
-        : [...state.daysOfWeek, action.day];
-      return { ...state, daysOfWeek: days };
-    }
-    default:
-      return state;
-  }
+  if (action.type === "RESET") return emptyDraft;
+  const { key, value } = action.payload;
+  return { ...state, [key]: value };
 }
 
-const isFlexi = (draft: TourDraft) => draft.category === "flexi";
+const STEPS = [
+  { label: "Location" },
+  { label: "Tour Type" },
+  { label: "Schedule" },
+  { label: "Pricing" },
+  { label: "Cab Options" },
+  { label: "Itinerary" },
+  { label: "Preview" },
+];
 
-function canProceed(step: number, draft: TourDraft): boolean {
-  if (step === 0) return draft.city.trim().length > 0 && draft.category !== "" && draft.description.trim().length > 0;
-  if (step === 1) return isFlexi(draft) || draft.stops.length >= 1;
-  if (step === 2) {
-    const daysOk = draft.daysOfWeek.length > 0;
-    const priceOk = isFlexi(draft)
-      ? Number(draft.hourlyRate) > 0
-      : Number(draft.pricePerPerson) > 0;
-    return daysOk && priceOk;
-  }
-  return true;
-}
-
-interface WizardShellProps {
+interface Props {
   tourId?: string;
-  seedDraft?: TourDraft;
-  currentStatus?: "draft" | "published" | "paused" | "past";
+  seedDraft?: Partial<TourDraft>;
+  currentStatus?: string;
 }
 
-export default function WizardShell({ tourId, seedDraft, currentStatus }: WizardShellProps = {}) {
+export default function WizardShell({ tourId, seedDraft, currentStatus: _currentStatus }: Props) {
   const router = useRouter();
   const { createTour, updateTour } = useTours();
-  const { profile } = useProfile();
+  const [draft, dispatchRaw] = useReducer(reducer, seedDraft ? { ...emptyDraft, ...seedDraft } : emptyDraft);
+  const dispatch = dispatchRaw as (a: { type: string; payload: unknown }) => void;
   const [step, setStep] = useState(0);
-  const [draft, dispatch] = useReducer(reducer, seedDraft ?? emptyDraft);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  const back = () => setStep((s) => Math.max(s - 1, 0));
-  const ok = canProceed(step, draft);
+  const isFlexi = draft.category === "flexi";
 
-  async function handleSave(status: "draft" | "published") {
+  function canProceed(): boolean {
+    switch (step) {
+      case 0: return !!(draft.city.trim() && draft.state);
+      case 1: return !!draft.category;
+      case 2: return draft.daysOfWeek.length > 0 && (isFlexi || !!(draft.startTime && draft.endTime));
+      case 3:
+        if (isFlexi) return draft.offersHourly || draft.offersAirportDrop || draft.offersRailwayDrop || draft.offersBusDrop;
+        return !!(draft.fullCabPrice !== "" && Number(draft.fullCabPrice) > 0);
+      case 4: return true;
+      case 5: return isFlexi ? true : draft.stops.length > 0;
+      default: return true;
+    }
+  }
+
+  async function handleFinish(status: "draft" | "published") {
     setSaving(true);
-    setSaveError(null);
+    setError(null);
     try {
       if (tourId) {
         await updateTour(tourId, draft, status);
       } else {
         await createTour(draft, status);
       }
-      router.replace("/tours");
+      router.push("/tours");
     } catch (e: unknown) {
-      // Supabase errors are plain objects with a .message property, not Error instances
-      const msg =
-        e instanceof Error
-          ? e.message
-          : (e as Record<string, unknown>)?.message as string | undefined
-            ?? (e as Record<string, unknown>)?.details as string | undefined
-            ?? JSON.stringify(e);
-      setSaveError(msg || "Failed to save tour");
+      setError((e as { message?: string })?.message ?? "Failed to save tour");
+    } finally {
       setSaving(false);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col max-w-md mx-auto">
-      {/* Header */}
-      <div className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-20">
-        <div className="flex items-center gap-3 px-4 h-14">
-          {step === 0 ? (
-            <Link href="/tours" className="p-2 -ml-2 rounded-xl hover:bg-zinc-800">
-              <ChevronLeft className="w-5 h-5 text-zinc-400" />
-            </Link>
-          ) : (
-            <button onClick={back} className="p-2 -ml-2 rounded-xl hover:bg-zinc-800">
-              <ChevronLeft className="w-5 h-5 text-zinc-400" />
-            </button>
-          )}
-          <div className="flex-1">
-            <p className="text-xs text-zinc-500">Step {step + 1} of {STEPS.length}</p>
-            <p className="text-sm font-bold text-white">{tourId ? "Edit Tour" : "New Tour"} — {STEPS[step]}</p>
-          </div>
-        </div>
+  const isLast = step === STEPS.length - 1;
 
-        {/* Progress bar */}
-        <div className="flex gap-1 px-4 pb-3">
-          {STEPS.map((_, i) => (
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Top bar */}
+      <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 px-4 pt-10 pb-5">
+        <div className="max-w-lg mx-auto">
+          <button
+            onClick={() => step > 0 ? setStep(step - 1) : router.push("/tours")}
+            className="flex items-center gap-1 text-blue-300 hover:text-white text-sm mb-4 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" /> {step > 0 ? "Back" : "Cancel"}
+          </button>
+
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-white font-extrabold text-lg">{STEPS[step].label}</p>
+            <span className="text-blue-300 text-sm font-medium">{step + 1} / {STEPS.length}</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              key={i}
-              className={`flex-1 h-1 rounded-full transition-colors ${i <= step ? "bg-yellow-400" : "bg-zinc-800"}`}
+              className="h-full bg-gradient-to-r from-sky-400 to-indigo-400 rounded-full transition-all duration-300"
+              style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
             />
-          ))}
+          </div>
+
+          {/* Step dots */}
+          <div className="flex items-center justify-between mt-3 px-1">
+            {STEPS.map((s, i) => (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div className={`w-2 h-2 rounded-full transition-all ${
+                  i < step ? "bg-sky-400" : i === step ? "bg-white" : "bg-white/20"
+                }`} />
+                <span className={`text-[8px] font-bold hidden sm:block ${i === step ? "text-white" : "text-white/30"}`}>
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Step content */}
-      <div className="flex-1 overflow-y-auto">
-        {step === 0 && (
-          <Step1BasicInfo
-            draft={draft}
-            profile={profile}
-            onField={(field, value) => dispatch({ type: "SET_FIELD", field: field as keyof TourDraft, value: value as TourDraft[keyof TourDraft] })}
-            onCategory={(cat) => dispatch({ type: "SET_FIELD", field: "category", value: cat as TourCategory })}
-          />
-        )}
-        {step === 1 && isFlexi(draft) && (
-          <div className="p-4 flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
-            <div className="text-5xl">⏱️</div>
-            <p className="text-xl font-bold text-white">No Itinerary Needed</p>
-            <p className="text-sm text-zinc-400 max-w-xs">
-              Flexi tours are open-ended — travellers pick how many hours they need. There are no fixed stops to plan.
-            </p>
-            <p className="text-xs text-zinc-600 mt-2">Click Continue to set your hourly rate and availability.</p>
-          </div>
-        )}
-        {step === 1 && !isFlexi(draft) && (
-          <Step2Stops
-            stops={draft.stops}
-            onAdd={(name, dur) => dispatch({ type: "ADD_STOP", name, duration: dur })}
-            onRemove={(i) => dispatch({ type: "REMOVE_STOP", index: i })}
-            onMove={(from, to) => dispatch({ type: "MOVE_STOP", from, to })}
-            onDuration={(i, dur) => dispatch({ type: "UPDATE_STOP_DURATION", index: i, duration: dur })}
-          />
-        )}
-        {step === 2 && (
-          <Step3Schedule
-            draft={draft}
-            onField={(field, value) => dispatch({ type: "SET_FIELD", field: field as keyof TourDraft, value: value as TourDraft[keyof TourDraft] })}
-            onToggleDay={(day) => dispatch({ type: "TOGGLE_DAY", day })}
-          />
-        )}
-        {step === 3 && <Step4Preview draft={draft} profile={profile} />}
-      </div>
+      <div className="px-4 max-w-lg mx-auto py-6">
+        {step === 0 && <Step1Location draft={draft} dispatch={dispatch} />}
+        {step === 1 && <Step2TourType draft={draft} dispatch={dispatch} />}
+        {step === 2 && <Step3Schedule draft={draft} dispatch={dispatch} />}
+        {step === 3 && <Step4Pricing draft={draft} dispatch={dispatch} />}
+        {step === 4 && <Step5CabOptions draft={draft} dispatch={dispatch} />}
+        {step === 5 && <Step6Itinerary draft={draft} dispatch={dispatch} />}
+        {step === 6 && <Step7Preview draft={draft} />}
 
-      {/* Footer CTA */}
-      <div className="bg-zinc-900 border-t border-zinc-800 px-4 py-3 pb-safe">
-        {saveError && (
-          <p className="text-xs text-red-400 mb-2 text-center">{saveError}</p>
-        )}
-        {step < STEPS.length - 1 ? (
-          <button
-            onClick={next}
-            disabled={!ok}
-            className={`w-full py-3.5 rounded-2xl text-base font-bold transition-all ${
-              ok ? "bg-yellow-400 text-black hover:bg-yellow-300" : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-            }`}
-          >
-            Continue
-          </button>
-        ) : (
-          <div className="flex gap-3">
-            <button
-              onClick={() => handleSave(tourId && currentStatus === "published" ? "published" : "draft")}
-              disabled={saving}
-              className="flex-1 py-3.5 rounded-2xl border-2 border-zinc-700 text-sm font-bold text-zinc-400 hover:bg-zinc-800 disabled:opacity-50 transition-colors"
-            >
-              {saving ? "Saving…" : tourId ? "Save Changes" : "Save Draft"}
-            </button>
-            <button
-              onClick={() => handleSave("published")}
-              disabled={saving}
-              className="flex-1 py-3.5 rounded-2xl bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 disabled:opacity-50 transition-colors"
-            >
-              {saving ? "Saving…" : tourId ? "Update Tour" : "Publish Tour 🎉"}
-            </button>
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
         )}
+
+        <div className={`mt-8 flex gap-3 ${isLast ? "flex-col" : ""}`}>
+          {isLast ? (
+            <>
+              <button
+                onClick={() => handleFinish("published")}
+                disabled={saving}
+                className="w-full py-4 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-extrabold rounded-2xl hover:opacity-90 disabled:opacity-50 transition-opacity shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 text-base"
+              >
+                {saving ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <><Check className="w-5 h-5" /> {tourId ? "Update & Publish" : "Publish Tour"}</>
+                )}
+              </button>
+              <button
+                onClick={() => handleFinish("draft")}
+                disabled={saving}
+                className="w-full py-3.5 border-2 border-slate-200 text-slate-600 font-bold rounded-2xl hover:border-slate-300 transition-colors"
+              >
+                Save as Draft
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setStep(step + 1)}
+              disabled={!canProceed()}
+              className="flex-1 py-4 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-extrabold rounded-2xl hover:opacity-90 disabled:opacity-40 transition-opacity shadow-md shadow-indigo-200 flex items-center justify-center gap-2 text-base"
+            >
+              Continue <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
