@@ -47,7 +47,6 @@ function PhotoUploadButton({
         ref={ref}
         type="file"
         accept="image/*"
-        capture="environment"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -173,7 +172,7 @@ function CarForm({ initial, onSave, onCancel, saving, carId, uploadingCarId, onP
       {carId && onPhotoUpload && (
         <div>
           <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Car Photo</label>
-          <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden"
+          <input ref={photoRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onPhotoUpload(carId, f); e.target.value = ""; }} />
           <button type="button" onClick={() => photoRef.current?.click()}
             disabled={uploadingCarId === carId}
