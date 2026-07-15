@@ -135,10 +135,16 @@ function BookingCard({ booking: b, onCancel }: {
                 <span className="text-slate-400 text-xs font-medium">Car picture not available</span>
               </div>
             )}
-            {/* Car name overlay */}
+            {/* Car name overlay — bottom left */}
             {hasCarInfo && (
               <div className="absolute bottom-2 left-2 bg-slate-900/75 backdrop-blur-sm px-2.5 py-1 rounded-lg">
                 <span className="text-white text-xs font-bold">{[b.carBrand, b.vehicleModel].filter(Boolean).join(" ")}</span>
+              </div>
+            )}
+            {/* Vehicle plate overlay — bottom right, styled like a number plate */}
+            {b.vehiclePlate && (
+              <div className="absolute bottom-2 right-2 bg-amber-400 px-2.5 py-1 rounded-lg border-2 border-amber-500 shadow">
+                <span className="text-slate-900 text-xs font-extrabold font-mono tracking-widest">{b.vehiclePlate}</span>
               </div>
             )}
           </div>
@@ -190,13 +196,6 @@ function BookingCard({ booking: b, onCancel }: {
             <span className="text-slate-500 text-xs">
               {b.tourStartTime ?? "—"} – {b.tourEndTime ?? "—"}
             </span>
-          </div>
-        )}
-        {/* Vehicle plate */}
-        {b.vehiclePlate && (
-          <div className="flex items-center gap-1">
-            <Car className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="text-slate-500 text-xs font-mono font-semibold">{b.vehiclePlate}</span>
           </div>
         )}
       </div>
