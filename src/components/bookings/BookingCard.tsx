@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare, Clock, Mail, MapPin } from "lucide-react";
+import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare, Clock, Mail, MapPin, KeyRound, PlayCircle, CheckCircle } from "lucide-react";
 import type { Booking } from "@/types/tour";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -9,12 +9,24 @@ interface BookingCardProps {
   booking: Booking;
   onConfirm?: (id: string) => void;
   onCancel?: (id: string) => void;
+  onStartTrip?: (id: string, otp: string) => Promise<void>;
+  onEndTrip?: (id: string, otp: string) => Promise<void>;
 }
 
 const STATUS_STYLES: Record<string, string> = {
   pending:   "bg-yellow-400/10 text-yellow-400",
   confirmed: "bg-green-400/10 text-green-400",
+  ongoing:   "bg-sky-400/10 text-sky-400",
+  completed: "bg-zinc-700/60 text-zinc-400",
   cancelled: "bg-red-400/10 text-red-400",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  pending:   "Pending",
+  confirmed: "Confirmed",
+  ongoing:   "On Going",
+  completed: "Completed",
+  cancelled: "Cancelled",
 };
 
 const TOUR_TYPE_META: Record<string, { emoji: string; label: string }> = {
@@ -23,8 +35,11 @@ const TOUR_TYPE_META: Record<string, { emoji: string; label: string }> = {
   flexi:                  { emoji: "⏱️", label: "Flexi" },
 };
 
-export default function BookingCard({ booking, onConfirm, onCancel }: BookingCardProps) {
+export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip, onEndTrip }: BookingCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpLoading, setOtpLoading] = useState(false);
 
   const tourMeta = booking.tourType ? (TOUR_TYPE_META[booking.tourType] ?? { emoji: "🗺️", label: booking.tourType }) : null;
   const isFlexi = booking.tourType === "flexi";
@@ -55,8 +70,8 @@ export default function BookingCard({ booking, onConfirm, onCancel }: BookingCar
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[booking.status]}`}>
-              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[booking.status] ?? ""}`}>
+              {STATUS_LABELS[booking.status] ?? booking.status}
             </span>
             <p className="text-sm font-bold text-white">{formatCurrency(booking.totalAmount)}</p>
           </div>
@@ -161,6 +176,84 @@ export default function BookingCard({ booking, onConfirm, onCancel }: BookingCar
                 <Check className="w-4 h-4 text-black" />
                 <span className="text-sm font-semibold text-black">Confirm</span>
               </button>
+            </div>
+          )}
+
+          {/* Start OTP entry — traveller shares 4-digit OTP with driver */}
+          {booking.status === "confirmed" && (
+            <div className="pt-1 space-y-2">
+              <div className="bg-sky-950/60 border border-sky-800/60 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <KeyRound className="w-4 h-4 text-sky-400" />
+                  <p className="text-sky-300 text-xs font-bold uppercase tracking-wider">Enter Start OTP from Traveller</p>
+                </div>
+                <p className="text-zinc-400 text-[11px] mb-3">Ask the traveller for their 4-digit Start OTP to begin the trip.</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="_ _ _ _"
+                    value={otpInput}
+                    onChange={(e) => { setOtpInput(e.target.value.replace(/\D/g, "")); setOtpError(null); }}
+                    className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-center text-lg font-mono font-bold tracking-widest focus:outline-none focus:border-sky-500"
+                  />
+                  <button
+                    disabled={otpInput.length !== 4 || otpLoading}
+                    onClick={async () => {
+                      if (!onStartTrip) return;
+                      setOtpLoading(true); setOtpError(null);
+                      try { await onStartTrip(booking.id, otpInput); setOtpInput(""); }
+                      catch (err: unknown) { setOtpError((err as { message?: string })?.message ?? "Invalid OTP"); }
+                      finally { setOtpLoading(false); }
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <PlayCircle className="w-4 h-4 text-white" />
+                    <span className="text-sm font-bold text-white">{otpLoading ? "…" : "Start"}</span>
+                  </button>
+                </div>
+                {otpError && <p className="text-red-400 text-xs mt-2">{otpError}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* End OTP entry — traveller shares End OTP with driver to close trip */}
+          {booking.status === "ongoing" && (
+            <div className="pt-1 space-y-2">
+              <div className="bg-green-950/60 border border-green-800/60 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <KeyRound className="w-4 h-4 text-green-400" />
+                  <p className="text-green-300 text-xs font-bold uppercase tracking-wider">Enter End OTP from Traveller</p>
+                </div>
+                <p className="text-zinc-400 text-[11px] mb-3">Ask the traveller for their 4-digit End OTP to complete the trip.</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="_ _ _ _"
+                    value={otpInput}
+                    onChange={(e) => { setOtpInput(e.target.value.replace(/\D/g, "")); setOtpError(null); }}
+                    className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-center text-lg font-mono font-bold tracking-widest focus:outline-none focus:border-green-500"
+                  />
+                  <button
+                    disabled={otpInput.length !== 4 || otpLoading}
+                    onClick={async () => {
+                      if (!onEndTrip) return;
+                      setOtpLoading(true); setOtpError(null);
+                      try { await onEndTrip(booking.id, otpInput); setOtpInput(""); }
+                      catch (err: unknown) { setOtpError((err as { message?: string })?.message ?? "Invalid OTP"); }
+                      finally { setOtpLoading(false); }
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-500 hover:bg-green-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <CheckCircle className="w-4 h-4 text-white" />
+                    <span className="text-sm font-bold text-white">{otpLoading ? "…" : "End"}</span>
+                  </button>
+                </div>
+                {otpError && <p className="text-red-400 text-xs mt-2">{otpError}</p>}
+              </div>
             </div>
           )}
         </div>
