@@ -111,7 +111,8 @@ export function useProfile() {
       const url = `${baseUrl}?t=${Date.now()}`;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from("drivers") as any).update({ photo_url: url }).eq("id", user.id);
-      await fetchProfile();
+      // Optimistically update local state so photo shows immediately
+      setProfile((prev) => prev ? { ...prev, photoUrl: url } : prev);
     } finally {
       setUploading(null);
     }
