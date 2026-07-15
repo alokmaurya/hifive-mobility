@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
-  MapPin, Star, Users, Briefcase, ChevronLeft, PawPrint,
+  MapPin, Star, Users, Briefcase, ChevronLeft, ChevronRight, PawPrint,
   Cigarette, Car, CheckCircle, XCircle, Search, SlidersHorizontal, X,
 } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
@@ -61,13 +61,26 @@ function applyFilters(drivers: Driver[], f: Filters): Driver[] {
 
 function DriverCard({ driver, city, state }: { driver: Driver; city: string; state: string }) {
   const router = useRouter();
-  const car = driver.primaryCar;
+  const cars = driver.cars ?? (driver.primaryCar ? [driver.primaryCar] : []);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const car = cars[slideIndex] ?? cars[0];
+
+  const prevSlide = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSlideIndex((i) => (i - 1 + cars.length) % cars.length);
+  }, [cars.length]);
+
+  const nextSlide = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSlideIndex((i) => (i + 1) % cars.length);
+  }, [cars.length]);
+
   return (
     <button
       onClick={() => router.push(`/traveller/driver?id=${driver.id}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`)}
       className="w-full bg-white rounded-3xl text-left shadow-sm border border-slate-100 overflow-hidden hover:shadow-md hover:border-indigo-200 transition-all duration-200"
     >
-      {/* Car photo */}
+      {/* Car photo carousel */}
       <div className="h-40 bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center relative overflow-hidden">
         {car?.cabPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -83,6 +96,33 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
         }`}>
           {driver.isAvailable ? "Available" : "Busy"}
         </div>
+        {/* Carousel controls — only when multiple cars */}
+        {cars.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center hover:bg-black/60 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4 text-white" />
+            </button>
+            {/* Dot indicators */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {cars.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); setSlideIndex(i); }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === slideIndex ? "bg-white w-3" : "bg-white/50"}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
         {/* Car name overlay */}
         {car && (
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 flex items-end justify-between">

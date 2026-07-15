@@ -50,4 +50,5 @@ export interface Driver {
   photoUrl?: string;
   tourTypes?: string[];
   primaryCar?: DriverCar;
+  cars?: DriverCar[];
 }
