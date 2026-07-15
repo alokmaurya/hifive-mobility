@@ -36,7 +36,8 @@ export default function RootLayout({
             var p = params.get('p');
             if (p) {
               var q = params.get('q');
-              // Ensure trailing slash so GitHub Pages serves the correct index.html
+              // Use location.replace with trailing slash so GitHub Pages serves
+              // the correct path/index.html and Next.js mounts the right page
               var path = p.replace(/\\/?$/, '/');
               var url = '/hifive-mobility' + path + (q ? '?' + q : '') + window.location.hash;
               window.location.replace(url);
