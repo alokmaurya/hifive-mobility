@@ -72,14 +72,16 @@ export function useDriversByCity(city: string, state: string) {
         }
       });
 
-      // Fetch drivers, their primary cars, and live ratings in parallel
-      const [{ data: driverRows }, { data: carRows }, { data: ratingRows }] = await Promise.all([
+      // Fetch drivers, their primary cars, live ratings, and completed trip counts in parallel
+      const [{ data: driverRows }, { data: carRows }, { data: ratingRows }, { data: completedRows }] = await Promise.all([
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("drivers").select("*").in("id", driverIds),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("driver_cars").select("*").in("driver_id", driverIds).eq("is_active", true),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("bookings").select("driver_id, traveller_rating").in("driver_id", driverIds).not("traveller_rating", "is", null),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("bookings").select("driver_id").in("driver_id", driverIds).eq("status", "completed"),
       ]);
 
       // Compute average rating per driver from actual booking ratings
@@ -88,6 +90,12 @@ export function useDriversByCity(city: string, state: string) {
       ((ratingRows ?? []) as { driver_id: string; traveller_rating: number }[]).forEach((r) => {
         ratingSum[r.driver_id] = (ratingSum[r.driver_id] ?? 0) + r.traveller_rating;
         ratingCount[r.driver_id] = (ratingCount[r.driver_id] ?? 0) + 1;
+      });
+
+      // Count completed trips per driver
+      const tripsCount: Record<string, number> = {};
+      ((completedRows ?? []) as { driver_id: string }[]).forEach((r) => {
+        tripsCount[r.driver_id] = (tripsCount[r.driver_id] ?? 0) + 1;
       });
 
       // Map all active cars per driver
@@ -105,6 +113,10 @@ export function useDriversByCity(city: string, state: string) {
           const id = row.id as string;
           if (ratingCount[id]) {
             mapped.rating = Math.round((ratingSum[id] / ratingCount[id]) * 10) / 10;
+          }
+          if (tripsCount[id]) {
+            mapped.totalTrips = tripsCount[id];
+            mapped.totalToursRun = tripsCount[id];
           }
           return {
             ...mapped,
