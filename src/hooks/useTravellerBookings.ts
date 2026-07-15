@@ -16,14 +16,14 @@ export function useTravellerBookings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
       .from("bookings")
-      .select("*, drivers(name, photo_url), tours(city, driver_cars(car_brand, vehicle_model, vehicle_capacity, is_ac, cab_photo))")
+      .select("*, drivers(name, photo_url), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 
     setBookings(
       (data ?? []).map((r: Record<string, unknown>) => {
         const driverRow = r.drivers as { name?: string; photo_url?: string } | null;
-        const tourRow   = r.tours as { city?: string; driver_cars?: Record<string, unknown> | null } | null;
+        const tourRow   = r.tours as { city?: string; start_time?: string; end_time?: string; driver_cars?: Record<string, unknown> | null } | null;
         const carRow    = tourRow?.driver_cars ?? null;
         return {
           id: r.id as string,
@@ -43,9 +43,14 @@ export function useTravellerBookings() {
           bookedAt: r.created_at as string,
           carBrand: carRow ? (carRow.car_brand as string) ?? "" : undefined,
           vehicleModel: carRow ? (carRow.vehicle_model as string) ?? "" : undefined,
+          vehiclePlate: carRow ? (carRow.vehicle_plate as string) || undefined : undefined,
           vehicleCapacity: carRow ? (carRow.vehicle_capacity as number) ?? undefined : undefined,
           isAc: carRow ? (carRow.is_ac as boolean) ?? undefined : undefined,
           cabPhoto: carRow ? (carRow.cab_photo as string) || undefined : undefined,
+          tourStartTime: tourRow?.start_time || undefined,
+          tourEndTime: tourRow?.end_time || undefined,
+          startOtp: (r.start_otp as string) || undefined,
+          endOtp: (r.end_otp as string) || undefined,
         };
       })
     );

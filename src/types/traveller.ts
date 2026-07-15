@@ -26,7 +26,12 @@ export interface TravellerBooking {
   bookedAt: string;
   carBrand?: string;
   vehicleModel?: string;
+  vehiclePlate?: string;
   vehicleCapacity?: number;
   isAc?: boolean;
   cabPhoto?: string;
+  tourStartTime?: string;
+  tourEndTime?: string;
+  startOtp?: string;
+  endOtp?: string;
 }
