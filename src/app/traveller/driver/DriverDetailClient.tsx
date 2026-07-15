@@ -92,11 +92,20 @@ export default function DriverDetailClient() {
         .ilike("city", `%${city}%`),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from("driver_cars").select("*").eq("driver_id", driverId).eq("is_active", true).limit(1).single(),
-    ]).then(([driverRes, toursRes, carRes]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).from("bookings").select("traveller_rating").eq("driver_id", driverId).not("traveller_rating", "is", null),
+    ]).then(([driverRes, toursRes, carRes, ratingsRes]) => {
       function mapCar(c: Record<string, unknown>): CarInfo {
         return { vehicleModel: (c.vehicle_model as string) ?? "", vehiclePlate: (c.vehicle_plate as string) ?? "", carBrand: (c.car_brand as string) ?? "", vehicleType: (c.vehicle_type as string) ?? "suv", vehicleCapacity: (c.vehicle_capacity as number) ?? 4, fuelType: (c.fuel_type as string) ?? "petrol", isAc: (c.is_ac as boolean) ?? true, luggageCapacityBags: (c.luggage_capacity_bags as number) ?? 2, isPetFriendly: (c.is_pet_friendly as boolean) ?? false, smokingAllowed: (c.smoking_allowed as boolean) ?? false, cabPhoto: (c.cab_photo as string) ?? "" };
       }
-      if (driverRes.data) setDriver(mapDriver(driverRes.data as Record<string, unknown>));
+      if (driverRes.data) {
+        const d = mapDriver(driverRes.data as Record<string, unknown>);
+        const rows = (ratingsRes.data ?? []) as { traveller_rating: number }[];
+        if (rows.length > 0) {
+          d.rating = Math.round((rows.reduce((s, r) => s + r.traveller_rating, 0) / rows.length) * 10) / 10;
+        }
+        setDriver(d);
+      }
       if (carRes.data) setCar(mapCar(carRes.data as Record<string, unknown>));
       const tourRows = ((toursRes.data ?? []) as Record<string, unknown>[]);
       // Build map: tour_type → car for that tour

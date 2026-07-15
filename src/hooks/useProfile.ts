@@ -50,12 +50,19 @@ export function useProfile() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from("drivers")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-    if (data) setProfile(mapDriver(data as Record<string, unknown>));
+    const [{ data }, { data: ratingRows }] = await Promise.all([
+      supabase.from("drivers").select("*").eq("id", user.id).single(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).from("bookings").select("traveller_rating").eq("driver_id", user.id).not("traveller_rating", "is", null),
+    ]);
+    if (data) {
+      const driver = mapDriver(data as Record<string, unknown>);
+      if (ratingRows && ratingRows.length > 0) {
+        const avg = ratingRows.reduce((sum: number, r: { traveller_rating: number }) => sum + r.traveller_rating, 0) / ratingRows.length;
+        driver.rating = Math.round(avg * 10) / 10;
+      }
+      setProfile(driver);
+    }
     setLoading(false);
   }, [user]);
 

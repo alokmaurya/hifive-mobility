@@ -72,13 +72,23 @@ export function useDriversByCity(city: string, state: string) {
         }
       });
 
-      // Fetch drivers and their primary cars in parallel
-      const [{ data: driverRows }, { data: carRows }] = await Promise.all([
+      // Fetch drivers, their primary cars, and live ratings in parallel
+      const [{ data: driverRows }, { data: carRows }, { data: ratingRows }] = await Promise.all([
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("drivers").select("*").in("id", driverIds),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("driver_cars").select("*").in("driver_id", driverIds).eq("is_active", true),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from("bookings").select("driver_id, traveller_rating").in("driver_id", driverIds).not("traveller_rating", "is", null),
       ]);
+
+      // Compute average rating per driver from actual booking ratings
+      const ratingSum: Record<string, number> = {};
+      const ratingCount: Record<string, number> = {};
+      ((ratingRows ?? []) as { driver_id: string; traveller_rating: number }[]).forEach((r) => {
+        ratingSum[r.driver_id] = (ratingSum[r.driver_id] ?? 0) + r.traveller_rating;
+        ratingCount[r.driver_id] = (ratingCount[r.driver_id] ?? 0) + 1;
+      });
 
       // Map all active cars per driver
       const carsByDriver: Record<string, DriverCar[]> = {};
@@ -91,9 +101,14 @@ export function useDriversByCity(city: string, state: string) {
       setDrivers(
         ((driverRows ?? []) as Record<string, unknown>[]).map((row) => {
           const driverCars = carsByDriver[row.id as string] ?? [];
+          const mapped = mapDriverRow(row);
+          const id = row.id as string;
+          if (ratingCount[id]) {
+            mapped.rating = Math.round((ratingSum[id] / ratingCount[id]) * 10) / 10;
+          }
           return {
-            ...mapDriverRow(row),
-            tourTypes: tourTypesMap[row.id as string] ?? [],
+            ...mapped,
+            tourTypes: tourTypesMap[id] ?? [],
             primaryCar: driverCars[0],
             cars: driverCars,
           };
