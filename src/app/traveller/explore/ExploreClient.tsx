@@ -68,14 +68,13 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
       className="w-full bg-white rounded-3xl text-left shadow-sm border border-slate-100 overflow-hidden hover:shadow-md hover:border-indigo-200 transition-all duration-200"
     >
       {/* Car photo */}
-      <div className="h-36 bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center relative overflow-hidden">
+      <div className="h-40 bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center relative overflow-hidden">
         {car?.cabPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={car.cabPhoto} alt="Car" className="w-full h-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-1.5">
             <Car className="w-12 h-12 text-slate-300" />
-            {car && <span className="text-slate-400 text-xs font-medium">{car.carBrand} {car.vehicleModel}</span>}
           </div>
         )}
         <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm ${
@@ -83,17 +82,29 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
         }`}>
           {driver.isAvailable ? "Available" : "Busy"}
         </div>
-        {car?.vehiclePlate && (
-          <div className="absolute bottom-2 left-2 bg-slate-900/75 backdrop-blur-sm px-2.5 py-0.5 rounded-lg">
-            <span className="text-white text-xs font-mono font-bold tracking-wider">{car.vehiclePlate}</span>
+        {/* Car name overlay */}
+        {car && (
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 flex items-end justify-between">
+            <span className="text-white text-xs font-bold">{car.carBrand} {car.vehicleModel}</span>
+            {car.vehiclePlate && (
+              <span className="text-white/80 text-[10px] font-mono">{car.vehiclePlate}</span>
+            )}
           </div>
         )}
       </div>
 
       <div className="p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-11 h-11 bg-gradient-to-br from-indigo-100 to-sky-100 rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-100">
-            <span className="text-lg font-extrabold text-indigo-700">{driver.name.charAt(0).toUpperCase()}</span>
+          {/* Driver photo */}
+          <div className="w-12 h-12 rounded-2xl flex-shrink-0 overflow-hidden border-2 border-indigo-100">
+            {driver.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={driver.photoUrl} alt={driver.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-sky-100 flex items-center justify-center">
+                <span className="text-lg font-extrabold text-indigo-700">{driver.name.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-slate-900 font-bold text-base truncate">{driver.name}</p>
