@@ -104,6 +104,9 @@ export interface Booking {
   // OTP fields (driver reads these to validate traveller-provided OTPs)
   startOtp?: string;
   endOtp?: string;
+  // Traveller rating after trip completion
+  travellerRating?: number;
+  ratingComment?: string;
 }
 
 export interface TourEarning {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare, Clock, Mail, MapPin, KeyRound, PlayCircle, CheckCircle } from "lucide-react";
+import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare, Clock, Mail, MapPin, KeyRound, PlayCircle, CheckCircle, Star } from "lucide-react";
 import type { Booking } from "@/types/tour";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -215,6 +215,22 @@ export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip,
                 </div>
                 {otpError && <p className="text-red-400 text-xs mt-2">{otpError}</p>}
               </div>
+            </div>
+          )}
+
+          {/* Traveller rating — shown to driver on completed bookings */}
+          {booking.status === "completed" && booking.travellerRating && (
+            <div className="bg-amber-400/10 border border-amber-400/20 rounded-xl p-3">
+              <p className="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-2">Traveller Rating</p>
+              <div className="flex items-center gap-1 mb-1">
+                {[1,2,3,4,5].map((s) => (
+                  <Star key={s} className={`w-4 h-4 ${s <= booking.travellerRating! ? "fill-amber-400 text-amber-400" : "text-zinc-700"}`} />
+                ))}
+                <span className="text-amber-400 font-bold text-sm ml-1">{booking.travellerRating}/5</span>
+              </div>
+              {booking.ratingComment && (
+                <p className="text-zinc-400 text-xs italic mt-1">"{booking.ratingComment}"</p>
+              )}
             </div>
           )}
 
