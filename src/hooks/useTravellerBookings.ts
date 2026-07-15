@@ -51,6 +51,8 @@ export function useTravellerBookings() {
           tourEndTime: tourRow?.end_time || undefined,
           startOtp: (r.start_otp as string) || undefined,
           endOtp: (r.end_otp as string) || undefined,
+          travellerRating: (r.traveller_rating as number) ?? undefined,
+          ratingComment: (r.rating_comment as string) || undefined,
         };
       })
     );
@@ -123,5 +125,32 @@ export function useTravellerBookings() {
     await fetchBookings();
   }
 
-  return { bookings, loading, refresh: fetchBookings, createTourBooking, createFlexiBooking, cancelBooking };
+  async function submitRating(bookingId: string, driverId: string, rating: number, comment?: string) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from("bookings")
+      .update({ traveller_rating: rating, rating_comment: comment ?? null })
+      .eq("id", bookingId);
+    if (error) throw error;
+
+    // Recompute driver's average rating from all rated bookings and update drivers table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: ratedRows } = await (supabase as any)
+      .from("bookings")
+      .select("traveller_rating")
+      .eq("driver_id", driverId)
+      .not("traveller_rating", "is", null);
+    if (ratedRows && ratedRows.length > 0) {
+      const avg = ratedRows.reduce((sum: number, r: { traveller_rating: number }) => sum + r.traveller_rating, 0) / ratedRows.length;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from("drivers")
+        .update({ rating: Math.round(avg * 10) / 10 })
+        .eq("id", driverId);
+    }
+
+    await fetchBookings();
+  }
+
+  return { bookings, loading, refresh: fetchBookings, createTourBooking, createFlexiBooking, cancelBooking, submitRating };
 }

@@ -34,4 +34,6 @@ export interface TravellerBooking {
   tourEndTime?: string;
   startOtp?: string;
   endOtp?: string;
+  travellerRating?: number;
+  ratingComment?: string;
 }

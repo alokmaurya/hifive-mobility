@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind, KeyRound } from "lucide-react";
+import { useState } from "react";
+import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind, KeyRound, Star } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
 import { useTravellerBookings } from "@/hooks/useTravellerBookings";
@@ -23,7 +24,7 @@ const TOUR_TYPE_META: Record<TourType, { emoji: string; label: string }> = {
 
 export default function TravellerBookingsPage() {
   const router = useRouter();
-  const { bookings, loading, cancelBooking } = useTravellerBookings();
+  const { bookings, loading, cancelBooking, submitRating } = useTravellerBookings();
 
   async function handleCancel(id: string) {
     if (!confirm("Cancel this booking?")) return;
@@ -71,14 +72,14 @@ export default function TravellerBookingsPage() {
           {!loading && active.length > 0 && (
             <div className="space-y-3 mb-6">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Upcoming</p>
-              {active.map((b) => <BookingCard key={b.id} booking={b} onCancel={handleCancel} />)}
+              {active.map((b) => <BookingCard key={b.id} booking={b} onCancel={handleCancel} onRate={submitRating} />)}
             </div>
           )}
 
           {!loading && past.length > 0 && (
             <div className="space-y-3">
               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Past</p>
-              {past.map((b) => <BookingCard key={b.id} booking={b} onCancel={handleCancel} />)}
+              {past.map((b) => <BookingCard key={b.id} booking={b} onCancel={handleCancel} onRate={submitRating} />)}
             </div>
           )}
         </div>
@@ -88,12 +89,16 @@ export default function TravellerBookingsPage() {
   );
 }
 
-function BookingCard({ booking: b, onCancel }: {
+function BookingCard({ booking: b, onCancel, onRate }: {
   booking: ReturnType<typeof useTravellerBookings>["bookings"][number];
   onCancel: (id: string) => void;
+  onRate: (bookingId: string, driverId: string, rating: number, comment?: string) => Promise<void>;
 }) {
   const st  = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.completed;
   const meta = TOUR_TYPE_META[b.tourType] ?? { emoji: "🗺️", label: b.tourType };
+  const [hovered, setHovered] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
 
   const hasCarInfo = b.carBrand || b.vehicleModel;
 
@@ -265,6 +270,56 @@ function BookingCard({ booking: b, onCancel }: {
       {b.specialRequests && (
         <div className="px-4 pb-3">
           <p className="text-slate-400 text-xs italic bg-slate-50 rounded-xl px-3 py-2">"{b.specialRequests}"</p>
+        </div>
+      )}
+
+      {/* Rating section — only for completed bookings */}
+      {b.status === "completed" && (
+        <div className="mx-4 mb-4">
+          {b.travellerRating ? (
+            /* Already rated */
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3">
+              <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1.5">Your Rating</p>
+              <div className="flex items-center gap-1 mb-1">
+                {[1,2,3,4,5].map((s) => (
+                  <Star key={s} className={`w-5 h-5 ${s <= b.travellerRating! ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} />
+                ))}
+                <span className="text-amber-600 font-bold text-sm ml-1">{b.travellerRating}/5</span>
+              </div>
+              {b.ratingComment && <p className="text-slate-500 text-xs italic">"{b.ratingComment}"</p>}
+            </div>
+          ) : (
+            /* Rate now */
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Rate your experience with {b.driverName}</p>
+              <div className="flex items-center gap-1 mb-3">
+                {[1,2,3,4,5].map((s) => (
+                  <button
+                    key={s}
+                    onMouseEnter={() => setHovered(s)}
+                    onMouseLeave={() => setHovered(0)}
+                    onClick={async () => {
+                      setRatingSubmitting(true);
+                      try { await onRate(b.id, b.driverId, s, ratingComment || undefined); }
+                      finally { setRatingSubmitting(false); }
+                    }}
+                    disabled={ratingSubmitting}
+                    className="p-0.5 disabled:opacity-50"
+                  >
+                    <Star className={`w-7 h-7 transition-colors ${s <= hovered ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} />
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Add a comment (optional)"
+                value={ratingComment}
+                onChange={(e) => setRatingComment(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-300"
+              />
+              <p className="text-slate-400 text-[10px] mt-1.5">Tap a star to submit your rating</p>
+            </div>
+          )}
         </div>
       )}
     </div>
