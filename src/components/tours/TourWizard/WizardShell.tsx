@@ -24,6 +24,7 @@ const emptyDraft: TourDraft = {
   airportDropPrice: "", railwayDropPrice: "", busStationDropPrice: "",
   offersAirportDrop: false, offersRailwayDrop: false, offersBusDrop: false, offersHourly: true,
   isAc: true, isPetFriendly: false, smokingAllowed: false,
+  carId: undefined,
 };
 
 type Action = { type: "SET_FIELD"; payload: { key: string; value: unknown } } | { type: "RESET" };
@@ -39,7 +40,7 @@ const STEPS = [
   { label: "Tour Type" },
   { label: "Schedule" },
   { label: "Pricing" },
-  { label: "Cab Options" },
+  { label: "Select Car" },
   { label: "Itinerary" },
   { label: "Preview" },
 ];
@@ -69,7 +70,7 @@ export default function WizardShell({ tourId, seedDraft, currentStatus: _current
       case 3:
         if (isFlexi) return draft.offersHourly || draft.offersAirportDrop || draft.offersRailwayDrop || draft.offersBusDrop;
         return !!(draft.fullCabPrice !== "" && Number(draft.fullCabPrice) > 0);
-      case 4: return true;
+      case 4: return !!draft.carId;
       case 5: return isFlexi ? true : draft.stops.length > 0;
       default: return true;
     }

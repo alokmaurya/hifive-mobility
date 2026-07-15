@@ -143,8 +143,10 @@ export type TourDraft = {
   offersRailwayDrop: boolean;
   offersBusDrop: boolean;
   offersHourly: boolean;
-  // Cab options
+  // Cab options (derived from selected car)
   isAc: boolean;
   isPetFriendly: boolean;
   smokingAllowed: boolean;
+  // Selected car
+  carId?: string;
 };

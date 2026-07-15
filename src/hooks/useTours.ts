@@ -8,8 +8,9 @@ import type { TourDraft } from "@/types/tour";
 import { buildTourCode } from "@/lib/utils";
 
 type DriverProfile = { name: string; rating: number; vehicle_model: string; vehicle_capacity: number; fuel_type: string; cab_photo: string };
+type CarRow = { id: string; vehicle_model: string; vehicle_capacity: number; fuel_type: string; cab_photo: string };
 
-function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null): Tour {
+function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null, car?: CarRow | null): Tour {
   const stops = (row.tour_stops as Record<string, unknown>[] | undefined) ?? [];
   return {
     id: row.id as string,
@@ -58,10 +59,10 @@ function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null): T
     busStationDropPrice: Number(row.bus_station_drop_price ?? 0),
     tourCode: (row.tour_code as string) || undefined,
     driverName: driver?.name ?? "",
-    vehicleModel: driver?.vehicle_model ?? "",
-    vehicleCapacity: driver?.vehicle_capacity ?? 0,
-    fuelType: driver?.fuel_type ?? "petrol",
-    cabPhoto: driver?.cab_photo ?? "",
+    vehicleModel: car?.vehicle_model ?? driver?.vehicle_model ?? "",
+    vehicleCapacity: car?.vehicle_capacity ?? driver?.vehicle_capacity ?? 0,
+    fuelType: car?.fuel_type ?? driver?.fuel_type ?? "petrol",
+    cabPhoto: car?.cab_photo ?? driver?.cab_photo ?? "",
   };
 }
 
@@ -92,7 +93,7 @@ export function useTours() {
     const [{ data, error }, driver] = await Promise.all([
       supabase
         .from("tours")
-        .select("*, tour_stops(*)")
+        .select("*, tour_stops(*), driver_cars(id, vehicle_model, vehicle_capacity, fuel_type, cab_photo)")
         .eq("driver_id", user.id)
         .order("created_at", { ascending: true }),
       fetchDriverProfile(user.id),
@@ -100,7 +101,11 @@ export function useTours() {
     if (error) {
       setError(error.message);
     } else {
-      setTours((data ?? []).map((r) => mapTour(r as Record<string, unknown>, driver)));
+      setTours((data ?? []).map((r) => {
+        const row = r as Record<string, unknown>;
+        const car = row.driver_cars as CarRow | null;
+        return mapTour(row, driver, car);
+      }));
     }
     setLoading(false);
   }, [user]);
@@ -118,15 +123,26 @@ export function useTours() {
         .eq("driver_id", user.id)
         .eq("category", draft.category as string),
     ]);
+    // Fetch selected car details if a car was chosen
+    let car: CarRow | null = null;
+    if (draft.carId) {
+      const { data: carData } = await db.from("driver_cars")
+        .select("id, vehicle_model, vehicle_capacity, fuel_type, cab_photo")
+        .eq("id", draft.carId).single();
+      car = carData as CarRow | null;
+    }
+    const vehicleModel = car?.vehicle_model ?? driver?.vehicle_model ?? "";
+    const vehicleCapacity = car?.vehicle_capacity ?? driver?.vehicle_capacity ?? 0;
+    const fuelType = car?.fuel_type ?? driver?.fuel_type ?? "petrol";
     const seqNum = (existingCount ?? 0) + 1;
-    const tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, driver?.vehicle_model ?? "", seqNum);
+    const tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, vehicleModel, seqNum);
     const name = buildTourName(
       draft.city,
       driver?.name ?? "",
       driver?.rating ?? 5,
-      driver?.vehicle_model ?? "",
-      driver?.vehicle_capacity ?? 0,
-      driver?.fuel_type ?? "petrol",
+      vehicleModel,
+      vehicleCapacity,
+      fuelType,
     );
     const totalMinutes =
       draft.stops.reduce((s, stop) => s + stop.durationMinutes, 0) +
@@ -157,6 +173,7 @@ export function useTours() {
         is_ac: draft.isAc,
         is_pet_friendly: draft.isPetFriendly,
         smoking_allowed: draft.smokingAllowed,
+        car_id: draft.carId ?? null,
         airport_drop_price: Number(draft.airportDropPrice) || 0,
         railway_drop_price: Number(draft.railwayDropPrice) || 0,
         bus_station_drop_price: Number(draft.busStationDropPrice) || 0,
@@ -192,8 +209,20 @@ export function useTours() {
     const db = supabase as any;
     const [driver, { data: existing }] = await Promise.all([
       fetchDriverProfile(user.id),
-      db.from("tours").select("tour_code").eq("id", tourId).single(),
+      db.from("tours").select("tour_code, car_id").eq("id", tourId).single(),
     ]);
+    // Fetch selected car details if a car was chosen
+    const chosenCarId = draft.carId ?? (existing?.car_id as string | undefined);
+    let car: CarRow | null = null;
+    if (chosenCarId) {
+      const { data: carData } = await db.from("driver_cars")
+        .select("id, vehicle_model, vehicle_capacity, fuel_type, cab_photo")
+        .eq("id", chosenCarId).single();
+      car = carData as CarRow | null;
+    }
+    const vehicleModel = car?.vehicle_model ?? driver?.vehicle_model ?? "";
+    const vehicleCapacity = car?.vehicle_capacity ?? driver?.vehicle_capacity ?? 0;
+    const fuelType = car?.fuel_type ?? driver?.fuel_type ?? "petrol";
     // Preserve existing tour_code; only generate one if missing (legacy row)
     let tourCode = (existing?.tour_code as string) || "";
     if (!tourCode) {
@@ -202,15 +231,15 @@ export function useTours() {
         .eq("driver_id", user.id)
         .eq("category", draft.category as string)
         .neq("id", tourId);
-      tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, driver?.vehicle_model ?? "", (existingCount ?? 0) + 1);
+      tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, vehicleModel, (existingCount ?? 0) + 1);
     }
     const name = buildTourName(
       draft.city,
       driver?.name ?? "",
       driver?.rating ?? 5,
-      driver?.vehicle_model ?? "",
-      driver?.vehicle_capacity ?? 0,
-      driver?.fuel_type ?? "petrol",
+      vehicleModel,
+      vehicleCapacity,
+      fuelType,
     );
     const totalMinutes =
       draft.stops.reduce((s, stop) => s + stop.durationMinutes, 0) +
@@ -238,6 +267,7 @@ export function useTours() {
       is_ac: draft.isAc,
       is_pet_friendly: draft.isPetFriendly,
       smoking_allowed: draft.smokingAllowed,
+      car_id: chosenCarId ?? null,
       airport_drop_price: Number(draft.airportDropPrice) || 0,
       railway_drop_price: Number(draft.railwayDropPrice) || 0,
       bus_station_drop_price: Number(draft.busStationDropPrice) || 0,
