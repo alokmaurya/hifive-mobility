@@ -73,8 +73,9 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
           // eslint-disable-next-line @next/next/no-img-element
           <img src={car.cabPhoto} alt="Car" className="w-full h-full object-cover" />
         ) : (
-          <div className="flex flex-col items-center gap-1.5">
-            <Car className="w-12 h-12 text-slate-300" />
+          <div className="flex flex-col items-center gap-2">
+            <Car className="w-10 h-10 text-slate-300" />
+            <span className="text-slate-400 text-xs font-medium">Car picture not available</span>
           </div>
         )}
         <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm ${
@@ -134,22 +135,30 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
             <Briefcase className="w-2.5 h-2.5" />{car.luggageCapacityBags} bags
           </span>
           {car.isAc ? (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-green-50 text-green-600">
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-green-50 text-green-600 border border-green-100">
               <CheckCircle className="w-2.5 h-2.5" />AC
             </span>
           ) : (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-400">
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-400 border border-slate-200">
               <XCircle className="w-2.5 h-2.5" />No AC
             </span>
           )}
-          {car.isPetFriendly && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600">
+          {car.isPetFriendly ? (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-100">
               <PawPrint className="w-2.5 h-2.5" />Pets OK
             </span>
+          ) : (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-400 border border-slate-200">
+              <XCircle className="w-2.5 h-2.5" />No Pets
+            </span>
           )}
-          {car.smokingAllowed && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-orange-50 text-orange-500">
-              <Cigarette className="w-2.5 h-2.5" />Smoking
+          {car.smokingAllowed ? (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-orange-50 text-orange-500 border border-orange-100">
+              <Cigarette className="w-2.5 h-2.5" />Smoking OK
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-400 border border-slate-200">
+              <XCircle className="w-2.5 h-2.5" />No Smoking
             </span>
           )}
           </>}
