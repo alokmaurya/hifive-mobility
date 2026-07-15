@@ -93,7 +93,8 @@ export function useProfile() {
       const baseUrl = await uploadToStorage(user.id, path, file);
       const url = `${baseUrl}?t=${Date.now()}`;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("drivers") as any).update({ photo_url: url }).eq("id", user.id);
+      const { error: dbErr } = await (supabase.from("drivers") as any).update({ photo_url: url }).eq("id", user.id);
+      if (dbErr) throw new Error(dbErr.message ?? "Failed to save photo to profile");
       setProfile((prev) => prev ? { ...prev, photoUrl: url } : prev);
     } finally {
       setUploading(null);
@@ -112,7 +113,8 @@ export function useProfile() {
       const dbCol = side === "front" ? "aadhar_front_url" : "aadhar_back_url";
       const stateKey = side === "front" ? "aadharFrontUrl" : "aadharBackUrl";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("drivers") as any).update({ [dbCol]: url }).eq("id", user.id);
+      const { error: dbErr } = await (supabase.from("drivers") as any).update({ [dbCol]: url }).eq("id", user.id);
+      if (dbErr) throw new Error(dbErr.message ?? "Failed to save aadhar photo to profile");
       setProfile((prev) => prev ? { ...prev, [stateKey]: url } : prev);
     } finally {
       setUploading(null);
