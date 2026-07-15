@@ -61,10 +61,11 @@ export default function DriverDetailClient() {
 
   const [driver, setDriver]   = useState<Driver | null>(null);
   const [car, setCar]         = useState<CarInfo | null>(null);
+  const [carByTourType, setCarByTourType] = useState<Record<string, CarInfo>>({});
   const [tours, setTours]     = useState<Tour[]>([]);
   const [loadingPage, setLoadingPage] = useState(true);
 
-  const [selectedOption, setSelectedOption] = useState<TourType | null>(null);
+  const [selectedOption, setSelectedOption] = useState<TourType>("city_sightseeing");
   const [expanded, setExpanded]             = useState<TourType | null>(null);
 
   const [tourDate, setTourDate]               = useState("");
@@ -92,14 +93,23 @@ export default function DriverDetailClient() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from("driver_cars").select("*").eq("driver_id", driverId).eq("is_active", true).limit(1).single(),
     ]).then(([driverRes, toursRes, carRes]) => {
-      if (driverRes.data) setDriver(mapDriver(driverRes.data as Record<string, unknown>));
-      if (carRes.data) {
-        const c = carRes.data as Record<string, unknown>;
-        setCar({ vehicleModel: c.vehicle_model as string ?? "", vehiclePlate: c.vehicle_plate as string ?? "", carBrand: c.car_brand as string ?? "", vehicleType: c.vehicle_type as string ?? "suv", vehicleCapacity: c.vehicle_capacity as number ?? 4, fuelType: c.fuel_type as string ?? "petrol", isAc: c.is_ac as boolean ?? true, luggageCapacityBags: c.luggage_capacity_bags as number ?? 2, isPetFriendly: c.is_pet_friendly as boolean ?? false, smokingAllowed: c.smoking_allowed as boolean ?? false, cabPhoto: c.cab_photo as string ?? "" });
+      function mapCar(c: Record<string, unknown>): CarInfo {
+        return { vehicleModel: (c.vehicle_model as string) ?? "", vehiclePlate: (c.vehicle_plate as string) ?? "", carBrand: (c.car_brand as string) ?? "", vehicleType: (c.vehicle_type as string) ?? "suv", vehicleCapacity: (c.vehicle_capacity as number) ?? 4, fuelType: (c.fuel_type as string) ?? "petrol", isAc: (c.is_ac as boolean) ?? true, luggageCapacityBags: (c.luggage_capacity_bags as number) ?? 2, isPetFriendly: (c.is_pet_friendly as boolean) ?? false, smokingAllowed: (c.smoking_allowed as boolean) ?? false, cabPhoto: (c.cab_photo as string) ?? "" };
       }
+      if (driverRes.data) setDriver(mapDriver(driverRes.data as Record<string, unknown>));
+      if (carRes.data) setCar(mapCar(carRes.data as Record<string, unknown>));
+      const tourRows = ((toursRes.data ?? []) as Record<string, unknown>[]);
+      // Build map: tour_type → car for that tour
+      const carMap: Record<string, CarInfo> = {};
+      tourRows.forEach((r) => {
+        const tourType = (r.tour_type as string) ?? (r.category as string);
+        const linkedCar = r.driver_cars as Record<string, unknown> | null;
+        if (tourType && linkedCar) carMap[tourType] = mapCar(linkedCar);
+      });
+      setCarByTourType(carMap);
       setTours(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((toursRes.data ?? []) as Record<string, unknown>[]).map((r) => ({
+        tourRows.map((r) => ({
           id: r.id as string,
           driverId: r.driver_id as string,
           name: r.name as string,
@@ -178,6 +188,9 @@ export default function DriverDetailClient() {
   const flexiRate = flexiTour?.hourlyRate || driver.hourlyRate;
   const flexiTotal = hoursRequested * flexiRate;
 
+  // Car for the selected tour type; fall back to first active car
+  const activeCar: CarInfo | null = carByTourType[selectedOption] ?? car;
+
   return (
     <RequireTravellerAuth>
       <div className="min-h-screen bg-slate-50 pb-24">
@@ -246,70 +259,84 @@ export default function DriverDetailClient() {
                 )}
               </div>
 
-              {/* Cab details card */}
-              {car && (
-                <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-                  <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-3">Cab Details</p>
-
-                  {/* Car photo */}
-                  <div className="bg-slate-50 rounded-2xl h-40 flex items-center justify-center mb-4 relative overflow-hidden border border-slate-100">
-                    {car.cabPhoto ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={car.cabPhoto} alt="Car" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2">
-                        <Car className="w-14 h-14 text-slate-300" />
-                        <span className="text-slate-400 text-sm font-semibold">{car.carBrand} {car.vehicleModel}</span>
-                      </div>
-                    )}
-                    {car.vehiclePlate && (
-                      <div className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-sm px-3 py-1 rounded-lg border border-slate-700">
-                        <span className="text-white text-sm font-mono font-bold tracking-wider">{car.vehiclePlate}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Specs grid */}
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
-                      <p className="text-slate-400 text-[9px] uppercase tracking-wide">Type</p>
-                      <p className="text-slate-800 text-xs font-bold mt-0.5 capitalize">{car.vehicleType}</p>
-                    </div>
-                    <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
-                      <p className="text-slate-400 text-[9px] uppercase tracking-wide">Fuel</p>
-                      <p className="text-slate-800 text-xs font-bold mt-0.5">{FUEL_LABEL[car.fuelType] ?? car.fuelType}</p>
-                    </div>
-                    <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
-                      <p className="text-slate-400 text-[9px] uppercase tracking-wide">Seats</p>
-                      <p className="text-slate-800 text-xs font-bold mt-0.5">{car.vehicleCapacity}</p>
-                    </div>
-                  </div>
-
-                  {/* Amenities */}
-                  <div className="flex items-center gap-4 flex-wrap pt-3 border-t border-slate-100">
-                    <div className="flex items-center gap-1">
-                      {car.isAc ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <XCircle className="w-3.5 h-3.5 text-slate-300" />}
-                      <span className={`text-xs font-medium ${car.isAc ? "text-green-600" : "text-slate-400"}`}>AC</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                      <span className="text-slate-500 text-xs">{car.luggageCapacityBags} bags</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <PawPrint className={`w-3.5 h-3.5 ${car.isPetFriendly ? "text-indigo-500" : "text-slate-300"}`} />
-                      <span className={`text-xs ${car.isPetFriendly ? "text-indigo-600 font-medium" : "text-slate-400"}`}>
-                        {car.isPetFriendly ? "Pet friendly" : "No pets"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Cigarette className={`w-3.5 h-3.5 ${car.smokingAllowed ? "text-orange-400" : "text-slate-300"}`} />
-                      <span className={`text-xs ${car.smokingAllowed ? "text-orange-500 font-medium" : "text-slate-400"}`}>
-                        {car.smokingAllowed ? "Smoking ok" : "No smoking"}
-                      </span>
-                    </div>
-                  </div>
+              {/* Cab details card — updates when tour type is selected */}
+              <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest">Cab Details</p>
+                  {selectedOption && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 border border-indigo-100">
+                      {TOUR_OPTIONS.find((o) => o.type === selectedOption)?.label ?? selectedOption}
+                    </span>
+                  )}
                 </div>
-              )}
+
+                {activeCar ? (
+                  <>
+                    {/* Car photo */}
+                    <div className="bg-slate-50 rounded-2xl h-40 flex items-center justify-center mb-4 relative overflow-hidden border border-slate-100">
+                      {activeCar.cabPhoto ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={activeCar.cabPhoto} alt="Car" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <Car className="w-14 h-14 text-slate-300" />
+                          <span className="text-slate-400 text-sm font-semibold">{activeCar.carBrand} {activeCar.vehicleModel}</span>
+                        </div>
+                      )}
+                      {activeCar.vehiclePlate && (
+                        <div className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-sm px-3 py-1 rounded-lg border border-slate-700">
+                          <span className="text-white text-sm font-mono font-bold tracking-wider">{activeCar.vehiclePlate}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Specs grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
+                        <p className="text-slate-400 text-[9px] uppercase tracking-wide">Type</p>
+                        <p className="text-slate-800 text-xs font-bold mt-0.5 capitalize">{activeCar.vehicleType}</p>
+                      </div>
+                      <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
+                        <p className="text-slate-400 text-[9px] uppercase tracking-wide">Fuel</p>
+                        <p className="text-slate-800 text-xs font-bold mt-0.5">{FUEL_LABEL[activeCar.fuelType] ?? activeCar.fuelType}</p>
+                      </div>
+                      <div className="bg-slate-50 rounded-xl px-2 py-2.5 text-center border border-slate-100">
+                        <p className="text-slate-400 text-[9px] uppercase tracking-wide">Seats</p>
+                        <p className="text-slate-800 text-xs font-bold mt-0.5">{activeCar.vehicleCapacity}</p>
+                      </div>
+                    </div>
+
+                    {/* Amenities */}
+                    <div className="flex items-center gap-4 flex-wrap pt-3 border-t border-slate-100">
+                      <div className="flex items-center gap-1">
+                        {activeCar.isAc ? <CheckCircle className="w-3.5 h-3.5 text-green-500" /> : <XCircle className="w-3.5 h-3.5 text-slate-300" />}
+                        <span className={`text-xs font-medium ${activeCar.isAc ? "text-green-600" : "text-slate-400"}`}>AC</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-slate-500 text-xs">{activeCar.luggageCapacityBags} bags</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <PawPrint className={`w-3.5 h-3.5 ${activeCar.isPetFriendly ? "text-indigo-500" : "text-slate-300"}`} />
+                        <span className={`text-xs ${activeCar.isPetFriendly ? "text-indigo-600 font-medium" : "text-slate-400"}`}>
+                          {activeCar.isPetFriendly ? "Pet friendly" : "No pets"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Cigarette className={`w-3.5 h-3.5 ${activeCar.smokingAllowed ? "text-orange-400" : "text-slate-300"}`} />
+                        <span className={`text-xs ${activeCar.smokingAllowed ? "text-orange-500 font-medium" : "text-slate-400"}`}>
+                          {activeCar.smokingAllowed ? "Smoking ok" : "No smoking"}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-8">
+                    <Car className="w-12 h-12 text-slate-200" />
+                    <p className="text-slate-400 text-sm">No cab details available</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* ── RIGHT: Choose Tour Type ── */}
