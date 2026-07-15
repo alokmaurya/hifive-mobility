@@ -1,7 +1,24 @@
 import type { TourCategory } from "./tour";
 
+// Keep these exports — car.ts imports them
 export type FuelType = "petrol" | "diesel" | "cng" | "hybrid" | "ev";
 export type VehicleType = "hatchback" | "sedan" | "suv" | "van" | "tempo";
+
+export type Gender = "male" | "female" | "other" | "";
+
+export interface DriverCar {
+  vehicleModel: string;
+  vehiclePlate: string;
+  carBrand: string;
+  vehicleType: string;
+  vehicleCapacity: number;
+  fuelType: string;
+  isAc: boolean;
+  luggageCapacityBags: number;
+  isPetFriendly: boolean;
+  smokingAllowed: boolean;
+  cabPhoto: string;
+}
 
 export interface Driver {
   id: string;
@@ -9,30 +26,28 @@ export interface Driver {
   avatar?: string;
   rating: number;
   totalTrips: number;
-  vehicleModel: string;
-  vehiclePlate: string;
-  carBrand: string;
-  vehicleType: VehicleType;
-  vehicleCapacity: number;
-  fuelType: FuelType;
-  isAc: boolean;
-  luggageCapacityBags: number;
-  isPetFriendly: boolean;
+  // Personal info
+  age?: number;
+  gender: Gender;
+  phone?: string;
+  aadharNumber: string;
+  aadharFrontUrl: string;
+  aadharBackUrl: string;
+  // Professional info
   bio: string;
   languages: string[];
   yearsExperience: number;
   specialties: TourCategory[];
-  totalToursRun: number;
-  totalGuestsHosted: number;
   licenseNumber: string;
   isVerified: boolean;
-  age?: number;
-  smokingAllowed: boolean;
-  photoUrl?: string;
-  cabPhoto?: string;
-  carPhotoUrl?: string; // alias kept for compat
+  // Stats
+  totalToursRun: number;
+  totalGuestsHosted: number;
+  // Preferences
   isAvailable: boolean;
   hourlyRate: number;
-  phone?: string;
+  // Photo
+  photoUrl?: string;
   tourTypes?: string[];
+  primaryCar?: DriverCar;
 }

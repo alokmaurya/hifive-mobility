@@ -7,7 +7,7 @@ import type { Tour } from "@/types/tour";
 import type { TourDraft } from "@/types/tour";
 import { buildTourCode } from "@/lib/utils";
 
-type DriverProfile = { name: string; rating: number; vehicle_model: string; vehicle_capacity: number; fuel_type: string; cab_photo: string };
+type DriverProfile = { name: string; rating: number };
 type CarRow = { id: string; vehicle_model: string; vehicle_capacity: number; fuel_type: string; cab_photo: string };
 
 function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null, car?: CarRow | null): Tour {
@@ -59,10 +59,10 @@ function mapTour(row: Record<string, unknown>, driver?: DriverProfile | null, ca
     busStationDropPrice: Number(row.bus_station_drop_price ?? 0),
     tourCode: (row.tour_code as string) || undefined,
     driverName: driver?.name ?? "",
-    vehicleModel: car?.vehicle_model ?? driver?.vehicle_model ?? "",
-    vehicleCapacity: car?.vehicle_capacity ?? driver?.vehicle_capacity ?? 0,
-    fuelType: car?.fuel_type ?? driver?.fuel_type ?? "petrol",
-    cabPhoto: car?.cab_photo ?? driver?.cab_photo ?? "",
+    vehicleModel: car?.vehicle_model ?? "",
+    vehicleCapacity: car?.vehicle_capacity ?? 0,
+    fuelType: car?.fuel_type ?? "petrol",
+    cabPhoto: car?.cab_photo ?? "",
   };
 }
 
@@ -70,7 +70,7 @@ async function fetchDriverProfile(userId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from("drivers")
-    .select("name, rating, vehicle_model, vehicle_capacity, fuel_type, cab_photo")
+    .select("name, rating")
     .eq("id", userId)
     .single();
   return data as DriverProfile | null;
@@ -131,9 +131,9 @@ export function useTours() {
         .eq("id", draft.carId).single();
       car = carData as CarRow | null;
     }
-    const vehicleModel = car?.vehicle_model ?? driver?.vehicle_model ?? "";
-    const vehicleCapacity = car?.vehicle_capacity ?? driver?.vehicle_capacity ?? 0;
-    const fuelType = car?.fuel_type ?? driver?.fuel_type ?? "petrol";
+    const vehicleModel = car?.vehicle_model ?? "";
+    const vehicleCapacity = car?.vehicle_capacity ?? 0;
+    const fuelType = car?.fuel_type ?? "petrol";
     const seqNum = (existingCount ?? 0) + 1;
     const tourCode = buildTourCode(draft.city, driver?.name ?? "", draft.category as string, vehicleModel, seqNum);
     const name = buildTourName(
@@ -220,9 +220,9 @@ export function useTours() {
         .eq("id", chosenCarId).single();
       car = carData as CarRow | null;
     }
-    const vehicleModel = car?.vehicle_model ?? driver?.vehicle_model ?? "";
-    const vehicleCapacity = car?.vehicle_capacity ?? driver?.vehicle_capacity ?? 0;
-    const fuelType = car?.fuel_type ?? driver?.fuel_type ?? "petrol";
+    const vehicleModel = car?.vehicle_model ?? "";
+    const vehicleCapacity = car?.vehicle_capacity ?? 0;
+    const fuelType = car?.fuel_type ?? "petrol";
     // Preserve existing tour_code; only generate one if missing (legacy row)
     let tourCode = (existing?.tour_code as string) || "";
     if (!tourCode) {
