@@ -13,6 +13,7 @@ export interface TravellerBooking {
   tourId?: string;
   driverId: string;
   driverName: string;
+  driverPhotoUrl?: string;
   tourCity: string;
   tourDate: string;
   tourType: TourType;
@@ -23,4 +24,9 @@ export interface TravellerBooking {
   status: "pending" | "confirmed" | "cancelled" | "completed";
   specialRequests?: string;
   bookedAt: string;
+  carBrand?: string;
+  vehicleModel?: string;
+  vehicleCapacity?: number;
+  isAc?: boolean;
+  cabPhoto?: string;
 }

@@ -16,27 +16,38 @@ export function useTravellerBookings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
       .from("bookings")
-      .select("*, drivers(name), tours(city)")
+      .select("*, drivers(name, photo_url), tours(city, driver_cars(car_brand, vehicle_model, vehicle_capacity, is_ac, cab_photo))")
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 
     setBookings(
-      (data ?? []).map((r: Record<string, unknown>) => ({
-        id: r.id as string,
-        tourId: r.tour_id as string | undefined,
-        driverId: r.driver_id as string,
-        driverName: (r.drivers as { name?: string } | null)?.name ?? "",
-        tourCity: (r.tours as { city?: string } | null)?.city ?? (r.city as string) ?? "",
-        tourDate: r.tour_date as string,
-        tourType: (r.tour_type as TourType) ?? "city_sightseeing",
-        guestCount: (r.guest_count as number) ?? 1,
-        hoursRequested: r.hours_requested as number | undefined,
-        totalAmount: Number(r.total_amount),
-        currency: "₹",
-        status: r.status as TravellerBooking["status"],
-        specialRequests: (r.special_requests as string) ?? undefined,
-        bookedAt: r.created_at as string,
-      }))
+      (data ?? []).map((r: Record<string, unknown>) => {
+        const driverRow = r.drivers as { name?: string; photo_url?: string } | null;
+        const tourRow   = r.tours as { city?: string; driver_cars?: Record<string, unknown> | null } | null;
+        const carRow    = tourRow?.driver_cars ?? null;
+        return {
+          id: r.id as string,
+          tourId: r.tour_id as string | undefined,
+          driverId: r.driver_id as string,
+          driverName: driverRow?.name ?? "",
+          driverPhotoUrl: driverRow?.photo_url || undefined,
+          tourCity: tourRow?.city ?? (r.city as string) ?? "",
+          tourDate: r.tour_date as string,
+          tourType: (r.tour_type as TourType) ?? "city_sightseeing",
+          guestCount: (r.guest_count as number) ?? 1,
+          hoursRequested: r.hours_requested as number | undefined,
+          totalAmount: Number(r.total_amount),
+          currency: "₹",
+          status: r.status as TravellerBooking["status"],
+          specialRequests: (r.special_requests as string) ?? undefined,
+          bookedAt: r.created_at as string,
+          carBrand: carRow ? (carRow.car_brand as string) ?? "" : undefined,
+          vehicleModel: carRow ? (carRow.vehicle_model as string) ?? "" : undefined,
+          vehicleCapacity: carRow ? (carRow.vehicle_capacity as number) ?? undefined : undefined,
+          isAc: carRow ? (carRow.is_ac as boolean) ?? undefined : undefined,
+          cabPhoto: carRow ? (carRow.cab_photo as string) || undefined : undefined,
+        };
+      })
     );
     setLoading(false);
   }, [user]);

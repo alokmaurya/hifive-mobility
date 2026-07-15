@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket } from "lucide-react";
+import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
 import { useTravellerBookings } from "@/hooks/useTravellerBookings";
@@ -94,13 +94,21 @@ function BookingCard({ booking: b, onCancel }: {
   const st  = STATUS_CONFIG[b.status] ?? STATUS_CONFIG.completed;
   const meta = TOUR_TYPE_META[b.tourType] ?? { emoji: "🗺️", label: b.tourType };
 
+  const hasCarInfo = b.carBrand || b.vehicleModel;
+
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-      {/* Top bar */}
+      {/* Top bar — driver identity */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-            <span className="text-lg">{meta.emoji}</span>
+          {/* Driver avatar */}
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center flex-shrink-0 overflow-hidden border border-indigo-100">
+            {b.driverPhotoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={b.driverPhotoUrl} alt={b.driverName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-base font-extrabold text-indigo-500">{b.driverName.charAt(0).toUpperCase()}</span>
+            )}
           </div>
           <div>
             <p className="text-slate-900 font-bold text-sm leading-tight">{b.driverName}</p>
@@ -112,6 +120,45 @@ function BookingCard({ booking: b, onCancel }: {
           <span className={`text-xs font-bold ${st.text}`}>{st.label}</span>
         </div>
       </div>
+
+      {/* Car section */}
+      {hasCarInfo && (
+        <div className="mx-4 mb-3 rounded-2xl overflow-hidden border border-slate-100">
+          {/* Car photo */}
+          <div className="bg-slate-50 h-32 flex items-center justify-center relative">
+            {b.cabPhoto ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={b.cabPhoto} alt="Car" className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex flex-col items-center gap-1.5">
+                <Car className="w-10 h-10 text-slate-300" />
+                <span className="text-slate-400 text-xs font-medium">Car picture not available</span>
+              </div>
+            )}
+            {/* Car name overlay */}
+            {hasCarInfo && (
+              <div className="absolute bottom-2 left-2 bg-slate-900/75 backdrop-blur-sm px-2.5 py-1 rounded-lg">
+                <span className="text-white text-xs font-bold">{[b.carBrand, b.vehicleModel].filter(Boolean).join(" ")}</span>
+              </div>
+            )}
+          </div>
+          {/* Car chips */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-white flex-wrap">
+            {b.vehicleCapacity !== undefined && (
+              <div className="flex items-center gap-1 bg-slate-50 rounded-lg px-2 py-1">
+                <Users className="w-3 h-3 text-slate-400" />
+                <span className="text-slate-600 text-[10px] font-semibold">{b.vehicleCapacity} seats</span>
+              </div>
+            )}
+            {b.isAc !== undefined && (
+              <div className={`flex items-center gap-1 rounded-lg px-2 py-1 ${b.isAc ? "bg-sky-50" : "bg-slate-50"}`}>
+                <Wind className={`w-3 h-3 ${b.isAc ? "text-sky-500" : "text-slate-300"}`} />
+                <span className={`text-[10px] font-semibold ${b.isAc ? "text-sky-600" : "text-slate-400"}`}>AC</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Details */}
       <div className="flex items-center gap-4 px-4 pb-3 border-b border-slate-50">
