@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check, Camera, Loader2, Plus, Trash2 } from "lucide-react";
+import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check, Camera, Loader2, Plus, Trash2, CreditCard } from "lucide-react";
 import AppHeader from "@/components/ui/AppHeader";
 import BottomNav from "@/components/ui/BottomNav";
 import RequireAuth from "@/components/ui/RequireAuth";
@@ -10,7 +10,7 @@ import { useCars } from "@/hooks/useCars";
 import { useAuth } from "@/contexts/AuthContext";
 import { CATEGORY_META } from "@/lib/utils";
 import type { TourCategory } from "@/types/tour";
-import type { Driver, VehicleType, FuelType } from "@/types/driver";
+import type { VehicleType, FuelType, Gender } from "@/types/driver";
 import type { DriverCar, DriverCarDraft } from "@/types/car";
 
 const VEHICLE_TYPES: { value: VehicleType; label: string }[] = [
@@ -27,6 +27,12 @@ const FUEL_TYPES: { value: FuelType; label: string }[] = [
   { value: "cng",    label: "CNG" },
   { value: "hybrid", label: "Hybrid" },
   { value: "ev",     label: "Electric (EV)" },
+];
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: "male",   label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other",  label: "Other" },
 ];
 
 function PhotoUploadButton({
@@ -197,14 +203,19 @@ function CarForm({ initial, onSave, onCancel, saving, carId, uploadingCarId, onP
 }
 
 function ProfileContent() {
-  const { profile, loading, uploading, updateProfile, uploadDriverPhoto } = useProfile();
+  const { profile, loading, uploading, updateProfile, uploadDriverPhoto, uploadAadharPhoto } = useProfile();
   const { cars, loading: carsLoading, uploadingCarId, addCar, updateCar, deleteCar, uploadCarPhoto } = useCars();
   const { signOut } = useAuth();
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const [editingBio, setEditingBio] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [age, setAge] = useState<string>("");
+  const [gender, setGender] = useState<Gender>("");
+  const [phone, setPhone] = useState("");
+  const [yearsExp, setYearsExp] = useState<string>("");
+  const [aadharNumber, setAadharNumber] = useState("");
 
   const [saving, setSaving] = useState(false);
 
@@ -232,22 +243,43 @@ function ProfileContent() {
     setDeletingCarId(null);
   }
 
-  function startBioEdit() {
+  function startProfileEdit() {
     setName(profile?.name ?? "");
     setBio(profile?.bio ?? "");
-    setEditingBio(true);
+    setAge(profile?.age != null ? String(profile.age) : "");
+    setGender(profile?.gender ?? "");
+    setPhone(profile?.phone ?? "");
+    setYearsExp(profile?.yearsExperience != null ? String(profile.yearsExperience) : "");
+    setAadharNumber(profile?.aadharNumber ?? "");
+    setEditingProfile(true);
   }
 
-  async function saveBioEdit() {
+  async function saveProfileEdit() {
     setSaving(true);
-    try { await updateProfile({ name, bio }); } catch {}
+    try {
+      await updateProfile({
+        name,
+        bio,
+        age: age ? Number(age) : undefined,
+        gender,
+        phone,
+        yearsExperience: yearsExp ? Number(yearsExp) : undefined,
+        aadharNumber,
+      });
+    } catch {}
     setSaving(false);
-    setEditingBio(false);
+    setEditingProfile(false);
   }
 
   async function handleDriverPhotoUpload(file: File) {
     setUploadError(null);
     try { await uploadDriverPhoto(file); }
+    catch (e: unknown) { setUploadError((e as Error).message ?? "Upload failed"); }
+  }
+
+  async function handleAadharUpload(side: "front" | "back", file: File) {
+    setUploadError(null);
+    try { await uploadAadharPhoto(side, file); }
     catch (e: unknown) { setUploadError((e as Error).message ?? "Upload failed"); }
   }
 
@@ -281,14 +313,10 @@ function ProfileContent() {
         {/* ── Avatar & bio ───────────────────────────────────────────── */}
         <div className="bg-zinc-900 rounded-3xl border border-zinc-800 p-5">
           <div className="flex items-start gap-4">
-            {/* Driver photo with upload overlay */}
+            {/* Driver photo */}
             <div className="relative shrink-0">
               {profile?.photoUrl ? (
-                <img
-                  src={profile.photoUrl}
-                  alt="Driver"
-                  className="w-20 h-20 rounded-2xl object-cover"
-                />
+                <img src={profile.photoUrl} alt="Driver" className="w-20 h-20 rounded-2xl object-cover" />
               ) : (
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-3xl font-bold text-black">
                   {profile?.name?.charAt(0).toUpperCase() ?? "?"}
@@ -303,67 +331,116 @@ function ProfileContent() {
             </div>
 
             <div className="flex-1 min-w-0">
-              {editingBio ? (
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm mb-1 focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
-                />
-              ) : (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-lg font-bold text-white">{profile?.name}</h1>
-                  {profile?.isVerified && (
-                    <span className="flex items-center gap-1 bg-yellow-400/10 text-yellow-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-yellow-400/20">
-                      <Shield className="w-3 h-3" /> Verified
-                    </span>
-                  )}
-                </div>
-              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold text-white">{profile?.name}</h1>
+                {profile?.isVerified && (
+                  <span className="flex items-center gap-1 bg-yellow-400/10 text-yellow-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-yellow-400/20">
+                    <Shield className="w-3 h-3" /> Verified
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-1 mt-0.5">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 <span className="text-sm font-semibold text-white">{profile?.rating.toFixed(1)}</span>
                 <span className="text-xs text-zinc-500">({profile?.totalToursRun} tours)</span>
               </div>
-              <p className="text-sm text-zinc-500 mt-1">{profile?.yearsExperience} yrs experience</p>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {profile?.gender && (
+                  <span className="text-xs text-zinc-400 capitalize">{profile.gender}</span>
+                )}
+                {profile?.age && (
+                  <span className="text-xs text-zinc-400">{profile.age} yrs old</span>
+                )}
+                {profile?.phone && (
+                  <span className="text-xs text-zinc-400">{profile.phone}</span>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Driver photo upload hint when no photo */}
           {!profile?.photoUrl && (
             <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-zinc-800/60 rounded-xl border border-dashed border-zinc-700">
               <Camera className="w-4 h-4 text-zinc-500 shrink-0" />
-              <p className="text-xs text-zinc-500">Tap the camera icon on your photo to upload a profile picture</p>
+              <p className="text-xs text-zinc-500">Tap the camera icon to upload your profile photo</p>
             </div>
           )}
 
-          {editingBio ? (
-            <>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={3}
-                placeholder="Tell tourists about yourself…"
-                className="mt-4 w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
-              />
-              <div className="flex gap-2 mt-3">
-                <button onClick={() => setEditingBio(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5">
+          {profile?.bio && !editingProfile && (
+            <p className="text-sm text-zinc-400 mt-4 leading-relaxed">{profile.bio}</p>
+          )}
+
+          {editingProfile ? (
+            <div className="mt-4 space-y-3">
+              {/* Name */}
+              <div>
+                <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Full Name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
+              </div>
+
+              {/* Age & Gender */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Age</label>
+                  <input type="number" min={18} max={80} value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    placeholder="e.g. 35"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Gender</label>
+                  <select value={gender} onChange={(e) => setGender(e.target.value as Gender)}
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50">
+                    <option value="">Select</option>
+                    {GENDER_OPTIONS.map(({ value, label }) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Phone & Experience */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Phone</label>
+                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Exp. (years)</label>
+                  <input type="number" min={0} max={50} value={yearsExp}
+                    onChange={(e) => setYearsExp(e.target.value)}
+                    placeholder="e.g. 5"
+                    className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Bio</label>
+                <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
+                  placeholder="Tell tourists about yourself…"
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
+              </div>
+
+              <div className="flex gap-2">
+                <button onClick={() => setEditingProfile(false)} className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5">
                   <X className="w-4 h-4 text-zinc-400" />
                   <span className="text-sm font-semibold text-zinc-300">Cancel</span>
                 </button>
-                <button onClick={saveBioEdit} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5">
+                <button onClick={saveProfileEdit} disabled={saving} className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5">
                   <Check className="w-4 h-4 text-black" />
                   <span className="text-sm font-semibold text-black">{saving ? "Saving…" : "Save"}</span>
                 </button>
               </div>
-            </>
+            </div>
           ) : (
-            <>
-              {profile?.bio && <p className="text-sm text-zinc-400 mt-4 leading-relaxed">{profile.bio}</p>}
-              <button onClick={startBioEdit} className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors">
-                <Pencil className="w-4 h-4 text-zinc-400" />
-                <span className="text-sm font-semibold text-zinc-300">Edit Profile</span>
-              </button>
-            </>
+            <button onClick={startProfileEdit} className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors">
+              <Pencil className="w-4 h-4 text-zinc-400" />
+              <span className="text-sm font-semibold text-zinc-300">Edit Profile</span>
+            </button>
           )}
         </div>
 
@@ -382,6 +459,73 @@ function ProfileContent() {
               <p className="text-[10px] text-zinc-500 leading-tight">{label}</p>
             </div>
           ))}
+        </div>
+
+        {/* ── Aadhar Card ───────────────────────────────────────────── */}
+        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
+            <CreditCard className="w-4 h-4 text-yellow-400" />
+            <span className="text-sm font-bold text-white">Aadhar Card</span>
+          </div>
+          <div className="p-4 space-y-4">
+            {/* Aadhar Number */}
+            <div>
+              <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1.5">Aadhar Number</label>
+              {editingProfile ? (
+                <input
+                  value={aadharNumber}
+                  onChange={(e) => setAadharNumber(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                  placeholder="12-digit Aadhar number"
+                  maxLength={12}
+                  className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
+                />
+              ) : (
+                <p className="text-sm font-mono text-zinc-300 bg-zinc-800 px-3 py-2 rounded-xl border border-zinc-700">
+                  {profile?.aadharNumber
+                    ? profile.aadharNumber.replace(/(\d{4})(\d{4})(\d{4})/, "$1 $2 $3")
+                    : <span className="text-zinc-600 italic">Not added</span>}
+                </p>
+              )}
+            </div>
+
+            {/* Aadhar photos */}
+            <div className="grid grid-cols-2 gap-3">
+              {(["front", "back"] as const).map((side) => {
+                const url = side === "front" ? profile?.aadharFrontUrl : profile?.aadharBackUrl;
+                const isUploading = uploading === `aadhar_${side}`;
+                return (
+                  <div key={side}>
+                    <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1.5">
+                      {side === "front" ? "Front Side" : "Back Side"}
+                    </label>
+                    <div className="relative rounded-xl overflow-hidden border border-zinc-700 bg-zinc-800 aspect-[1.6/1]">
+                      {url ? (
+                        <img src={url} alt={`Aadhar ${side}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+                          <CreditCard className="w-6 h-6 text-zinc-600" />
+                          <span className="text-[10px] text-zinc-600">No photo</span>
+                        </div>
+                      )}
+                      <PhotoUploadButton
+                        onFile={(f) => handleAadharUpload(side, f)}
+                        uploading={isUploading}
+                        label={url ? "Change" : "Upload"}
+                        className="absolute bottom-1.5 right-1.5 flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-900/80 text-zinc-300 text-[10px] font-semibold hover:bg-zinc-800 transition-colors disabled:opacity-60"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {!editingProfile && (
+              <button onClick={startProfileEdit} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-colors">
+                <Pencil className="w-4 h-4 text-zinc-400" />
+                <span className="text-sm font-semibold text-zinc-300">Edit Aadhar Number</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── My Cars ───────────────────────────────────────────────── */}

@@ -43,13 +43,14 @@ function activeFilterCount(f: Filters) {
 
 function applyFilters(drivers: Driver[], f: Filters): Driver[] {
   return drivers.filter((d) => {
-    if (f.seats === "4" && d.vehicleCapacity > 4) return false;
-    if (f.seats === "6" && d.vehicleCapacity < 5) return false;
+    const car = d.primaryCar;
+    if (f.seats === "4" && (car?.vehicleCapacity ?? 0) > 4) return false;
+    if (f.seats === "6" && (car?.vehicleCapacity ?? 0) < 5) return false;
     if (f.minRating > 0 && d.rating < f.minRating) return false;
-    if (f.pets === "yes" && !d.isPetFriendly) return false;
-    if (f.pets === "no" && d.isPetFriendly) return false;
-    if (f.smoking === "yes" && !d.smokingAllowed) return false;
-    if (f.smoking === "no" && d.smokingAllowed) return false;
+    if (f.pets === "yes" && !car?.isPetFriendly) return false;
+    if (f.pets === "no" && car?.isPetFriendly) return false;
+    if (f.smoking === "yes" && !car?.smokingAllowed) return false;
+    if (f.smoking === "no" && car?.smokingAllowed) return false;
     if (f.tourTypes.length > 0) {
       const dt = d.tourTypes ?? [];
       if (!f.tourTypes.some((t) => dt.includes(t))) return false;
@@ -60,6 +61,7 @@ function applyFilters(drivers: Driver[], f: Filters): Driver[] {
 
 function DriverCard({ driver, city, state }: { driver: Driver; city: string; state: string }) {
   const router = useRouter();
+  const car = driver.primaryCar;
   return (
     <button
       onClick={() => router.push(`/traveller/driver?id=${driver.id}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`)}
@@ -67,13 +69,13 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
     >
       {/* Car photo */}
       <div className="h-36 bg-gradient-to-br from-slate-100 to-blue-50 flex items-center justify-center relative overflow-hidden">
-        {driver.carPhotoUrl ? (
+        {car?.cabPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={driver.carPhotoUrl} alt="Car" className="w-full h-full object-cover" />
+          <img src={car.cabPhoto} alt="Car" className="w-full h-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-1.5">
             <Car className="w-12 h-12 text-slate-300" />
-            <span className="text-slate-400 text-xs font-medium">{driver.carBrand || ""} {driver.vehicleModel}</span>
+            {car && <span className="text-slate-400 text-xs font-medium">{car.carBrand} {car.vehicleModel}</span>}
           </div>
         )}
         <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm ${
@@ -81,9 +83,9 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
         }`}>
           {driver.isAvailable ? "Available" : "Busy"}
         </div>
-        {driver.vehiclePlate && (
+        {car?.vehiclePlate && (
           <div className="absolute bottom-2 left-2 bg-slate-900/75 backdrop-blur-sm px-2.5 py-0.5 rounded-lg">
-            <span className="text-white text-xs font-mono font-bold tracking-wider">{driver.vehiclePlate}</span>
+            <span className="text-white text-xs font-mono font-bold tracking-wider">{car.vehiclePlate}</span>
           </div>
         )}
       </div>
@@ -104,20 +106,23 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
               <span className="text-slate-300 text-xs">{driver.totalToursRun} trips</span>
             </div>
           </div>
-          <div className="text-right flex-shrink-0">
-            <p className="text-[10px] text-slate-400 uppercase tracking-wide">{VEHICLE_LABEL[driver.vehicleType] ?? driver.vehicleType}</p>
-            <p className="text-slate-600 text-xs font-semibold">{driver.vehicleCapacity} seats</p>
-          </div>
+          {car && (
+            <div className="text-right flex-shrink-0">
+              <p className="text-[10px] text-slate-400 uppercase tracking-wide">{VEHICLE_LABEL[car.vehicleType] ?? car.vehicleType}</p>
+              <p className="text-slate-600 text-xs font-semibold">{car.vehicleCapacity} seats</p>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          {car && <>
           <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
-            {FUEL_LABEL[driver.fuelType] ?? driver.fuelType}
+            {FUEL_LABEL[car.fuelType] ?? car.fuelType}
           </span>
           <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500">
-            <Briefcase className="w-2.5 h-2.5" />{driver.luggageCapacityBags} bags
+            <Briefcase className="w-2.5 h-2.5" />{car.luggageCapacityBags} bags
           </span>
-          {driver.isAc ? (
+          {car.isAc ? (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-green-50 text-green-600">
               <CheckCircle className="w-2.5 h-2.5" />AC
             </span>
@@ -126,16 +131,17 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
               <XCircle className="w-2.5 h-2.5" />No AC
             </span>
           )}
-          {driver.isPetFriendly && (
+          {car.isPetFriendly && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600">
               <PawPrint className="w-2.5 h-2.5" />Pets OK
             </span>
           )}
-          {driver.smokingAllowed && (
+          {car.smokingAllowed && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-orange-50 text-orange-500">
               <Cigarette className="w-2.5 h-2.5" />Smoking
             </span>
           )}
+          </>}
           {(driver.tourTypes ?? []).map((tt) => {
             const opt = TOUR_TYPE_OPTIONS.find((o) => o.value === tt);
             return opt ? (
