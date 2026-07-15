@@ -8,24 +8,27 @@ import EmptyState from "@/components/ui/EmptyState";
 import RequireAuth from "@/components/ui/RequireAuth";
 import { useBookings } from "@/hooks/useBookings";
 
-type Tab = "pending" | "confirmed" | "cancelled";
+type Tab = "pending" | "confirmed" | "ongoing" | "completed" | "cancelled";
 
 function BookingsContent() {
-  const { bookings, loading, updateBookingStatus } = useBookings();
+  const { bookings, loading, updateBookingStatus, startTrip, endTrip } = useBookings();
   const [tab, setTab] = useState<Tab>("pending");
 
   const filtered = bookings.filter((b) => b.status === tab);
-  const pendingCount = bookings.filter((b) => b.status === "pending").length;
+  const pendingCount  = bookings.filter((b) => b.status === "pending").length;
+  const ongoingCount  = bookings.filter((b) => b.status === "ongoing").length;
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "pending",   label: `Pending${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
     { key: "confirmed", label: "Confirmed" },
+    { key: "ongoing",   label: `On Going${ongoingCount > 0 ? ` (${ongoingCount})` : ""}` },
+    { key: "completed", label: "Completed" },
     { key: "cancelled", label: "Cancelled" },
   ];
 
   return (
     <div className="min-h-screen bg-zinc-950 pb-24">
-      <AppHeader title="Bookings" notificationCount={pendingCount} />
+      <AppHeader title="Bookings" notificationCount={pendingCount + ongoingCount} />
 
       {/* Tabs */}
       <div className="bg-zinc-900 border-b border-zinc-800 sticky top-14 z-20">
@@ -60,6 +63,8 @@ function BookingsContent() {
               booking={booking}
               onConfirm={(id) => updateBookingStatus(id, "confirmed")}
               onCancel={(id) => updateBookingStatus(id, "cancelled")}
+              onStartTrip={(id, otp) => startTrip(id, otp)}
+              onEndTrip={(id, otp) => endTrip(id, otp)}
             />
           ))
         ) : (

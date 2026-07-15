@@ -10,8 +10,9 @@ import type { TourType } from "@/types/traveller";
 const STATUS_CONFIG: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   pending:   { bg: "bg-amber-50",   text: "text-amber-600",  dot: "bg-amber-400",  label: "Pending" },
   confirmed: { bg: "bg-green-50",   text: "text-green-600",  dot: "bg-green-500",  label: "Confirmed" },
-  cancelled: { bg: "bg-red-50",     text: "text-red-500",    dot: "bg-red-400",    label: "Cancelled" },
+  ongoing:   { bg: "bg-sky-50",     text: "text-sky-600",    dot: "bg-sky-500",    label: "On Going" },
   completed: { bg: "bg-slate-100",  text: "text-slate-500",  dot: "bg-slate-400",  label: "Completed" },
+  cancelled: { bg: "bg-red-50",     text: "text-red-500",    dot: "bg-red-400",    label: "Cancelled" },
 };
 
 const TOUR_TYPE_META: Record<TourType, { emoji: string; label: string }> = {
@@ -29,7 +30,7 @@ export default function TravellerBookingsPage() {
     try { await cancelBooking(id); } catch { /* ignore */ }
   }
 
-  const active   = bookings.filter((b) => b.status === "pending" || b.status === "confirmed");
+  const active   = bookings.filter((b) => b.status === "pending" || b.status === "confirmed" || b.status === "ongoing");
   const past     = bookings.filter((b) => b.status === "cancelled" || b.status === "completed");
 
   return (
@@ -200,33 +201,41 @@ function BookingCard({ booking: b, onCancel }: {
         )}
       </div>
 
-      {/* OTP section */}
-      <div className="mx-4 mb-3 grid grid-cols-2 gap-2">
-        {/* Start OTP */}
-        <div className="bg-indigo-50 rounded-2xl px-3 py-2.5 border border-indigo-100">
-          <div className="flex items-center gap-1 mb-1">
-            <KeyRound className="w-3 h-3 text-indigo-400" />
-            <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">Start OTP</p>
+      {/* OTP section — only show for active trips */}
+      {(b.status === "confirmed" || b.status === "ongoing") && (
+        <div className="mx-4 mb-3 grid grid-cols-2 gap-2">
+          {/* Start OTP — active when confirmed */}
+          <div className={`rounded-2xl px-3 py-2.5 border ${b.status === "confirmed" ? "bg-indigo-50 border-indigo-200" : "bg-slate-50 border-slate-100 opacity-50"}`}>
+            <div className="flex items-center gap-1 mb-1">
+              <KeyRound className={`w-3 h-3 ${b.status === "confirmed" ? "text-indigo-500" : "text-slate-400"}`} />
+              <p className={`text-[9px] font-bold uppercase tracking-wider ${b.status === "confirmed" ? "text-indigo-500" : "text-slate-400"}`}>Start OTP</p>
+            </div>
+            {b.startOtp ? (
+              <p className={`font-extrabold text-xl tracking-widest ${b.status === "confirmed" ? "text-indigo-700" : "text-slate-500"}`}>{b.startOtp}</p>
+            ) : (
+              <p className="text-indigo-300 text-xs font-medium">Awaiting confirmation</p>
+            )}
+            {b.status === "confirmed" && b.startOtp && (
+              <p className="text-indigo-400 text-[10px] mt-1">Share with driver to start trip</p>
+            )}
           </div>
-          {b.startOtp ? (
-            <p className="text-indigo-700 font-extrabold text-lg tracking-widest">{b.startOtp}</p>
-          ) : (
-            <p className="text-indigo-300 text-xs font-medium">Will be shared on confirmation</p>
-          )}
-        </div>
-        {/* End OTP */}
-        <div className="bg-slate-50 rounded-2xl px-3 py-2.5 border border-slate-100">
-          <div className="flex items-center gap-1 mb-1">
-            <KeyRound className="w-3 h-3 text-slate-400" />
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">End OTP</p>
+          {/* End OTP — active when ongoing */}
+          <div className={`rounded-2xl px-3 py-2.5 border ${b.status === "ongoing" ? "bg-green-50 border-green-200" : "bg-slate-50 border-slate-100 opacity-50"}`}>
+            <div className="flex items-center gap-1 mb-1">
+              <KeyRound className={`w-3 h-3 ${b.status === "ongoing" ? "text-green-600" : "text-slate-400"}`} />
+              <p className={`text-[9px] font-bold uppercase tracking-wider ${b.status === "ongoing" ? "text-green-600" : "text-slate-400"}`}>End OTP</p>
+            </div>
+            {b.endOtp ? (
+              <p className={`font-extrabold text-xl tracking-widest ${b.status === "ongoing" ? "text-green-700" : "text-slate-500"}`}>{b.endOtp}</p>
+            ) : (
+              <p className="text-slate-400 text-xs font-medium">Generated when trip starts</p>
+            )}
+            {b.status === "ongoing" && b.endOtp && (
+              <p className="text-green-500 text-[10px] mt-1">Share with driver to end trip</p>
+            )}
           </div>
-          {b.endOtp ? (
-            <p className="text-slate-700 font-extrabold text-lg tracking-widest">{b.endOtp}</p>
-          ) : (
-            <p className="text-slate-400 text-xs font-medium">Shared at tour start</p>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-3 border-t border-slate-50">

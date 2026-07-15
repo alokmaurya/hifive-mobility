@@ -12,7 +12,7 @@ export type TourCategory =
   | "coastal"
   | "city";
 
-export type BookingStatus = "pending" | "confirmed" | "cancelled";
+export type BookingStatus = "pending" | "confirmed" | "ongoing" | "completed" | "cancelled";
 
 export interface TourStop {
   id: string;
@@ -101,6 +101,9 @@ export interface Booking {
   tourCity?: string;
   tourCategory?: string;
   tourCode?: string;
+  // OTP fields (driver reads these to validate traveller-provided OTPs)
+  startOtp?: string;
+  endOtp?: string;
 }
 
 export interface TourEarning {
