@@ -36,8 +36,10 @@ export default function RootLayout({
             var p = params.get('p');
             if (p) {
               var q = params.get('q');
-              var url = window.location.pathname + p + (q ? '?' + q : '') + window.location.hash;
-              window.history.replaceState(null, '', url);
+              // Ensure trailing slash so GitHub Pages serves the correct index.html
+              var path = p.replace(/\\/?$/, '/');
+              var url = '/hifive-mobility' + path + (q ? '?' + q : '') + window.location.hash;
+              window.location.replace(url);
             }
           })();
         `}} />
