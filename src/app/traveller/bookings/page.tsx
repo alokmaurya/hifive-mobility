@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind } from "lucide-react";
+import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind, KeyRound } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
 import { useTravellerBookings } from "@/hooks/useTravellerBookings";
@@ -160,8 +160,8 @@ function BookingCard({ booking: b, onCancel }: {
         </div>
       )}
 
-      {/* Details */}
-      <div className="flex items-center gap-4 px-4 pb-3 border-b border-slate-50">
+      {/* Details row */}
+      <div className="flex items-center gap-4 px-4 pb-3 flex-wrap">
         {b.tourCity && (
           <div className="flex items-center gap-1">
             <MapPin className="w-3.5 h-3.5 text-indigo-400" />
@@ -183,10 +183,54 @@ function BookingCard({ booking: b, onCancel }: {
             <span className="text-slate-500 text-xs">{b.guestCount} guest{b.guestCount > 1 ? "s" : ""}</span>
           </div>
         )}
+        {/* Tour start/end time */}
+        {(b.tourStartTime || b.tourEndTime) && (
+          <div className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="text-slate-500 text-xs">
+              {b.tourStartTime ?? "—"} – {b.tourEndTime ?? "—"}
+            </span>
+          </div>
+        )}
+        {/* Vehicle plate */}
+        {b.vehiclePlate && (
+          <div className="flex items-center gap-1">
+            <Car className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="text-slate-500 text-xs font-mono font-semibold">{b.vehiclePlate}</span>
+          </div>
+        )}
+      </div>
+
+      {/* OTP section */}
+      <div className="mx-4 mb-3 grid grid-cols-2 gap-2">
+        {/* Start OTP */}
+        <div className="bg-indigo-50 rounded-2xl px-3 py-2.5 border border-indigo-100">
+          <div className="flex items-center gap-1 mb-1">
+            <KeyRound className="w-3 h-3 text-indigo-400" />
+            <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-wider">Start OTP</p>
+          </div>
+          {b.startOtp ? (
+            <p className="text-indigo-700 font-extrabold text-lg tracking-widest">{b.startOtp}</p>
+          ) : (
+            <p className="text-indigo-300 text-xs font-medium">Will be shared on confirmation</p>
+          )}
+        </div>
+        {/* End OTP */}
+        <div className="bg-slate-50 rounded-2xl px-3 py-2.5 border border-slate-100">
+          <div className="flex items-center gap-1 mb-1">
+            <KeyRound className="w-3 h-3 text-slate-400" />
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">End OTP</p>
+          </div>
+          {b.endOtp ? (
+            <p className="text-slate-700 font-extrabold text-lg tracking-widest">{b.endOtp}</p>
+          ) : (
+            <p className="text-slate-400 text-xs font-medium">Shared at tour start</p>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between px-4 py-3 border-t border-slate-50">
         <div>
           <p className="text-[10px] text-slate-400 uppercase tracking-wide">Total</p>
           <p className="text-indigo-600 font-extrabold text-lg leading-tight">{b.currency}{b.totalAmount.toLocaleString("en-IN")}</p>
