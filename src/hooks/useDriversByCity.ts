@@ -80,19 +80,24 @@ export function useDriversByCity(city: string, state: string) {
         (supabase as any).from("driver_cars").select("*").in("driver_id", driverIds).eq("is_active", true),
       ]);
 
-      // Map first active car per driver
-      const carByDriver: Record<string, DriverCar> = {};
+      // Map all active cars per driver
+      const carsByDriver: Record<string, DriverCar[]> = {};
       ((carRows ?? []) as Record<string, unknown>[]).forEach((row) => {
         const driverId = row.driver_id as string;
-        if (!carByDriver[driverId]) carByDriver[driverId] = mapCarRow(row);
+        if (!carsByDriver[driverId]) carsByDriver[driverId] = [];
+        carsByDriver[driverId].push(mapCarRow(row));
       });
 
       setDrivers(
-        ((driverRows ?? []) as Record<string, unknown>[]).map((row) => ({
-          ...mapDriverRow(row),
-          tourTypes: tourTypesMap[row.id as string] ?? [],
-          primaryCar: carByDriver[row.id as string],
-        }))
+        ((driverRows ?? []) as Record<string, unknown>[]).map((row) => {
+          const driverCars = carsByDriver[row.id as string] ?? [];
+          return {
+            ...mapDriverRow(row),
+            tourTypes: tourTypesMap[row.id as string] ?? [],
+            primaryCar: driverCars[0],
+            cars: driverCars,
+          };
+        })
       );
       setLoading(false);
     });
