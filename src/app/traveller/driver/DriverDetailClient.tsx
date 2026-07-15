@@ -94,7 +94,9 @@ export default function DriverDetailClient() {
       (supabase as any).from("driver_cars").select("*").eq("driver_id", driverId).eq("is_active", true).limit(1).single(),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from("bookings").select("traveller_rating").eq("driver_id", driverId).not("traveller_rating", "is", null),
-    ]).then(([driverRes, toursRes, carRes, ratingsRes]) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase as any).from("bookings").select("id").eq("driver_id", driverId).eq("status", "completed"),
+    ]).then(([driverRes, toursRes, carRes, ratingsRes, completedRes]) => {
       function mapCar(c: Record<string, unknown>): CarInfo {
         return { vehicleModel: (c.vehicle_model as string) ?? "", vehiclePlate: (c.vehicle_plate as string) ?? "", carBrand: (c.car_brand as string) ?? "", vehicleType: (c.vehicle_type as string) ?? "suv", vehicleCapacity: (c.vehicle_capacity as number) ?? 4, fuelType: (c.fuel_type as string) ?? "petrol", isAc: (c.is_ac as boolean) ?? true, luggageCapacityBags: (c.luggage_capacity_bags as number) ?? 2, isPetFriendly: (c.is_pet_friendly as boolean) ?? false, smokingAllowed: (c.smoking_allowed as boolean) ?? false, cabPhoto: (c.cab_photo as string) ?? "" };
       }
@@ -104,6 +106,9 @@ export default function DriverDetailClient() {
         if (rows.length > 0) {
           d.rating = Math.round((rows.reduce((s, r) => s + r.traveller_rating, 0) / rows.length) * 10) / 10;
         }
+        const trips = completedRes.data?.length ?? 0;
+        d.totalTrips = trips;
+        d.totalToursRun = trips;
         setDriver(d);
       }
       if (carRes.data) setCar(mapCar(carRes.data as Record<string, unknown>));
