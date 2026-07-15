@@ -107,7 +107,8 @@ export function useProfile() {
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
       const path = `${user.id}/profile.${ext}`;
-      const url = await uploadToStorage(user.id, path, file);
+      const baseUrl = await uploadToStorage(user.id, path, file);
+      const url = `${baseUrl}?t=${Date.now()}`;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from("drivers") as any).update({ photo_url: url }).eq("id", user.id);
       await fetchProfile();
