@@ -20,11 +20,36 @@ export function useTravellerBookings() {
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 
+    // Collect driver IDs where car data is missing from the tour join
+    const rows = (data ?? []) as Record<string, unknown>[];
+    const missingCarDriverIds = [...new Set(
+      rows
+        .filter((r) => {
+          const tourRow = r.tours as { driver_cars?: unknown } | null;
+          return !tourRow?.driver_cars;
+        })
+        .map((r) => r.driver_id as string)
+    )];
+
+    let fallbackCarsByDriver: Record<string, Record<string, unknown>> = {};
+    if (missingCarDriverIds.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: fallbackCars } = await (supabase as any)
+        .from("driver_cars")
+        .select("driver_id, car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo")
+        .in("driver_id", missingCarDriverIds)
+        .eq("is_active", true);
+      ((fallbackCars ?? []) as Record<string, unknown>[]).forEach((c) => {
+        const did = c.driver_id as string;
+        if (!fallbackCarsByDriver[did]) fallbackCarsByDriver[did] = c;
+      });
+    }
+
     setBookings(
-      (data ?? []).map((r: Record<string, unknown>) => {
+      rows.map((r: Record<string, unknown>) => {
         const driverRow = r.drivers as { name?: string; photo_url?: string } | null;
         const tourRow   = r.tours as { city?: string; start_time?: string; end_time?: string; driver_cars?: Record<string, unknown> | null } | null;
-        const carRow    = tourRow?.driver_cars ?? null;
+        const carRow    = tourRow?.driver_cars ?? fallbackCarsByDriver[r.driver_id as string] ?? null;
         return {
           id: r.id as string,
           tourId: r.tour_id as string | undefined,
