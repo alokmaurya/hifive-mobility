@@ -120,6 +120,8 @@ export function useTravellerBookings() {
     hourlyRate: number,
     tourDate: string,
     specialRequests?: string,
+    startTime?: string,
+    endTime?: string,
   ) {
     if (!user) throw new Error("Not authenticated");
     const totalAmount = hoursRequested * hourlyRate;
@@ -136,6 +138,8 @@ export function useTravellerBookings() {
       tour_type: "flexi",
       hours_requested: hoursRequested,
       hourly_rate: hourlyRate,
+      flexi_start_time: startTime || null,
+      flexi_end_time: endTime || null,
     });
     if (error) throw error;
     await fetchBookings();

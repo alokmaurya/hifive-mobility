@@ -173,7 +173,7 @@ export default function DriverDetailClient() {
     try {
       if (selectedOption === "flexi") {
         if (!flexiStartTime || !flexiEndTime || flexiHours <= 0) throw new Error("Please select valid start and end times");
-        await createFlexiBooking(driver.id, flexiHours, flexiRate, tourDate, specialRequests || undefined);
+        await createFlexiBooking(driver.id, flexiHours, flexiRate, tourDate, specialRequests || undefined, flexiStartTime, flexiEndTime);
       } else {
         const tour = getTourForType(selectedOption);
         if (!tour) throw new Error("No tour found for this type");

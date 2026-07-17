@@ -96,6 +96,8 @@ export interface Booking {
   bookedAt: string;
   tourType?: string;
   hoursRequested?: number;
+  flexiStartTime?: string;
+  flexiEndTime?: string;
   travellerEmail?: string;
   // Tour display info
   tourCity?: string;

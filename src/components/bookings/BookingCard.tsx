@@ -5,6 +5,13 @@ import { Calendar, Users, Phone, Check, X, ChevronDown, ChevronUp, MessageSquare
 import type { Booking } from "@/types/tour";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
+function fmt12h(time: string): string {
+  const [h, m] = time.split(":").map(Number);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12  = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
+}
+
 interface BookingCardProps {
   booking: Booking;
   onConfirm?: (id: string) => void;
@@ -82,7 +89,12 @@ export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip,
             <Calendar className="w-3 h-3" />
             {formatDate(booking.tourDate)}
           </span>
-          {isFlexi && booking.hoursRequested ? (
+          {isFlexi && (booking.flexiStartTime && booking.flexiEndTime) ? (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {fmt12h(booking.flexiStartTime)} – {fmt12h(booking.flexiEndTime)}
+            </span>
+          ) : isFlexi && booking.hoursRequested ? (
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {booking.hoursRequested} hrs
@@ -131,7 +143,12 @@ export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip,
               <Calendar className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
               <span>{formatDate(booking.tourDate)}</span>
             </div>
-            {isFlexi && booking.hoursRequested ? (
+            {isFlexi && booking.flexiStartTime && booking.flexiEndTime ? (
+              <div className="flex items-center gap-2 text-sm text-zinc-400">
+                <Clock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
+                <span>{fmt12h(booking.flexiStartTime)} – {fmt12h(booking.flexiEndTime)} ({booking.hoursRequested} hrs)</span>
+              </div>
+            ) : isFlexi && booking.hoursRequested ? (
               <div className="flex items-center gap-2 text-sm text-zinc-400">
                 <Clock className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
                 <span>{booking.hoursRequested} hours requested</span>
