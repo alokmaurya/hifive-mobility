@@ -70,7 +70,8 @@ export default function DriverDetailClient() {
 
   const [tourDate, setTourDate]               = useState("");
   const [guestCount, setGuestCount]           = useState(1);
-  const [hoursRequested, setHoursRequested]   = useState(4);
+  const [flexiStartTime, setFlexiStartTime]   = useState("");
+  const [flexiEndTime, setFlexiEndTime]       = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
   const [submitting, setSubmitting]           = useState(false);
   const [submitError, setSubmitError]         = useState<string | null>(null);
@@ -171,7 +172,8 @@ export default function DriverDetailClient() {
     setSubmitError(null);
     try {
       if (selectedOption === "flexi") {
-        await createFlexiBooking(driver.id, hoursRequested, driver.hourlyRate, tourDate, specialRequests || undefined);
+        if (!flexiStartTime || !flexiEndTime || flexiHours <= 0) throw new Error("Please select valid start and end times");
+        await createFlexiBooking(driver.id, flexiHours, flexiRate, tourDate, specialRequests || undefined);
       } else {
         const tour = getTourForType(selectedOption);
         if (!tour) throw new Error("No tour found for this type");
@@ -200,7 +202,18 @@ export default function DriverDetailClient() {
 
   const flexiTour = getTourForType("flexi");
   const flexiRate = flexiTour?.hourlyRate || driver.hourlyRate;
-  const flexiTotal = hoursRequested * flexiRate;
+
+  function calcFlexiHours(start: string, end: string): number {
+    if (!start || !end) return 0;
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    const mins = (eh * 60 + em) - (sh * 60 + sm);
+    if (mins <= 0) return 0;
+    return Math.round((mins / 60) * 10) / 10; // 1 decimal, e.g. 2.5
+  }
+
+  const flexiHours = calcFlexiHours(flexiStartTime, flexiEndTime);
+  const flexiTotal = flexiHours * flexiRate;
 
   // Car for the selected tour type; fall back to first active car
   const activeCar: CarInfo | null = carByTourType[selectedOption] ?? car;
@@ -462,21 +475,41 @@ export default function DriverDetailClient() {
                               )}
 
                               {opt.type === "flexi" && (
-                                <div>
-                                  <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
-                                    <Clock className="w-3 h-3" /> Hours Required
-                                  </label>
-                                  <div className="flex items-center gap-3">
-                                    <button type="button" onClick={() => setHoursRequested(Math.max(1, hoursRequested - 1))}
-                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">−</button>
-                                    <span className="text-slate-900 font-bold w-8 text-center">{hoursRequested}h</span>
-                                    <button type="button" onClick={() => setHoursRequested(Math.min(12, hoursRequested + 1))}
-                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">+</button>
+                                <div className="space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                      <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                        <Clock className="w-3 h-3" /> Start Time
+                                      </label>
+                                      <input
+                                        type="time"
+                                        value={flexiStartTime}
+                                        onChange={(e) => setFlexiStartTime(e.target.value)}
+                                        required={selectedOption === "flexi"}
+                                        className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                        <Clock className="w-3 h-3" /> End Time
+                                      </label>
+                                      <input
+                                        type="time"
+                                        value={flexiEndTime}
+                                        onChange={(e) => setFlexiEndTime(e.target.value)}
+                                        required={selectedOption === "flexi"}
+                                        className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="mt-2 bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
-                                    <span className="text-slate-500 text-xs">{hoursRequested} hrs × ₹{flexiRate}/hr</span>
-                                    <span className="text-indigo-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
-                                  </div>
+                                  {flexiHours > 0 ? (
+                                    <div className="bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
+                                      <span className="text-slate-500 text-xs">{flexiHours} hrs × ₹{flexiRate}/hr</span>
+                                      <span className="text-indigo-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
+                                    </div>
+                                  ) : flexiStartTime && flexiEndTime ? (
+                                    <p className="text-red-500 text-xs">End time must be after start time</p>
+                                  ) : null}
                                 </div>
                               )}
 
