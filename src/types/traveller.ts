@@ -14,6 +14,7 @@ export interface TravellerBooking {
   driverId: string;
   driverName: string;
   driverPhotoUrl?: string;
+  driverIsVerified?: boolean;
   tourCity: string;
   tourDate: string;
   tourType: TourType;

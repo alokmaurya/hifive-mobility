@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ChevronLeft, Star, Users, Briefcase, PawPrint, Cigarette, Car,
   CheckCircle, XCircle, MapPin, Clock, Calendar, MessageSquare,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, BadgeCheck,
 } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
@@ -237,6 +237,7 @@ export default function DriverDetailClient() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h1 className="text-slate-900 font-extrabold text-lg leading-tight">{driver.name}</h1>
+                      {driver.isVerified && <BadgeCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         driver.isAvailable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"
                       }`}>
@@ -264,11 +265,11 @@ export default function DriverDetailClient() {
                   <p className="text-slate-500 text-xs leading-relaxed mb-4 border-t border-slate-50 pt-3">{driver.bio}</p>
                 )}
 
-                {/* Verified badge */}
+                {/* Aadhar-verified badge */}
                 {driver.isVerified && (
                   <div className="flex items-center gap-1.5 mb-4">
-                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
-                    <span className="text-indigo-600 text-xs font-semibold">Verified Driver</span>
+                    <BadgeCheck className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="text-blue-600 text-xs font-semibold">Identity Verified</span>
                   </div>
                 )}
               </div>
