@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   MapPin, Star, Users, Briefcase, ChevronLeft, ChevronRight, PawPrint,
-  Cigarette, Car, CheckCircle, XCircle, Search, SlidersHorizontal, X,
+  Cigarette, Car, CheckCircle, XCircle, Search, SlidersHorizontal, X, BadgeCheck,
 } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
@@ -148,7 +148,10 @@ function DriverCard({ driver, city, state }: { driver: Driver; city: string; sta
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-slate-900 font-bold text-base truncate">{driver.name}</p>
+            <div className="flex items-center gap-1 min-w-0">
+              <p className="text-slate-900 font-bold text-base truncate">{driver.name}</p>
+              {driver.isVerified && <BadgeCheck className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+            </div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
               {driver.age && <span className="text-slate-400 text-xs">Age {driver.age}</span>}
               <div className="flex items-center gap-0.5">

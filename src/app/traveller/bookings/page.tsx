@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind, KeyRound, Star } from "lucide-react";
+import { CalendarDays, MapPin, Users, Clock, ArrowRight, Ticket, Car, Wind, KeyRound, Star, BadgeCheck } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
 import { useTravellerBookings } from "@/hooks/useTravellerBookings";
@@ -117,7 +117,10 @@ function BookingCard({ booking: b, onCancel, onRate }: {
             )}
           </div>
           <div>
-            <p className="text-slate-900 font-bold text-sm leading-tight">{b.driverName}</p>
+            <div className="flex items-center gap-1">
+              <p className="text-slate-900 font-bold text-sm leading-tight">{b.driverName}</p>
+              {b.driverIsVerified && <BadgeCheck className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />}
+            </div>
             <p className="text-slate-400 text-xs">{meta.label}</p>
           </div>
         </div>

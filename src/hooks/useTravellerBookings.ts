@@ -16,7 +16,7 @@ export function useTravellerBookings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
       .from("bookings")
-      .select("*, drivers(name, photo_url), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
+      .select("*, drivers(name, photo_url, is_verified), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -47,7 +47,7 @@ export function useTravellerBookings() {
 
     setBookings(
       rows.map((r: Record<string, unknown>) => {
-        const driverRow = r.drivers as { name?: string; photo_url?: string } | null;
+        const driverRow = r.drivers as { name?: string; photo_url?: string; is_verified?: boolean } | null;
         const tourRow   = r.tours as { city?: string; start_time?: string; end_time?: string; driver_cars?: Record<string, unknown> | null } | null;
         const carRow    = tourRow?.driver_cars ?? fallbackCarsByDriver[r.driver_id as string] ?? null;
         return {
@@ -56,6 +56,7 @@ export function useTravellerBookings() {
           driverId: r.driver_id as string,
           driverName: driverRow?.name ?? "",
           driverPhotoUrl: driverRow?.photo_url || undefined,
+          driverIsVerified: driverRow?.is_verified ?? false,
           tourCity: tourRow?.city ?? (r.city as string) ?? "",
           tourDate: r.tour_date as string,
           tourType: (r.tour_type as TourType) ?? "city_sightseeing",
