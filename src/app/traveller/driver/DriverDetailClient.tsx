@@ -209,7 +209,7 @@ export default function DriverDetailClient() {
     const [eh, em] = end.split(":").map(Number);
     const mins = (eh * 60 + em) - (sh * 60 + sm);
     if (mins <= 0) return 0;
-    return Math.round((mins / 60) * 10) / 10; // 1 decimal, e.g. 2.5
+    return Math.ceil(mins / 60); // round up to next whole hour
   }
 
   const flexiHours = calcFlexiHours(flexiStartTime, flexiEndTime);
