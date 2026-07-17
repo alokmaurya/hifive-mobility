@@ -31,6 +31,8 @@ function mapBooking(row: Record<string, unknown>, tourName?: string, tourCity?: 
     bookedAt: row.created_at as string,
     tourType: row.tour_type as string | undefined,
     hoursRequested: row.hours_requested as number | undefined,
+    flexiStartTime: (row.flexi_start_time as string) || undefined,
+    flexiEndTime: (row.flexi_end_time as string) || undefined,
     travellerEmail: traveller?.email,
     tourCity: tourCity ?? "",
     tourCategory: tourCategory ?? "",
