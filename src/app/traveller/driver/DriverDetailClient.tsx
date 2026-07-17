@@ -231,8 +231,15 @@ export default function DriverDetailClient() {
               <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
                 {/* Avatar + name/age/status */}
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-sky-100 rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-100">
-                    <span className="text-2xl font-extrabold text-indigo-600">{driver.name.charAt(0).toUpperCase()}</span>
+                  <div className="w-16 h-16 rounded-2xl flex-shrink-0 overflow-hidden border border-indigo-100">
+                    {driver.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={driver.photoUrl} alt={driver.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-sky-100 flex items-center justify-center">
+                        <span className="text-2xl font-extrabold text-indigo-600">{driver.name.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
