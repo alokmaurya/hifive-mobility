@@ -131,8 +131,6 @@ export function useTravellerBookings() {
     pickupAddress?: string,
     pickupLat?: number,
     pickupLng?: number,
-    startTime?: string,
-    endTime?: string,
   ) {
     if (!user) throw new Error("Not authenticated");
     const totalAmount = hoursRequested * hourlyRate;
@@ -154,8 +152,6 @@ export function useTravellerBookings() {
       pickup_address: pickupAddress ?? null,
       pickup_lat: pickupLat ?? null,
       pickup_lng: pickupLng ?? null,
-      flexi_start_time: startTime || null,
-      flexi_end_time: endTime || null,
     });
     if (error) throw error;
     await fetchBookings();
