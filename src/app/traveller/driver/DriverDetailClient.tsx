@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
@@ -14,7 +15,10 @@ import { useTravellerBookings } from "@/hooks/useTravellerBookings";
 import type { Driver } from "@/types/driver";
 import type { Tour } from "@/types/tour";
 import type { TourType } from "@/types/traveller";
+import type { PickupLocation } from "@/components/traveller/PickupLocationMap";
 import { formatTime } from "@/lib/utils";
+
+const PickupLocationMap = dynamic(() => import("@/components/traveller/PickupLocationMap"), { ssr: false });
 
 const FUEL_LABEL: Record<string, string> = { petrol: "Petrol", diesel: "Diesel", cng: "CNG" };
 
@@ -64,6 +68,7 @@ export default function DriverDetailClient() {
   const [carByTourType, setCarByTourType] = useState<Record<string, CarInfo>>({});
   const [tours, setTours]     = useState<Tour[]>([]);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [cityCenter, setCityCenter] = useState<{ lat: number; lng: number } | undefined>();
 
   const [selectedOption, setSelectedOption] = useState<TourType>("city_sightseeing");
   const [expanded, setExpanded]             = useState<TourType | null>(null);
@@ -73,6 +78,7 @@ export default function DriverDetailClient() {
   const [flexiStartTime, setFlexiStartTime]   = useState("");
   const [flexiEndTime, setFlexiEndTime]       = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
+  const [pickupLocation, setPickupLocation]   = useState<PickupLocation | null>(null);
   const [submitting, setSubmitting]           = useState(false);
   const [submitError, setSubmitError]         = useState<string | null>(null);
   const [submitted, setSubmitted]             = useState(false);
@@ -159,7 +165,17 @@ export default function DriverDetailClient() {
       );
       setLoadingPage(false);
     });
-  }, [driverId, city]);
+
+    // Geocode city name to set initial map center
+    if (city) {
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(`${city}${state ? `, ${state}` : ""},India`)}&format=json&limit=1`, { headers: { "Accept-Language": "en" } })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.[0]) setCityCenter({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+        })
+        .catch(() => {});
+    }
+  }, [driverId, city, state]);
 
   function getTourForType(type: TourType): Tour | undefined {
     return tours.find((t) => t.tourType === type || t.category === type);
@@ -173,12 +189,21 @@ export default function DriverDetailClient() {
     try {
       if (selectedOption === "flexi") {
         if (!flexiStartTime || !flexiEndTime || flexiHours <= 0) throw new Error("Please select valid start and end times");
-        await createFlexiBooking(driver.id, flexiHours, flexiRate, tourDate, specialRequests || undefined);
+        await createFlexiBooking(
+          driver.id, flexiHours, flexiRate, tourDate,
+          specialRequests || undefined,
+          flexiStartTime, flexiEndTime,
+          pickupLocation?.address, pickupLocation?.lat, pickupLocation?.lng,
+        );
       } else {
         const tour = getTourForType(selectedOption);
         if (!tour) throw new Error("No tour found for this type");
         const total = tour.pricePerPerson; // full cab price — not multiplied by guest count
-        await createTourBooking(tour.id, driver.id, selectedOption, guestCount, tourDate, total, specialRequests || undefined);
+        await createTourBooking(
+          tour.id, driver.id, selectedOption, guestCount, tourDate, total,
+          specialRequests || undefined,
+          pickupLocation?.address, pickupLocation?.lat, pickupLocation?.lng,
+        );
       }
       setSubmitted(true);
     } catch (err: unknown) {
@@ -374,10 +399,24 @@ export default function DriverDetailClient() {
               </div>
             </div>
 
-            {/* ── RIGHT: Choose Tour Type ── */}
+            {/* ── RIGHT: Pickup Location + Choose Tour Type ── */}
             <div className="w-full lg:flex-1">
               {!submitted ? (
                 <div className="space-y-3">
+
+                  {/* Pickup Location */}
+                  <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                    <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-3">
+                      <MapPin className="w-3 h-3" /> Pickup Location
+                    </p>
+                    <PickupLocationMap
+                      value={pickupLocation}
+                      onChange={setPickupLocation}
+                      cityCenter={cityCenter}
+                      cityName={city || undefined}
+                    />
+                  </div>
+
                   <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Choose Tour Type</p>
                   {TOUR_OPTIONS.map((opt) => {
                     const tour = getTourForType(opt.type);

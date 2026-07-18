@@ -95,6 +95,9 @@ export function useTravellerBookings() {
     tourDate: string,
     totalAmount: number,
     specialRequests?: string,
+    pickupAddress?: string,
+    pickupLat?: number,
+    pickupLng?: number,
   ) {
     if (!user) throw new Error("Not authenticated");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,6 +112,9 @@ export function useTravellerBookings() {
       special_requests: specialRequests || null,
       status: "pending",
       tour_type: tourType,
+      pickup_address: pickupAddress ?? null,
+      pickup_lat: pickupLat ?? null,
+      pickup_lng: pickupLng ?? null,
     });
     if (error) throw error;
     await fetchBookings();
@@ -120,6 +126,11 @@ export function useTravellerBookings() {
     hourlyRate: number,
     tourDate: string,
     specialRequests?: string,
+    flexiStartTime?: string,
+    flexiEndTime?: string,
+    pickupAddress?: string,
+    pickupLat?: number,
+    pickupLng?: number,
   ) {
     if (!user) throw new Error("Not authenticated");
     const totalAmount = hoursRequested * hourlyRate;
@@ -136,6 +147,11 @@ export function useTravellerBookings() {
       tour_type: "flexi",
       hours_requested: hoursRequested,
       hourly_rate: hourlyRate,
+      flexi_start_time: flexiStartTime ?? null,
+      flexi_end_time: flexiEndTime ?? null,
+      pickup_address: pickupAddress ?? null,
+      pickup_lat: pickupLat ?? null,
+      pickup_lng: pickupLng ?? null,
     });
     if (error) throw error;
     await fetchBookings();
