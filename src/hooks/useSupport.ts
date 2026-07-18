@@ -49,16 +49,27 @@ export function useSupport(role: UserRole) {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tableReady, setTableReady] = useState(true);
 
   const fetchTickets = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from("support_tickets")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
+
+    if (error) {
+      // Table may not exist yet — migration pending
+      if (error.message?.includes("support_tickets") || error.code === "42P01") {
+        setTableReady(false);
+      }
+      setLoading(false);
+      return;
+    }
+    setTableReady(true);
     setTickets(((data ?? []) as Record<string, unknown>[]).map(mapTicket));
     setLoading(false);
   }, [user]);
@@ -67,6 +78,7 @@ export function useSupport(role: UserRole) {
 
   async function createTicket(category: TicketCategory, subject: string, description: string) {
     if (!user) throw new Error("Not authenticated");
+    if (!tableReady) throw new Error("Support system is being set up. Please try again in a few minutes.");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any).from("support_tickets").insert({
       user_id: user.id,
@@ -76,9 +88,15 @@ export function useSupport(role: UserRole) {
       description,
       status: "open",
     });
-    if (error) throw error;
+    if (error) {
+      if (error.message?.includes("support_tickets") || error.code === "42P01") {
+        setTableReady(false);
+        throw new Error("Support system is being set up. Please try again shortly.");
+      }
+      throw new Error(error.message ?? "Failed to submit ticket");
+    }
     await fetchTickets();
   }
 
-  return { tickets, loading, createTicket, refresh: fetchTickets };
+  return { tickets, loading, tableReady, createTicket, refresh: fetchTickets };
 }

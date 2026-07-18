@@ -156,7 +156,7 @@ function NewTicketForm({ onCreate, onCancel }: { onCreate: (cat: TicketCategory,
 
 function SupportContent() {
   const router = useRouter();
-  const { tickets, loading, createTicket } = useSupport("driver");
+  const { tickets, loading, tableReady, createTicket } = useSupport("driver");
   const [showForm, setShowForm] = useState(false);
 
   return (
@@ -171,7 +171,7 @@ function SupportContent() {
             <LifeBuoy className="w-5 h-5 text-yellow-400" />
             <h1 className="text-white font-bold text-lg">Help & Support</h1>
           </div>
-          {!showForm && (
+          {!showForm && tableReady && (
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-400 text-black text-sm font-bold hover:bg-yellow-300 transition-colors"
@@ -183,6 +183,13 @@ function SupportContent() {
       </div>
 
       <div className="max-w-md mx-auto px-4 pt-4 space-y-4">
+        {!tableReady && (
+          <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-2xl p-4 text-center">
+            <p className="text-yellow-300 text-sm font-semibold">Support system is being set up</p>
+            <p className="text-yellow-400/70 text-xs mt-1">Please apply migration 027 in Supabase and try again.</p>
+          </div>
+        )}
+
         {showForm && (
           <NewTicketForm onCreate={createTicket} onCancel={() => setShowForm(false)} />
         )}
@@ -200,12 +207,14 @@ function SupportContent() {
               <p className="text-zinc-300 font-semibold">No support tickets yet</p>
               <p className="text-zinc-500 text-sm mt-1">Facing an issue? Raise a request and we'll help you out.</p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-yellow-400 text-black font-bold text-sm hover:bg-yellow-300 transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Raise a Request
-            </button>
+            {tableReady && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-yellow-400 text-black font-bold text-sm hover:bg-yellow-300 transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Raise a Request
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-3">

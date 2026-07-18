@@ -83,8 +83,8 @@ export default function TravellerProfilePage() {
               <p className="text-slate-400 text-sm">{traveller?.email}</p>
             </div>
 
-            {/* Quick links */}
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            {/* Help & Support quick link */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-4">
               <button
                 onClick={() => router.push("/traveller/support")}
                 className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"

@@ -156,7 +156,7 @@ function NewTicketForm({ onCreate, onCancel }: { onCreate: (cat: TicketCategory,
 
 export default function TravellerSupportPage() {
   const router = useRouter();
-  const { tickets, loading, createTicket } = useSupport("traveller");
+  const { tickets, loading, tableReady, createTicket } = useSupport("traveller");
   const [showForm, setShowForm] = useState(false);
 
   return (
@@ -172,7 +172,7 @@ export default function TravellerSupportPage() {
               <LifeBuoy className="w-5 h-5 text-indigo-300" />
               <h1 className="text-white font-bold text-lg">Help & Support</h1>
             </div>
-            {!showForm && (
+            {!showForm && tableReady && (
               <button
                 onClick={() => setShowForm(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-white text-sm font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm"
@@ -184,6 +184,13 @@ export default function TravellerSupportPage() {
         </div>
 
         <div className="max-w-md mx-auto px-4 pt-4 space-y-4">
+          {!tableReady && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+              <p className="text-amber-700 text-sm font-semibold">Support system is being set up</p>
+              <p className="text-amber-600/70 text-xs mt-1">Please try again in a few minutes.</p>
+            </div>
+          )}
+
           {showForm && (
             <NewTicketForm onCreate={createTicket} onCancel={() => setShowForm(false)} />
           )}
@@ -201,12 +208,14 @@ export default function TravellerSupportPage() {
                 <p className="text-slate-700 font-semibold">No support tickets yet</p>
                 <p className="text-slate-400 text-sm mt-1">Facing an issue? Raise a request and we'll help you out.</p>
               </div>
-              <button
-                onClick={() => setShowForm(true)}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-md shadow-indigo-100"
-              >
-                <Plus className="w-4 h-4" /> Raise a Request
-              </button>
+              {tableReady && (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-md shadow-indigo-100"
+                >
+                  <Plus className="w-4 h-4" /> Raise a Request
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
