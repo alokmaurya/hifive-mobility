@@ -37,6 +37,6 @@ jobs:
           # Remove old docs/ and replace with fresh build output
           git rm -rf docs/ --ignore-unmatch
           cp -r out docs
-          git add docs/
+          git add -f docs/
           git diff --cached --quiet || git commit -m "deploy: update docs/ from ${{ github.sha }}"
           git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
