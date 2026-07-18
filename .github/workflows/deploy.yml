@@ -26,15 +26,12 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          # Secrets override the placeholders at runtime; placeholders prevent
-          # build failure when secrets are not configured in the repository.
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
 
       - name: Deploy to gh-pages branch
         run: |
           cd out
-          # Prevent Jekyll from processing the static export
           touch .nojekyll
           git init
           git config user.email "github-actions[bot]@users.noreply.github.com"
