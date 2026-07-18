@@ -167,6 +167,28 @@ export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip,
             )}
           </div>
 
+          {/* Pickup location — shown when traveller set one */}
+          {booking.pickupAddress && (
+            <div className="bg-sky-950/40 border border-sky-800/40 rounded-xl p-3 space-y-1.5">
+              <p className="text-[10px] font-bold text-sky-400 uppercase tracking-widest">Pickup Location</p>
+              <div className="flex items-start gap-2">
+                <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
+                <p className="text-zinc-300 text-xs leading-relaxed">{booking.pickupAddress}</p>
+              </div>
+              {booking.pickupLat && booking.pickupLng && (
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${booking.pickupLat},${booking.pickupLng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sky-400 text-xs font-semibold hover:text-sky-300 mt-1"
+                >
+                  <MapPin className="w-3 h-3" />
+                  Open in Google Maps →
+                </a>
+              )}
+            </div>
+          )}
+
           {booking.guest.specialRequests && (
             <div className="flex items-start gap-2 bg-yellow-400/5 border border-yellow-400/20 rounded-xl px-3 py-2.5">
               <MessageSquare className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />

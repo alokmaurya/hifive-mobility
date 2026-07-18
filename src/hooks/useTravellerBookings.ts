@@ -100,8 +100,7 @@ export function useTravellerBookings() {
     pickupLng?: number,
   ) {
     if (!user) throw new Error("Not authenticated");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from("bookings").insert({
+    const basePayload = {
       tour_id: tourId,
       driver_id: driverId,
       traveller_id: user.id,
@@ -112,10 +111,19 @@ export function useTravellerBookings() {
       special_requests: specialRequests || null,
       status: "pending",
       tour_type: tourType,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let { error } = await (supabase as any).from("bookings").insert({
+      ...basePayload,
       pickup_address: pickupAddress ?? null,
       pickup_lat: pickupLat ?? null,
       pickup_lng: pickupLng ?? null,
     });
+    // If pickup columns don't exist yet (migration not applied), retry without them
+    if (error?.message?.includes("pickup_")) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ error } = await (supabase as any).from("bookings").insert(basePayload));
+    }
     if (error) throw error;
     await fetchBookings();
   }
