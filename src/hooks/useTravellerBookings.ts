@@ -164,7 +164,6 @@ export function useTravellerBookings() {
       pickup_lat: pickupLat ?? null,
       pickup_lng: pickupLng ?? null,
     });
-    // If pickup columns don't exist yet (migration not applied), retry without them
     if (error?.message?.includes("pickup_")) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ({ error } = await (supabase as any).from("bookings").insert(basePayload));

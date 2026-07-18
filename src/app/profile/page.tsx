@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Star, Shield, Globe, Car, Map, Users, Clock, Pencil, ChevronRight, LogOut, X, Check, Camera, Loader2, Plus, Trash2, CreditCard, BadgeCheck } from "lucide-react";
 import AppHeader from "@/components/ui/AppHeader";
 import BottomNav from "@/components/ui/BottomNav";
@@ -203,6 +204,7 @@ function CarForm({ initial, onSave, onCancel, saving, carId, uploadingCarId, onP
 }
 
 function ProfileContent() {
+  const router = useRouter();
   const { profile, loading, uploading, updateProfile, uploadDriverPhoto, uploadAadharPhoto } = useProfile();
   const { cars, loading: carsLoading, uploadingCarId, addCar, updateCar, deleteCar, uploadCarPhoto } = useCars();
   const { signOut } = useAuth();
@@ -674,12 +676,12 @@ function ProfileContent() {
         {/* ── Settings ───────────────────────────────────────────────── */}
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
           {[
-            { label: "Bank & Payouts",      icon: "💳" },
-            { label: "Notifications",       icon: "🔔" },
-            { label: "Documents & License", icon: "📄" },
-            { label: "Help & Support",      icon: "💬" },
-          ].map(({ label, icon }) => (
-            <button key={label} className="w-full flex items-center justify-between px-4 py-3.5 border-b border-zinc-800 last:border-none hover:bg-zinc-800 transition-colors">
+            { label: "Bank & Payouts",      icon: "💳", href: null },
+            { label: "Notifications",       icon: "🔔", href: null },
+            { label: "Documents & License", icon: "📄", href: null },
+            { label: "Help & Support",      icon: "💬", href: "/support" },
+          ].map(({ label, icon, href }) => (
+            <button key={label} onClick={() => href && router.push(href)} className="w-full flex items-center justify-between px-4 py-3.5 border-b border-zinc-800 last:border-none hover:bg-zinc-800 transition-colors">
               <div className="flex items-center gap-3">
                 <span className="text-lg">{icon}</span>
                 <span className="text-sm font-medium text-zinc-300">{label}</span>
