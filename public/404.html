@@ -4,21 +4,33 @@
   <meta charset="utf-8">
   <title>HiFive Mobility</title>
   <script>
-    // GitHub Pages SPA redirect — keeps path under the repo basePath (/hifive-mobility/)
-    var l = window.location;
-    var base = l.pathname.split('/').slice(0, 2).join('/'); // /hifive-mobility
-    var rest = '/' + l.pathname.split('/').slice(2).join('/');
-    l.replace(
-      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      base + '/?p=' + encodeURIComponent(rest) +
-      (l.search ? '&q=' + encodeURIComponent(l.search.slice(1)) : '') +
-      l.hash
-    );
+    // GitHub Pages SPA redirect — restores client-side navigation after a hard 404.
+    // Encodes the full path + search + hash into ?p=&q=&h= and sends the user to
+    // the correct portal root (traveller or driver) so the SPA can re-navigate.
+    (function () {
+      var l = window.location;
+      var seg = l.pathname.split('/');
+      // seg[0]="" seg[1]="hifive-mobility" seg[2]="traveller"|"dashboard"|...
+      var base = '/' + seg.slice(1, 2).join('/'); // /hifive-mobility
+      var rest = '/' + seg.slice(2).join('/');     // /traveller/bookings/ etc.
+
+      // Pick the right portal root so RequireAuth / RequireTravellerAuth load correctly
+      var portalRoot = (seg[2] === 'traveller') ? (base + '/traveller/') : (base + '/');
+
+      var query = '?p=' + encodeURIComponent(rest)
+        + (l.search ? '&q=' + encodeURIComponent(l.search.slice(1)) : '')
+        + (l.hash   ? '&h=' + encodeURIComponent(l.hash.slice(1))   : '');
+
+      l.replace(l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') + portalRoot + query);
+    })();
   </script>
 </head>
 <body>
   <noscript>
-    <p>Redirecting&hellip; <a href="/hifive-mobility/">Go to home</a></p>
+    <p>Redirecting&hellip;
+      <a href="/hifive-mobility/">Driver portal</a> |
+      <a href="/hifive-mobility/traveller/">Traveller portal</a>
+    </p>
   </noscript>
 </body>
 </html>
