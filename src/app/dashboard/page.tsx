@@ -22,8 +22,8 @@ function DashboardContent() {
 
   const totalNet = Math.round(
     bookings
-      .filter((b) => b.status === "confirmed")
-      .reduce((s, b) => s + b.totalAmount * 0.9, 0)
+      .filter((b) => b.status === "confirmed" || b.status === "completed" || b.status === "ongoing")
+      .reduce((s, b) => s + b.totalAmount, 0)
   );
 
   const hour = new Date().getHours();
