@@ -162,23 +162,8 @@ export function useTravellerBookings() {
       .update({ traveller_rating: rating, rating_comment: comment ?? null })
       .eq("id", bookingId);
     if (error) throw error;
-
-    // Recompute driver's average rating from all rated bookings and update drivers table
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: ratedRows } = await (supabase as any)
-      .from("bookings")
-      .select("traveller_rating")
-      .eq("driver_id", driverId)
-      .not("traveller_rating", "is", null);
-    if (ratedRows && ratedRows.length > 0) {
-      const avg = ratedRows.reduce((sum: number, r: { traveller_rating: number }) => sum + r.traveller_rating, 0) / ratedRows.length;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
-        .from("drivers")
-        .update({ rating: Math.round(avg * 10) / 10 })
-        .eq("id", driverId);
-    }
-
+    // drivers.rating is updated automatically by DB trigger (024_driver_stats_trigger)
+    // using SECURITY DEFINER so it aggregates ALL ratings, not just this traveller's.
     await fetchBookings();
   }
 
