@@ -131,13 +131,10 @@ export function useTravellerBookings() {
     pickupAddress?: string,
     pickupLat?: number,
     pickupLng?: number,
-    startTime?: string,
-    endTime?: string,
   ) {
     if (!user) throw new Error("Not authenticated");
     const totalAmount = hoursRequested * hourlyRate;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from("bookings").insert({
+    const basePayload = {
       driver_id: driverId,
       traveller_id: user.id,
       guest_name: "",
@@ -151,12 +148,18 @@ export function useTravellerBookings() {
       hourly_rate: hourlyRate,
       flexi_start_time: flexiStartTime ?? null,
       flexi_end_time: flexiEndTime ?? null,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let { error } = await (supabase as any).from("bookings").insert({
+      ...basePayload,
       pickup_address: pickupAddress ?? null,
       pickup_lat: pickupLat ?? null,
       pickup_lng: pickupLng ?? null,
-      flexi_start_time: startTime || null,
-      flexi_end_time: endTime || null,
     });
+    if (error?.message?.includes("pickup_")) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ error } = await (supabase as any).from("bookings").insert(basePayload));
+    }
     if (error) throw error;
     await fetchBookings();
   }

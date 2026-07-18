@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Save, User, Phone, Mail } from "lucide-react";
+import { LogOut, Save, User, Phone, Mail, LifeBuoy, ChevronRight } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
 import { useTraveller } from "@/hooks/useTraveller";
@@ -81,6 +81,22 @@ export default function TravellerProfilePage() {
               </div>
               <p className="text-slate-900 font-bold text-lg mt-3">{traveller?.name || "Traveller"}</p>
               <p className="text-slate-400 text-sm">{traveller?.email}</p>
+            </div>
+
+            {/* Quick links */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+              <button
+                onClick={() => router.push("/traveller/support")}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <LifeBuoy className="w-4 h-4 text-indigo-500" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-700">Help &amp; Support</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
+              </button>
             </div>
 
             {/* Edit form */}
