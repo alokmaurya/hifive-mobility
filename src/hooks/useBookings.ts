@@ -41,6 +41,9 @@ function mapBooking(row: Record<string, unknown>, tourName?: string, tourCity?: 
     endOtp: (row.end_otp as string) || undefined,
     travellerRating: (row.traveller_rating as number) ?? undefined,
     ratingComment: (row.rating_comment as string) || undefined,
+    pickupAddress: (row.pickup_address as string) || undefined,
+    pickupLat: (row.pickup_lat as number) || undefined,
+    pickupLng: (row.pickup_lng as number) || undefined,
   };
 }
 
@@ -53,17 +56,28 @@ export function useBookings() {
   const fetchBookings = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const { data, error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let { data, error } = await (supabase as any)
       .from("bookings")
-      .select("*, tours(name, city, category, tour_code), travellers(name, phone, email), start_otp, end_otp, traveller_rating, rating_comment")
+      .select("*, tours(name, city, category, tour_code), travellers(name, phone, email), start_otp, end_otp, traveller_rating, rating_comment, pickup_address, pickup_lat, pickup_lng")
       .eq("driver_id", user.id)
       .order("created_at", { ascending: false });
+
+    // If pickup columns don't exist yet (migration not applied), retry without them
+    if (error?.message?.includes("pickup_")) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ data, error } = await (supabase as any)
+        .from("bookings")
+        .select("*, tours(name, city, category, tour_code), travellers(name, phone, email), start_otp, end_otp, traveller_rating, rating_comment")
+        .eq("driver_id", user.id)
+        .order("created_at", { ascending: false }));
+    }
 
     if (error) {
       setError(error.message);
     } else {
       setBookings(
-        (data ?? []).map((r) => {
+        ((data ?? []) as Record<string, unknown>[]).map((r) => {
           const row = r as Record<string, unknown>;
           const tourRow = row.tours as { name?: string; city?: string; category?: string; tour_code?: string } | null;
           return mapBooking(row, tourRow?.name, tourRow?.city, tourRow?.category, tourRow?.tour_code);
