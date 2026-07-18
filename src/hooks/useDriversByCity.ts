@@ -72,31 +72,15 @@ export function useDriversByCity(city: string, state: string) {
         }
       });
 
-      // Fetch drivers, their primary cars, live ratings, and completed trip counts in parallel
-      const [{ data: driverRows }, { data: carRows }, { data: ratingRows }, { data: completedRows }] = await Promise.all([
+      // Fetch drivers and their primary cars.
+      // rating and total_tours_run are kept in sync by a DB trigger (024_driver_stats_trigger),
+      // so we read them directly from the drivers table — consistent for all travellers.
+      const [{ data: driverRows }, { data: carRows }] = await Promise.all([
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("drivers").select("*").in("id", driverIds),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase as any).from("driver_cars").select("*").in("driver_id", driverIds).eq("is_active", true),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from("bookings").select("driver_id, traveller_rating").in("driver_id", driverIds).not("traveller_rating", "is", null),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from("bookings").select("driver_id").in("driver_id", driverIds).eq("status", "completed"),
       ]);
-
-      // Compute average rating per driver from actual booking ratings
-      const ratingSum: Record<string, number> = {};
-      const ratingCount: Record<string, number> = {};
-      ((ratingRows ?? []) as { driver_id: string; traveller_rating: number }[]).forEach((r) => {
-        ratingSum[r.driver_id] = (ratingSum[r.driver_id] ?? 0) + r.traveller_rating;
-        ratingCount[r.driver_id] = (ratingCount[r.driver_id] ?? 0) + 1;
-      });
-
-      // Count completed trips per driver
-      const tripsCount: Record<string, number> = {};
-      ((completedRows ?? []) as { driver_id: string }[]).forEach((r) => {
-        tripsCount[r.driver_id] = (tripsCount[r.driver_id] ?? 0) + 1;
-      });
 
       // Map all active cars per driver
       const carsByDriver: Record<string, DriverCar[]> = {};
@@ -111,13 +95,6 @@ export function useDriversByCity(city: string, state: string) {
           const driverCars = carsByDriver[row.id as string] ?? [];
           const mapped = mapDriverRow(row);
           const id = row.id as string;
-          if (ratingCount[id]) {
-            mapped.rating = Math.round((ratingSum[id] / ratingCount[id]) * 10) / 10;
-          }
-          if (tripsCount[id]) {
-            mapped.totalTrips = tripsCount[id];
-            mapped.totalToursRun = tripsCount[id];
-          }
           return {
             ...mapped,
             tourTypes: tourTypesMap[id] ?? [],
