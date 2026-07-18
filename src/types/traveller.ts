@@ -37,4 +37,7 @@ export interface TravellerBooking {
   endOtp?: string;
   travellerRating?: number;
   ratingComment?: string;
+  pickupAddress?: string;
+  pickupLat?: number;
+  pickupLng?: number;
 }
