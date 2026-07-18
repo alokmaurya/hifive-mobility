@@ -50,24 +50,9 @@ export function useProfile() {
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
-    const [{ data }, { data: ratingRows }, { data: completedRows }] = await Promise.all([
-      supabase.from("drivers").select("*").eq("id", user.id).single(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("bookings").select("traveller_rating").eq("driver_id", user.id).not("traveller_rating", "is", null),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("bookings").select("id").eq("driver_id", user.id).eq("status", "completed"),
-    ]);
-    if (data) {
-      const driver = mapDriver(data as Record<string, unknown>);
-      if (ratingRows && ratingRows.length > 0) {
-        const avg = ratingRows.reduce((sum: number, r: { traveller_rating: number }) => sum + r.traveller_rating, 0) / ratingRows.length;
-        driver.rating = Math.round(avg * 10) / 10;
-      }
-      const trips = completedRows?.length ?? 0;
-      driver.totalTrips = trips;
-      driver.totalToursRun = trips;
-      setProfile(driver);
-    }
+    const { data } = await supabase.from("drivers").select("*").eq("id", user.id).single();
+    // rating and total_tours_run are kept in sync by DB trigger (024_driver_stats_trigger)
+    if (data) setProfile(mapDriver(data as Record<string, unknown>));
     setLoading(false);
   }, [user]);
 
