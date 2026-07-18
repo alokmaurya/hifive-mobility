@@ -22,6 +22,21 @@ const PickupLocationMap = dynamic(() => import("@/components/traveller/PickupLoc
 
 const FUEL_LABEL: Record<string, string> = { petrol: "Petrol", diesel: "Diesel", cng: "CNG" };
 
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_NAMES_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function formatAllowedDays(daysOfWeek: number[]): string {
+  if (!daysOfWeek || daysOfWeek.length === 0) return "";
+  if (daysOfWeek.length === 7) return "Every day";
+  return daysOfWeek.slice().sort((a, b) => a - b).map((d) => DAY_NAMES[d]).join(", ");
+}
+
+function isDateAllowed(dateStr: string, daysOfWeek: number[]): boolean {
+  if (!dateStr || !daysOfWeek || daysOfWeek.length === 0) return true;
+  const day = new Date(dateStr + "T12:00:00").getDay(); // noon to avoid TZ edge cases
+  return daysOfWeek.includes(day);
+}
+
 type TourOption = { type: TourType; emoji: string; label: string; desc: string };
 const TOUR_OPTIONS: TourOption[] = [
   { type: "city_sightseeing",       emoji: "🏙️", label: "City Sightseeing",       desc: "Full-day tour within the city (8 hrs)" },
@@ -178,16 +193,26 @@ export default function DriverDetailClient() {
     try {
       if (selectedOption === "flexi") {
         if (!flexiStartTime || !flexiEndTime || flexiHours <= 0) throw new Error("Please select valid start and end times");
+        const flexiTourForValidation = getTourForType("flexi");
+        const flexiDays = flexiTourForValidation?.schedule.daysOfWeek ?? [];
+        if (flexiDays.length > 0 && !isDateAllowed(tourDate, flexiDays)) {
+          const day = new Date(tourDate + "T12:00:00").getDay();
+          throw new Error(`Driver is not available on ${DAY_NAMES_FULL[day]}s. Operating days: ${formatAllowedDays(flexiDays)}`);
+        }
         await createFlexiBooking(
           driver.id, flexiHours, flexiRate, tourDate,
           specialRequests || undefined,
           flexiStartTime, flexiEndTime,
           pickupLocation?.address, pickupLocation?.lat, pickupLocation?.lng,
         );
-        await createFlexiBooking(driver.id, flexiHours, flexiRate, tourDate, specialRequests || undefined, flexiStartTime, flexiEndTime);
       } else {
         const tour = getTourForType(selectedOption);
         if (!tour) throw new Error("No tour found for this type");
+        const tourDays = tour.schedule.daysOfWeek;
+        if (tourDays.length > 0 && !isDateAllowed(tourDate, tourDays)) {
+          const day = new Date(tourDate + "T12:00:00").getDay();
+          throw new Error(`Driver is not available on ${DAY_NAMES_FULL[day]}s. Operating days: ${formatAllowedDays(tourDays)}`);
+        }
         const total = tour.pricePerPerson; // full cab price — not multiplied by guest count
         await createTourBooking(
           tour.id, driver.id, selectedOption, guestCount, tourDate, total,
@@ -480,19 +505,36 @@ export default function DriverDetailClient() {
 
                             {/* Booking form */}
                             <form onSubmit={handleSubmit} className="space-y-3 mt-3">
-                              <div>
-                                <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
-                                  <Calendar className="w-3 h-3" /> Date *
-                                </label>
-                                <input
-                                  type="date"
-                                  value={tourDate}
-                                  onChange={(e) => setTourDate(e.target.value)}
-                                  required
-                                  min={new Date().toISOString().split("T")[0]}
-                                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
-                                />
-                              </div>
+                              {(() => {
+                                const currentTour = opt.type === "flexi" ? getTourForType("flexi") : tour;
+                                const allowedDays = currentTour?.schedule.daysOfWeek ?? [];
+                                const allowedLabel = formatAllowedDays(allowedDays);
+                                const dateInvalid = tourDate.length > 0 && allowedDays.length > 0 && !isDateAllowed(tourDate, allowedDays);
+                                return (
+                                  <div>
+                                    <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                      <Calendar className="w-3 h-3" /> Date *
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={tourDate}
+                                      onChange={(e) => setTourDate(e.target.value)}
+                                      required
+                                      min={new Date().toISOString().split("T")[0]}
+                                      className={`w-full px-4 py-3 rounded-2xl border bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 text-sm ${dateInvalid ? "border-red-400 focus:ring-red-400/40" : "border-slate-200 focus:ring-indigo-400/40"}`}
+                                    />
+                                    {allowedLabel && (
+                                      <p className={`text-xs mt-1.5 flex items-center gap-1 ${dateInvalid ? "text-red-500 font-semibold" : "text-slate-400"}`}>
+                                        <Calendar className="w-3 h-3 shrink-0" />
+                                        {dateInvalid
+                                          ? `Not available on this day. Operates: ${allowedLabel}`
+                                          : `Available: ${allowedLabel}`}
+                                      </p>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+
 
                               {opt.type !== "flexi" && tour && (
                                 <div>
@@ -573,7 +615,11 @@ export default function DriverDetailClient() {
 
                               <button
                                 type="submit"
-                                disabled={submitting || !tourDate}
+                                disabled={submitting || !tourDate || (() => {
+                                  const t = opt.type === "flexi" ? getTourForType("flexi") : tour;
+                                  const days = t?.schedule.daysOfWeek ?? [];
+                                  return days.length > 0 && !isDateAllowed(tourDate, days);
+                                })()}
                                 className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 disabled:opacity-50 transition-opacity shadow-md shadow-indigo-100"
                               >
                                 {submitting ? "Sending request…" : "Send Booking Request"}
