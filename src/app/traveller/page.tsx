@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MapPin, Search, ChevronDown, Compass, Zap, Mountain } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
@@ -45,6 +45,21 @@ const DEFAULT_IMAGE = {
   emoji: "🇮🇳",
 };
 
+function SpaRedirectRestorer() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const redirectPath = searchParams.get("p");
+    if (redirectPath && redirectPath !== "/" && redirectPath !== "/traveller/" && redirectPath !== "/traveller") {
+      const search = searchParams.get("q") ? "?" + decodeURIComponent(searchParams.get("q")!) : "";
+      const hash   = searchParams.get("h") ? "#" + decodeURIComponent(searchParams.get("h")!) : "";
+      router.replace(redirectPath + search + hash);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+}
+
 export default function TravellerHomePage() {
   const router = useRouter();
   const { states, citiesForState, loading } = useCityStateOptions();
@@ -72,6 +87,7 @@ export default function TravellerHomePage() {
 
   return (
     <RequireTravellerAuth>
+      <Suspense fallback={null}><SpaRedirectRestorer /></Suspense>
       <div className="min-h-screen bg-slate-50 pb-24">
 
         {/* ── Slim Header ── */}
