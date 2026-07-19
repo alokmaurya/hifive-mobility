@@ -166,9 +166,21 @@ export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip,
               </div>
             )}
             {booking.pickupAddress && (
-              <div className="flex items-start gap-2 text-sm text-zinc-400">
+              <div className="flex items-start gap-2 text-sm">
                 <MapPin className="w-3.5 h-3.5 text-yellow-400 shrink-0 mt-0.5" />
-                <span className="text-yellow-200">{booking.pickupAddress}</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-yellow-200">{booking.pickupAddress}</span>
+                  {booking.pickupLat && booking.pickupLng && (
+                    <a
+                      href={`https://www.google.com/maps?q=${booking.pickupLat},${booking.pickupLng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-sky-400 hover:text-sky-300 underline underline-offset-2"
+                    >
+                      Open in Google Maps →
+                    </a>
+                  )}
+                </div>
               </div>
             )}
           </div>

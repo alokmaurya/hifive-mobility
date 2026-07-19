@@ -111,6 +111,8 @@ export interface Booking {
   ratingComment?: string;
   // Pickup location set by traveller
   pickupAddress?: string;
+  pickupLat?: number;
+  pickupLng?: number;
 }
 
 export interface TourEarning {
