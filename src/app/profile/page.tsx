@@ -100,35 +100,31 @@ function CarForm({ initial, onSave, onCancel, saving, carId, uploadingCarId, onP
   onPhotoUpload?: (carId: string, file: File) => void;
 }) {
   const [d, setD] = useState<DriverCarDraft>(initial);
-  const [touched, setTouched] = useState(false);
   const photoRef = useRef<HTMLInputElement>(null);
 
   function toggle(key: keyof DriverCarDraft) {
     setD((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
   }
 
-  const missing = (!d.carBrand ? "Brand" : "") || (!d.vehicleModel ? "Model" : "") || (!d.vehiclePlate ? "Number Plate" : "");
-
   return (
     <div className="space-y-3 pt-1">
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Brand <span className="text-red-400">*</span></label>
+          <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Brand</label>
           <input value={d.carBrand} onChange={(e) => setD(p => ({ ...p, carBrand: e.target.value }))}
-            placeholder="e.g. Maruti" className={`w-full px-3 py-2 rounded-xl border bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${touched && !d.carBrand ? "border-red-500" : "border-zinc-700"}`} />
+            placeholder="e.g. Maruti" className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
         </div>
         <div>
-          <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Model <span className="text-red-400">*</span></label>
+          <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Model</label>
           <input value={d.vehicleModel} onChange={(e) => setD(p => ({ ...p, vehicleModel: e.target.value }))}
-            placeholder="e.g. Ertiga" className={`w-full px-3 py-2 rounded-xl border bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${touched && !d.vehicleModel ? "border-red-500" : "border-zinc-700"}`} />
+            placeholder="e.g. Ertiga" className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
         </div>
       </div>
 
       <div>
-        <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Number Plate <span className="text-red-400">*</span></label>
+        <label className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide block mb-1">Number Plate</label>
         <input value={d.vehiclePlate} onChange={(e) => setD(p => ({ ...p, vehiclePlate: e.target.value.toUpperCase() }))}
-          placeholder="e.g. HP 01 AB 1234" className={`w-full px-3 py-2 rounded-xl border bg-zinc-800 text-white text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-400/50 ${touched && !d.vehiclePlate ? "border-red-500" : "border-zinc-700"}`} />
-        {touched && !d.vehiclePlate && <p className="text-[10px] text-red-400 mt-1">Number plate is required</p>}
+          placeholder="e.g. HP 01 AB 1234" className="w-full px-3 py-2 rounded-xl border border-zinc-700 bg-zinc-800 text-white text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-yellow-400/50" />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -194,14 +190,11 @@ function CarForm({ initial, onSave, onCancel, saving, carId, uploadingCarId, onP
         </div>
       )}
 
-      {touched && missing && (
-        <p className="text-[10px] text-red-400 text-center">Please fill in: {missing}</p>
-      )}
       <div className="flex gap-2 pt-1">
         <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center gap-1.5">
           <X className="w-4 h-4 text-zinc-400" /><span className="text-sm font-semibold text-zinc-300">Cancel</span>
         </button>
-        <button onClick={() => { setTouched(true); if (d.carBrand && d.vehicleModel && d.vehiclePlate) onSave(d); }} disabled={saving}
+        <button onClick={() => onSave(d)} disabled={saving || !d.carBrand || !d.vehicleModel || !d.vehiclePlate}
           className="flex-1 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 flex items-center justify-center gap-1.5">
           <Check className="w-4 h-4 text-black" /><span className="text-sm font-semibold text-black">{saving ? "Saving…" : "Save Car"}</span>
         </button>
