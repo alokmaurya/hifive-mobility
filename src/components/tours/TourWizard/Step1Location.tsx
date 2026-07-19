@@ -29,7 +29,7 @@ const STATE_CITIES: Record<string, string[]> = {
   "Tamil Nadu": ["Chennai","Coimbatore","Madurai","Tiruchirappalli","Salem","Tirunelveli","Erode","Vellore","Thanjavur","Tirupur","Ooty","Kodaikanal","Kanyakumari","Mahabalipuram","Rameswaram"],
   "Telangana": ["Hyderabad","Warangal","Nizamabad","Karimnagar","Ramagundam","Khammam","Mahbubnagar","Nalgonda","Adilabad","Suryapet"],
   "Tripura": ["Agartala","Dharmanagar","Udaipur","Kailasahar","Belonia","Sabroom"],
-  "Uttar Pradesh": ["Lucknow","Kanpur","Ghaziabad","Agra","Meerut","Varanasi","Allahabad","Bareilly","Aligarh","Moradabad","Mathura","Vrindavan","Ayodhya","Gorakhpur","Noida","Rishikesh"],
+  "Uttar Pradesh": ["Sultanpur","Lucknow","Kanpur","Ghaziabad","Agra","Meerut","Varanasi","Allahabad","Bareilly","Aligarh","Moradabad","Mathura","Vrindavan","Ayodhya","Gorakhpur","Noida","Rishikesh"],
   "Uttarakhand": ["Dehradun","Haridwar","Rishikesh","Nainital","Mussoorie","Roorkee","Haldwani","Kashipur","Rudrapur","Auli","Jim Corbett","Kedarnath","Badrinath","Chakrata"],
   "West Bengal": ["Kolkata","Asansol","Siliguri","Durgapur","Bardhaman","Malda","Baharampur","Habra","Kharagpur","Shantiniketan","Darjeeling","Sundarbans","Digha"],
   "Delhi": ["New Delhi","Dwarka","Rohini","Janakpuri","Lajpat Nagar","Saket","Vasant Kunj","Connaught Place","Karol Bagh","Chandni Chowk"],
