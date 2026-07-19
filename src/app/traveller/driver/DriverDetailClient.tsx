@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   ChevronLeft, Star, Users, Briefcase, PawPrint, Cigarette, Car,
   CheckCircle, XCircle, MapPin, Clock, Calendar, MessageSquare,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, BadgeCheck,
 } from "lucide-react";
 import RequireTravellerAuth from "@/components/ui/RequireTravellerAuth";
 import TravellerBottomNav from "@/components/traveller/TravellerBottomNav";
@@ -14,9 +15,27 @@ import { useTravellerBookings } from "@/hooks/useTravellerBookings";
 import type { Driver } from "@/types/driver";
 import type { Tour } from "@/types/tour";
 import type { TourType } from "@/types/traveller";
+import type { PickupLocation } from "@/components/traveller/PickupLocationMap";
 import { formatTime } from "@/lib/utils";
 
+const PickupLocationMap = dynamic(() => import("@/components/traveller/PickupLocationMap"), { ssr: false });
+
 const FUEL_LABEL: Record<string, string> = { petrol: "Petrol", diesel: "Diesel", cng: "CNG" };
+
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_NAMES_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function formatAllowedDays(daysOfWeek: number[]): string {
+  if (!daysOfWeek || daysOfWeek.length === 0) return "";
+  if (daysOfWeek.length === 7) return "Every day";
+  return daysOfWeek.slice().sort((a, b) => a - b).map((d) => DAY_NAMES[d]).join(", ");
+}
+
+function isDateAllowed(dateStr: string, daysOfWeek: number[]): boolean {
+  if (!dateStr || !daysOfWeek || daysOfWeek.length === 0) return true;
+  const day = new Date(dateStr + "T12:00:00").getDay(); // noon to avoid TZ edge cases
+  return daysOfWeek.includes(day);
+}
 
 type TourOption = { type: TourType; emoji: string; label: string; desc: string };
 const TOUR_OPTIONS: TourOption[] = [
@@ -64,14 +83,17 @@ export default function DriverDetailClient() {
   const [carByTourType, setCarByTourType] = useState<Record<string, CarInfo>>({});
   const [tours, setTours]     = useState<Tour[]>([]);
   const [loadingPage, setLoadingPage] = useState(true);
+  const [cityCenter, setCityCenter] = useState<{ lat: number; lng: number } | undefined>();
 
   const [selectedOption, setSelectedOption] = useState<TourType>("city_sightseeing");
   const [expanded, setExpanded]             = useState<TourType | null>(null);
 
   const [tourDate, setTourDate]               = useState("");
   const [guestCount, setGuestCount]           = useState(1);
-  const [hoursRequested, setHoursRequested]   = useState(4);
+  const [flexiStartTime, setFlexiStartTime]   = useState("");
+  const [flexiEndTime, setFlexiEndTime]       = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
+  const [pickupLocation, setPickupLocation]   = useState<PickupLocation | null>(null);
   const [submitting, setSubmitting]           = useState(false);
   const [submitError, setSubmitError]         = useState<string | null>(null);
   const [submitted, setSubmitted]             = useState(false);
@@ -92,24 +114,13 @@ export default function DriverDetailClient() {
         .ilike("city", `%${city}%`),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (supabase as any).from("driver_cars").select("*").eq("driver_id", driverId).eq("is_active", true).limit(1).single(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("bookings").select("traveller_rating").eq("driver_id", driverId).not("traveller_rating", "is", null),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase as any).from("bookings").select("id").eq("driver_id", driverId).eq("status", "completed"),
-    ]).then(([driverRes, toursRes, carRes, ratingsRes, completedRes]) => {
+    ]).then(([driverRes, toursRes, carRes]) => {
       function mapCar(c: Record<string, unknown>): CarInfo {
         return { vehicleModel: (c.vehicle_model as string) ?? "", vehiclePlate: (c.vehicle_plate as string) ?? "", carBrand: (c.car_brand as string) ?? "", vehicleType: (c.vehicle_type as string) ?? "suv", vehicleCapacity: (c.vehicle_capacity as number) ?? 4, fuelType: (c.fuel_type as string) ?? "petrol", isAc: (c.is_ac as boolean) ?? true, luggageCapacityBags: (c.luggage_capacity_bags as number) ?? 2, isPetFriendly: (c.is_pet_friendly as boolean) ?? false, smokingAllowed: (c.smoking_allowed as boolean) ?? false, cabPhoto: (c.cab_photo as string) ?? "" };
       }
+      // rating and total_tours_run are kept in sync by DB trigger — read directly from drivers table
       if (driverRes.data) {
-        const d = mapDriver(driverRes.data as Record<string, unknown>);
-        const rows = (ratingsRes.data ?? []) as { traveller_rating: number }[];
-        if (rows.length > 0) {
-          d.rating = Math.round((rows.reduce((s, r) => s + r.traveller_rating, 0) / rows.length) * 10) / 10;
-        }
-        const trips = completedRes.data?.length ?? 0;
-        d.totalTrips = trips;
-        d.totalToursRun = trips;
-        setDriver(d);
+        setDriver(mapDriver(driverRes.data as Record<string, unknown>));
       }
       if (carRes.data) setCar(mapCar(carRes.data as Record<string, unknown>));
       const tourRows = ((toursRes.data ?? []) as Record<string, unknown>[]);
@@ -158,7 +169,17 @@ export default function DriverDetailClient() {
       );
       setLoadingPage(false);
     });
-  }, [driverId, city]);
+
+    // Geocode city name to set initial map center
+    if (city) {
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(`${city}${state ? `, ${state}` : ""},India`)}&format=json&limit=1`, { headers: { "Accept-Language": "en" } })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data?.[0]) setCityCenter({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+        })
+        .catch(() => {});
+    }
+  }, [driverId, city, state]);
 
   function getTourForType(type: TourType): Tour | undefined {
     return tours.find((t) => t.tourType === type || t.category === type);
@@ -171,12 +192,33 @@ export default function DriverDetailClient() {
     setSubmitError(null);
     try {
       if (selectedOption === "flexi") {
-        await createFlexiBooking(driver.id, hoursRequested, driver.hourlyRate, tourDate, specialRequests || undefined);
+        if (!flexiStartTime || !flexiEndTime || flexiHours <= 0) throw new Error("Please select valid start and end times");
+        const flexiTourForValidation = getTourForType("flexi");
+        const flexiDays = flexiTourForValidation?.schedule.daysOfWeek ?? [];
+        if (flexiDays.length > 0 && !isDateAllowed(tourDate, flexiDays)) {
+          const day = new Date(tourDate + "T12:00:00").getDay();
+          throw new Error(`Driver is not available on ${DAY_NAMES_FULL[day]}s. Operating days: ${formatAllowedDays(flexiDays)}`);
+        }
+        await createFlexiBooking(
+          driver.id, flexiHours, flexiRate, tourDate,
+          specialRequests || undefined,
+          flexiStartTime, flexiEndTime,
+          pickupLocation?.address, pickupLocation?.lat, pickupLocation?.lng,
+        );
       } else {
         const tour = getTourForType(selectedOption);
         if (!tour) throw new Error("No tour found for this type");
+        const tourDays = tour.schedule.daysOfWeek;
+        if (tourDays.length > 0 && !isDateAllowed(tourDate, tourDays)) {
+          const day = new Date(tourDate + "T12:00:00").getDay();
+          throw new Error(`Driver is not available on ${DAY_NAMES_FULL[day]}s. Operating days: ${formatAllowedDays(tourDays)}`);
+        }
         const total = tour.pricePerPerson; // full cab price — not multiplied by guest count
-        await createTourBooking(tour.id, driver.id, selectedOption, guestCount, tourDate, total, specialRequests || undefined);
+        await createTourBooking(
+          tour.id, driver.id, selectedOption, guestCount, tourDate, total,
+          specialRequests || undefined,
+          pickupLocation?.address, pickupLocation?.lat, pickupLocation?.lng,
+        );
       }
       setSubmitted(true);
     } catch (err: unknown) {
@@ -200,7 +242,18 @@ export default function DriverDetailClient() {
 
   const flexiTour = getTourForType("flexi");
   const flexiRate = flexiTour?.hourlyRate || driver.hourlyRate;
-  const flexiTotal = hoursRequested * flexiRate;
+
+  function calcFlexiHours(start: string, end: string): number {
+    if (!start || !end) return 0;
+    const [sh, sm] = start.split(":").map(Number);
+    const [eh, em] = end.split(":").map(Number);
+    const mins = (eh * 60 + em) - (sh * 60 + sm);
+    if (mins <= 0) return 0;
+    return Math.ceil(mins / 60); // round up to next whole hour
+  }
+
+  const flexiHours = calcFlexiHours(flexiStartTime, flexiEndTime);
+  const flexiTotal = flexiHours * flexiRate;
 
   // Car for the selected tour type; fall back to first active car
   const activeCar: CarInfo | null = carByTourType[selectedOption] ?? car;
@@ -231,12 +284,20 @@ export default function DriverDetailClient() {
               <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
                 {/* Avatar + name/age/status */}
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-100 to-sky-100 rounded-2xl flex items-center justify-center flex-shrink-0 border border-indigo-100">
-                    <span className="text-2xl font-extrabold text-indigo-600">{driver.name.charAt(0).toUpperCase()}</span>
+                  <div className="w-16 h-16 rounded-2xl flex-shrink-0 overflow-hidden border border-indigo-100">
+                    {driver.photoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={driver.photoUrl} alt={driver.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-sky-100 flex items-center justify-center">
+                        <span className="text-2xl font-extrabold text-indigo-600">{driver.name.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h1 className="text-slate-900 font-extrabold text-lg leading-tight">{driver.name}</h1>
+                      {driver.isVerified && <BadgeCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />}
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                         driver.isAvailable ? "bg-green-100 text-green-600" : "bg-red-100 text-red-500"
                       }`}>
@@ -264,11 +325,11 @@ export default function DriverDetailClient() {
                   <p className="text-slate-500 text-xs leading-relaxed mb-4 border-t border-slate-50 pt-3">{driver.bio}</p>
                 )}
 
-                {/* Verified badge */}
+                {/* Aadhar-verified badge */}
                 {driver.isVerified && (
                   <div className="flex items-center gap-1.5 mb-4">
-                    <CheckCircle className="w-3.5 h-3.5 text-indigo-500" />
-                    <span className="text-indigo-600 text-xs font-semibold">Verified Driver</span>
+                    <BadgeCheck className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="text-blue-600 text-xs font-semibold">Identity Verified</span>
                   </div>
                 )}
               </div>
@@ -353,10 +414,24 @@ export default function DriverDetailClient() {
               </div>
             </div>
 
-            {/* ── RIGHT: Choose Tour Type ── */}
+            {/* ── RIGHT: Pickup Location + Choose Tour Type ── */}
             <div className="w-full lg:flex-1">
               {!submitted ? (
                 <div className="space-y-3">
+
+                  {/* Pickup Location */}
+                  <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
+                    <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-3">
+                      <MapPin className="w-3 h-3" /> Pickup Location
+                    </p>
+                    <PickupLocationMap
+                      value={pickupLocation}
+                      onChange={setPickupLocation}
+                      cityCenter={cityCenter}
+                      cityName={city || undefined}
+                    />
+                  </div>
+
                   <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-1">Choose Tour Type</p>
                   {TOUR_OPTIONS.map((opt) => {
                     const tour = getTourForType(opt.type);
@@ -430,19 +505,36 @@ export default function DriverDetailClient() {
 
                             {/* Booking form */}
                             <form onSubmit={handleSubmit} className="space-y-3 mt-3">
-                              <div>
-                                <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
-                                  <Calendar className="w-3 h-3" /> Date *
-                                </label>
-                                <input
-                                  type="date"
-                                  value={tourDate}
-                                  onChange={(e) => setTourDate(e.target.value)}
-                                  required
-                                  min={new Date().toISOString().split("T")[0]}
-                                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
-                                />
-                              </div>
+                              {(() => {
+                                const currentTour = opt.type === "flexi" ? getTourForType("flexi") : tour;
+                                const allowedDays = currentTour?.schedule.daysOfWeek ?? [];
+                                const allowedLabel = formatAllowedDays(allowedDays);
+                                const dateInvalid = tourDate.length > 0 && allowedDays.length > 0 && !isDateAllowed(tourDate, allowedDays);
+                                return (
+                                  <div>
+                                    <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                      <Calendar className="w-3 h-3" /> Date *
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={tourDate}
+                                      onChange={(e) => setTourDate(e.target.value)}
+                                      required
+                                      min={new Date().toISOString().split("T")[0]}
+                                      className={`w-full px-4 py-3 rounded-2xl border bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 text-sm ${dateInvalid ? "border-red-400 focus:ring-red-400/40" : "border-slate-200 focus:ring-indigo-400/40"}`}
+                                    />
+                                    {allowedLabel && (
+                                      <p className={`text-xs mt-1.5 flex items-center gap-1 ${dateInvalid ? "text-red-500 font-semibold" : "text-slate-400"}`}>
+                                        <Calendar className="w-3 h-3 shrink-0" />
+                                        {dateInvalid
+                                          ? `Not available on this day. Operates: ${allowedLabel}`
+                                          : `Available: ${allowedLabel}`}
+                                      </p>
+                                    )}
+                                  </div>
+                                );
+                              })()}
+
 
                               {opt.type !== "flexi" && tour && (
                                 <div>
@@ -461,21 +553,41 @@ export default function DriverDetailClient() {
                               )}
 
                               {opt.type === "flexi" && (
-                                <div>
-                                  <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
-                                    <Clock className="w-3 h-3" /> Hours Required
-                                  </label>
-                                  <div className="flex items-center gap-3">
-                                    <button type="button" onClick={() => setHoursRequested(Math.max(1, hoursRequested - 1))}
-                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">−</button>
-                                    <span className="text-slate-900 font-bold w-8 text-center">{hoursRequested}h</span>
-                                    <button type="button" onClick={() => setHoursRequested(Math.min(12, hoursRequested + 1))}
-                                      className="w-9 h-9 rounded-full border border-slate-200 bg-slate-50 text-slate-800 flex items-center justify-center text-lg hover:border-indigo-400 transition-colors">+</button>
+                                <div className="space-y-3">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                      <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                        <Clock className="w-3 h-3" /> Start Time
+                                      </label>
+                                      <input
+                                        type="time"
+                                        value={flexiStartTime}
+                                        onChange={(e) => setFlexiStartTime(e.target.value)}
+                                        required={selectedOption === "flexi"}
+                                        className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1 mb-1.5">
+                                        <Clock className="w-3 h-3" /> End Time
+                                      </label>
+                                      <input
+                                        type="time"
+                                        value={flexiEndTime}
+                                        onChange={(e) => setFlexiEndTime(e.target.value)}
+                                        required={selectedOption === "flexi"}
+                                        className="w-full px-3 py-2.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 text-sm"
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="mt-2 bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
-                                    <span className="text-slate-500 text-xs">{hoursRequested} hrs × ₹{flexiRate}/hr</span>
-                                    <span className="text-indigo-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
-                                  </div>
+                                  {flexiHours > 0 ? (
+                                    <div className="bg-indigo-50 rounded-xl px-3 py-2 flex items-center justify-between border border-indigo-100">
+                                      <span className="text-slate-500 text-xs">{flexiHours} hrs × ₹{flexiRate}/hr</span>
+                                      <span className="text-indigo-600 font-bold">₹{flexiTotal.toLocaleString("en-IN")}</span>
+                                    </div>
+                                  ) : flexiStartTime && flexiEndTime ? (
+                                    <p className="text-red-500 text-xs">End time must be after start time</p>
+                                  ) : null}
                                 </div>
                               )}
 
@@ -503,7 +615,11 @@ export default function DriverDetailClient() {
 
                               <button
                                 type="submit"
-                                disabled={submitting || !tourDate}
+                                disabled={submitting || !tourDate || (() => {
+                                  const t = opt.type === "flexi" ? getTourForType("flexi") : tour;
+                                  const days = t?.schedule.daysOfWeek ?? [];
+                                  return days.length > 0 && !isDateAllowed(tourDate, days);
+                                })()}
                                 className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-sky-500 text-white font-bold rounded-2xl hover:opacity-90 disabled:opacity-50 transition-opacity shadow-md shadow-indigo-100"
                               >
                                 {submitting ? "Sending request…" : "Send Booking Request"}

@@ -14,6 +14,7 @@ export interface TravellerBooking {
   driverId: string;
   driverName: string;
   driverPhotoUrl?: string;
+  driverIsVerified?: boolean;
   tourCity: string;
   tourDate: string;
   tourType: TourType;
@@ -36,4 +37,7 @@ export interface TravellerBooking {
   endOtp?: string;
   travellerRating?: number;
   ratingComment?: string;
+  pickupAddress?: string;
+  pickupLat?: number;
+  pickupLng?: number;
 }

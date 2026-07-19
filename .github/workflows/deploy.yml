@@ -22,6 +22,8 @@ jobs:
 
       # Automatically switches GitHub Pages source to "GitHub Actions"
       # so the app deploys correctly regardless of the current Pages setting.
+      # Automatically switches GitHub Pages source to GitHub Actions
+      # so the built app is served — no manual Pages settings needed.
       - uses: actions/configure-pages@v4
 
       - uses: actions/setup-node@v4
@@ -36,8 +38,8 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: Add .nojekyll
         run: touch ./out/.nojekyll

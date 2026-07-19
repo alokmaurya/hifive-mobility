@@ -16,7 +16,7 @@ export function useTravellerBookings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
       .from("bookings")
-      .select("*, drivers(name, photo_url), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
+      .select("*, drivers(name, photo_url, is_verified), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -47,7 +47,7 @@ export function useTravellerBookings() {
 
     setBookings(
       rows.map((r: Record<string, unknown>) => {
-        const driverRow = r.drivers as { name?: string; photo_url?: string } | null;
+        const driverRow = r.drivers as { name?: string; photo_url?: string; is_verified?: boolean } | null;
         const tourRow   = r.tours as { city?: string; start_time?: string; end_time?: string; driver_cars?: Record<string, unknown> | null } | null;
         const carRow    = tourRow?.driver_cars ?? fallbackCarsByDriver[r.driver_id as string] ?? null;
         return {
@@ -56,6 +56,7 @@ export function useTravellerBookings() {
           driverId: r.driver_id as string,
           driverName: driverRow?.name ?? "",
           driverPhotoUrl: driverRow?.photo_url || undefined,
+          driverIsVerified: driverRow?.is_verified ?? false,
           tourCity: tourRow?.city ?? (r.city as string) ?? "",
           tourDate: r.tour_date as string,
           tourType: (r.tour_type as TourType) ?? "city_sightseeing",
@@ -94,6 +95,9 @@ export function useTravellerBookings() {
     tourDate: string,
     totalAmount: number,
     specialRequests?: string,
+    pickupAddress?: string,
+    pickupLat?: number,
+    pickupLng?: number,
   ) {
     if (!user) throw new Error("Not authenticated");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,6 +112,9 @@ export function useTravellerBookings() {
       special_requests: specialRequests || null,
       status: "pending",
       tour_type: tourType,
+      pickup_address: pickupAddress ?? null,
+      pickup_lat: pickupLat ?? null,
+      pickup_lng: pickupLng ?? null,
     });
     if (error) throw error;
     await fetchBookings();
@@ -119,6 +126,11 @@ export function useTravellerBookings() {
     hourlyRate: number,
     tourDate: string,
     specialRequests?: string,
+    flexiStartTime?: string,
+    flexiEndTime?: string,
+    pickupAddress?: string,
+    pickupLat?: number,
+    pickupLng?: number,
   ) {
     if (!user) throw new Error("Not authenticated");
     const totalAmount = hoursRequested * hourlyRate;
@@ -135,6 +147,11 @@ export function useTravellerBookings() {
       tour_type: "flexi",
       hours_requested: hoursRequested,
       hourly_rate: hourlyRate,
+      flexi_start_time: flexiStartTime ?? null,
+      flexi_end_time: flexiEndTime ?? null,
+      pickup_address: pickupAddress ?? null,
+      pickup_lat: pickupLat ?? null,
+      pickup_lng: pickupLng ?? null,
     });
     if (error) throw error;
     await fetchBookings();
@@ -157,23 +174,8 @@ export function useTravellerBookings() {
       .update({ traveller_rating: rating, rating_comment: comment ?? null })
       .eq("id", bookingId);
     if (error) throw error;
-
-    // Recompute driver's average rating from all rated bookings and update drivers table
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: ratedRows } = await (supabase as any)
-      .from("bookings")
-      .select("traveller_rating")
-      .eq("driver_id", driverId)
-      .not("traveller_rating", "is", null);
-    if (ratedRows && ratedRows.length > 0) {
-      const avg = ratedRows.reduce((sum: number, r: { traveller_rating: number }) => sum + r.traveller_rating, 0) / ratedRows.length;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
-        .from("drivers")
-        .update({ rating: Math.round(avg * 10) / 10 })
-        .eq("id", driverId);
-    }
-
+    // drivers.rating is updated automatically by DB trigger (024_driver_stats_trigger)
+    // using SECURITY DEFINER so it aggregates ALL ratings, not just this traveller's.
     await fetchBookings();
   }
 

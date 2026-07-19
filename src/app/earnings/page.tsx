@@ -19,7 +19,7 @@ function EarningsContent() {
 
   const now = new Date();
   const relevant = bookings.filter((b) => {
-    if (b.status !== "confirmed") return false;
+    if (b.status !== "confirmed" && b.status !== "completed" && b.status !== "ongoing") return false;
     if (period === "month") {
       const d = new Date(b.tourDate);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
@@ -53,14 +53,11 @@ function EarningsContent() {
     toursRun: v.count,
     totalGuests: v.guests,
     grossRevenue: v.gross,
-    platformFee: Math.round(v.gross * 0.1),
-    netRevenue: Math.round(v.gross * 0.9),
+    netRevenue: Math.round(v.gross),
     bookings: v.bookings,
   }));
 
-  const totalGross  = tourEarnings.reduce((s, e) => s + e.grossRevenue, 0);
   const totalNet    = tourEarnings.reduce((s, e) => s + e.netRevenue, 0);
-  const totalFee    = tourEarnings.reduce((s, e) => s + e.platformFee, 0);
   const totalGuests = tourEarnings.reduce((s, e) => s + e.totalGuests, 0);
 
   return (
@@ -90,11 +87,10 @@ function EarningsContent() {
             <>
               <p className="text-zinc-400 text-sm">Net earnings</p>
               <p className="text-4xl font-bold text-yellow-400 mt-1">{formatCurrency(totalNet)}</p>
-              <div className="grid grid-cols-3 gap-3 mt-5">
+              <div className="grid grid-cols-2 gap-3 mt-5">
                 {[
-                  { label: "Gross",       value: formatCurrency(totalGross) },
-                  { label: "Platform Fee", value: formatCurrency(totalFee) },
-                  { label: "Guests",      value: String(totalGuests) },
+                  { label: "Bookings", value: String(tourEarnings.reduce((s, e) => s + e.toursRun, 0)) },
+                  { label: "Guests",   value: String(totalGuests) },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-zinc-800 rounded-xl p-2.5 text-center">
                     <p className="text-zinc-500 text-[10px] mb-0.5">{label}</p>
@@ -161,10 +157,6 @@ function EarningsContent() {
                           <p className="text-base font-bold text-yellow-400">{formatCurrency(e.netRevenue)}</p>
                           <p className="text-xs text-zinc-500">net</p>
                         </div>
-                      </div>
-                      <div className="mt-2 pt-2 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
-                        <span>Gross: {formatCurrency(e.grossRevenue)}</span>
-                        <span>Fee: {formatCurrency(e.platformFee)}</span>
                       </div>
                     </div>
 
