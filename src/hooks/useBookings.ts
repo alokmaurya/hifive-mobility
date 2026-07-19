@@ -42,6 +42,8 @@ function mapBooking(row: Record<string, unknown>, tourName?: string, tourCity?: 
     travellerRating: (row.traveller_rating as number) ?? undefined,
     ratingComment: (row.rating_comment as string) || undefined,
     pickupAddress: (row.pickup_address as string) || undefined,
+    pickupLat: (row.pickup_lat as number) || undefined,
+    pickupLng: (row.pickup_lng as number) || undefined,
   };
 }
 
@@ -56,7 +58,7 @@ export function useBookings() {
     setLoading(true);
     const { data, error } = await supabase
       .from("bookings")
-      .select("*, tours(name, city, category, tour_code), travellers(name, phone, email), start_otp, end_otp, traveller_rating, rating_comment, pickup_address")
+      .select("*, tours(name, city, category, tour_code), travellers(name, phone, email), start_otp, end_otp, traveller_rating, rating_comment, pickup_address, pickup_lat, pickup_lng")
       .eq("driver_id", user.id)
       .order("created_at", { ascending: false });
 
