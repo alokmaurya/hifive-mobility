@@ -109,6 +109,8 @@ export interface Booking {
   // Traveller rating after trip completion
   travellerRating?: number;
   ratingComment?: string;
+  // Pickup location set by traveller
+  pickupAddress?: string;
 }
 
 export interface TourEarning {
