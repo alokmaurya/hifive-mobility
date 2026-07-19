@@ -165,6 +165,12 @@ export default function BookingCard({ booking, onConfirm, onCancel, onStartTrip,
                 <span>{tourMeta.emoji} {tourMeta.label}</span>
               </div>
             )}
+            {booking.pickupAddress && (
+              <div className="flex items-start gap-2 text-sm text-zinc-400">
+                <MapPin className="w-3.5 h-3.5 text-yellow-400 shrink-0 mt-0.5" />
+                <span className="text-yellow-200">{booking.pickupAddress}</span>
+              </div>
+            )}
           </div>
 
           {booking.guest.specialRequests && (
