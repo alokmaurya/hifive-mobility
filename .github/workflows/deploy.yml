@@ -29,14 +29,15 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
 
-      - name: Publish built files to docs/ on main
+      - name: Deploy to gh-pages branch
         run: |
-          touch out/.nojekyll
+          cd out
+          touch .nojekyll
+          git init
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
-          # Remove old docs/ and replace with fresh build output
-          git rm -rf docs/ --ignore-unmatch
-          cp -r out docs
-          git add -f docs/
-          git diff --cached --quiet || git commit -m "deploy: update docs/ from ${{ github.sha }}"
-          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
+          git add -A
+          git commit -m "Deploy: ${{ github.sha }}"
+          git push --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            HEAD:gh-pages
