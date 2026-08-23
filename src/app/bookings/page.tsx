@@ -32,20 +32,35 @@ function BookingsContent() {
 
       {/* Tabs */}
       <div className="bg-zinc-900 border-b border-zinc-800 sticky top-14 z-20">
-        <div className="max-w-md mx-auto flex px-4">
-          {tabs.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`flex-1 py-3 text-sm font-semibold border-b-2 transition-colors ${
-                tab === key
-                  ? "border-yellow-400 text-yellow-400"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="max-w-md mx-auto flex px-2 gap-1 py-2">
+          {tabs.map(({ key, label }) => {
+            const dot = key === "pending" && pendingCount > 0
+              ? pendingCount
+              : key === "ongoing" && ongoingCount > 0
+              ? ongoingCount
+              : 0;
+            return (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`relative flex-1 py-2 px-1 rounded-xl text-xs font-bold transition-all ${
+                  tab === key
+                    ? "bg-yellow-400 text-black shadow"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800"
+                }`}
+              >
+                {key === "pending" ? "Pending" :
+                 key === "confirmed" ? "Confirmed" :
+                 key === "ongoing" ? "On Going" :
+                 key === "completed" ? "Done" : "Cancelled"}
+                {dot > 0 && (
+                  <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-extrabold flex items-center justify-center ${
+                    tab === key ? "bg-black text-yellow-400" : "bg-yellow-400 text-black"
+                  }`}>{dot}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -53,7 +68,7 @@ function BookingsContent() {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-20 bg-zinc-900 rounded-2xl border border-zinc-800 animate-pulse" />
+              <div key={i} className="h-32 bg-zinc-900 rounded-2xl border border-zinc-800 animate-pulse" />
             ))}
           </div>
         ) : filtered.length > 0 ? (
