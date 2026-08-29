@@ -136,6 +136,37 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["bookings"]["Insert"]>;
       };
+      travellers: {
+        Row: {
+          id: string;
+          name: string;
+          phone: string | null;
+          email: string | null;
+          created_at: string;
+          interests: string[];
+          food_preference: string;
+          dietary_notes: string;
+          preferred_language: string;
+          city: string;
+          emergency_contact: string;
+          bio: string;
+        };
+        Insert: {
+          id: string;
+          name?: string;
+          phone?: string | null;
+          email?: string | null;
+          created_at?: string;
+          interests?: string[];
+          food_preference?: string;
+          dietary_notes?: string;
+          preferred_language?: string;
+          city?: string;
+          emergency_contact?: string;
+          bio?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["travellers"]["Insert"]>;
+      };
     };
   };
 }

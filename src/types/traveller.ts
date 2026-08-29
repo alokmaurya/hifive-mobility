@@ -4,6 +4,13 @@ export interface Traveller {
   phone: string;
   email: string;
   createdAt: string;
+  interests?: string[];
+  foodPreference?: string;
+  dietaryNotes?: string;
+  preferredLanguage?: string;
+  city?: string;
+  emergencyContact?: string;
+  bio?: string;
 }
 
 export type TourType = "city_sightseeing" | "outer_city_sightseeing" | "flexi";
