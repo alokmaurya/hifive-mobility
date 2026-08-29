@@ -8,9 +8,13 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  const isTraveller = user?.user_metadata?.user_type === "traveller";
+
   useEffect(() => {
-    if (!loading && !user) router.replace("/auth/login");
-  }, [loading, user, router]);
+    if (loading) return;
+    if (!user) { router.replace("/auth/login"); return; }
+    if (isTraveller) router.replace("/traveller");
+  }, [loading, user, isTraveller, router]);
 
   if (loading) {
     return (
@@ -20,7 +24,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
     );
   }
 
-  if (!user) return null;
+  if (!user || isTraveller) return null;
 
   return <>{children}</>;
 }

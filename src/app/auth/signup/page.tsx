@@ -30,7 +30,7 @@ export default function SignupPage() {
     const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: { data: { name, user_type: "driver" } },
     });
 
     if (signUpErr) {

@@ -10,7 +10,9 @@ export default function Root() {
 
   useEffect(() => {
     if (loading) return;
-    router.replace(user ? "/dashboard" : "/auth/login");
+    if (!user) { router.replace("/auth/login"); return; }
+    const isTraveller = user.user_metadata?.user_type === "traveller";
+    router.replace(isTraveller ? "/traveller" : "/dashboard");
   }, [user, loading, router]);
 
   return (
