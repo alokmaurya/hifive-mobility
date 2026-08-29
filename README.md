@@ -565,3 +565,5 @@ The workflow reads both with `secrets.X || vars.X` so either approach works.
 ---
 
 *Built with Next.js + Supabase + Tailwind CSS. Deployed on GitHub Pages.*
+
+Developer Name : Alok Maurya
