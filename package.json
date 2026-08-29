@@ -5,10 +5,16 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:mobile": "IS_MOBILE=true next build",
+    "cap:sync": "IS_MOBILE=true next build && npx cap sync android",
+    "cap:open": "npx cap open android",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@supabase/supabase-js": "^2.108.2",
     "@types/leaflet": "^1.9.21",
     "leaflet": "^1.9.4",
