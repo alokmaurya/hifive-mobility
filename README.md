@@ -1,8 +1,8 @@
 # HiFive Tours — Driver & Traveller Platform
 
-A two-sided marketplace for curated sightseeing tours across India. Drivers create and manage tours; travellers browse, book, and rate their experiences. Built as a fully static Next.js app deployed on GitHub Pages, backed by Supabase for auth, database, and file storage.
+A two-sided marketplace for curated sightseeing tours across India. Drivers create and manage tours; travellers browse, book, and rate their experiences. Built as a high-performance Next.js app deployed as a static web app on GitHub Pages and packaged natively as an **Android mobile app via Capacitor**, backed by Supabase for auth, database, and file storage.
 
-**Live app:** https://alokmaurya.github.io/hifive-mobility/
+**Live Web App:** https://alokmaurya.github.io/hifive-mobility/
 
 ---
 
@@ -13,16 +13,17 @@ A two-sided marketplace for curated sightseeing tours across India. Drivers crea
 3. [Features](#features)
    - [Driver Portal](#driver-portal)
    - [Traveller Portal](#traveller-portal)
-4. [Pages & Routes](#pages--routes)
-5. [Components](#components)
-6. [Hooks](#hooks)
-7. [Types](#types)
-8. [Database Schema](#database-schema)
-9. [Authentication](#authentication)
-10. [Storage](#storage)
-11. [Deployment](#deployment)
-12. [Local Development](#local-development)
-13. [Environment Variables](#environment-variables)
+4. [Mobile Application (Android)](#mobile-application-android)
+5. [Pages & Routes](#pages--routes)
+6. [Components](#components)
+7. [Hooks](#hooks)
+8. [Types](#types)
+9. [Database Schema](#database-schema)
+10. [Authentication](#authentication)
+11. [Storage](#storage)
+12. [Deployment & CI/CD](#deployment--cicd)
+13. [Local Development](#local-development)
+14. [Environment Variables](#environment-variables)
 
 ---
 
@@ -31,6 +32,7 @@ A two-sided marketplace for curated sightseeing tours across India. Drivers crea
 | Technology | Version | Purpose |
 |---|---|---|
 | [Next.js](https://nextjs.org) | 16.x | App Router, static export (`output: "export"`) |
+| [Capacitor](https://capacitorjs.com) | 8.x | Native mobile runtime & Android wrapper (`@capacitor/android`) |
 | [React](https://react.dev) | 19.x | UI runtime |
 | [TypeScript](https://www.typescriptlang.org) | 5.x | Type safety |
 | [Supabase](https://supabase.com) | 2.x | PostgreSQL database, Auth, Storage |
@@ -44,46 +46,46 @@ A two-sided marketplace for curated sightseeing tours across India. Drivers crea
 ## Project Structure
 
 ```
-src/
-├── app/                        # Next.js App Router pages
-│   ├── page.tsx                # Root splash / auth redirect
-│   ├── layout.tsx              # Root layout with font and providers
-│   ├── auth/                   # Driver authentication
-│   │   ├── login/
-│   │   ├── signup/
-│   │   └── reset-password/
-│   ├── dashboard/              # Driver dashboard (stats)
-│   ├── tours/                  # Tour management
-│   │   ├── page.tsx
-│   │   ├── new/
-│   │   └── edit/
-│   ├── bookings/               # Booking management
-│   ├── earnings/               # Earnings & payouts
-│   ├── profile/                # Driver profile & cars
-│   ├── support/                # Driver support tickets
-│   └── traveller/              # Traveller sub-app
-│       ├── auth/               # Traveller auth (login/signup)
-│       ├── page.tsx            # Traveller home
-│       ├── explore/            # Browse drivers by city
-│       ├── driver/             # Driver detail page
-│       ├── tour/               # Tour detail & booking
-│       ├── bookings/           # Traveller booking history
-│       ├── profile/            # Traveller profile
-│       └── support/            # Traveller support tickets
-├── components/
-│   ├── bookings/               # BookingCard
-│   ├── tours/
-│   │   └── TourWizard/         # 7-step tour creation wizard
-│   ├── traveller/              # Traveller-specific components
-│   ├── ui/                     # Shared UI primitives
-│   └── providers/              # React context providers
-├── contexts/
-│   └── AuthContext.tsx         # Supabase auth state
-├── hooks/                      # Data-fetching hooks
-├── lib/
-│   ├── supabase.ts             # Supabase client
-│   └── utils.ts                # Shared helpers (formatCurrency, formatDate, etc.)
-└── types/                      # TypeScript interfaces
+├── android/                    # Native Android Gradle project (Capacitor)
+├── capacitor.config.ts         # Capacitor mobile app configuration
+├── src/
+│   ├── app/                    # Next.js App Router pages
+│   │   ├── page.tsx            # Root splash / auth redirect
+│   │   ├── layout.tsx          # Root layout with font and providers
+│   │   ├── auth/               # Driver authentication (login/signup)
+│   │   ├── dashboard/          # Driver dashboard (stats)
+│   │   ├── tours/              # Tour management & wizard
+│   │   ├── bookings/           # Driver booking management
+│   │   ├── earnings/           # Driver earnings & payouts
+│   │   ├── profile/            # Driver profile & cars
+│   │   ├── support/            # Driver support tickets
+│   │   └── traveller/          # Traveller sub-app
+│   │       ├── auth/           # Traveller auth (login/signup)
+│   │       ├── page.tsx        # Traveller home
+│   │       ├── explore/        # Browse drivers by city
+│   │       ├── driver/         # Driver detail page
+│   │       ├── tour/           # Tour detail & booking
+│   │       ├── bookings/       # Traveller booking history
+│   │       ├── profile/        # Traveller profile & preferences
+│   │       └── support/        # Traveller support tickets
+│   ├── components/
+│   │   ├── bookings/           # BookingCard
+│   │   ├── tours/
+│   │   │   └── TourWizard/     # 7-step tour creation wizard
+│   │   ├── traveller/          # Traveller-specific components
+│   │   ├── ui/                 # Shared UI primitives
+│   │   └── providers/          # React context providers
+│   ├── contexts/
+│   │   └── AuthContext.tsx     # Supabase auth state
+│   ├── hooks/                  # Data-fetching hooks
+│   ├── lib/
+│   │   ├── supabase.ts         # Supabase client with build-safe fallbacks
+│   │   ├── database.types.ts   # Database schema definitions
+│   │   └── utils.ts            # Shared formatting helpers
+│   └── types/                  # TypeScript interfaces
+└── supabase/
+    ├── migrations/             # SQL migrations (001 to 028)
+    └── schema.sql              # Supabase initial schema
 ```
 
 ---
@@ -112,8 +114,8 @@ src/
 
 | Feature | Description |
 |---|---|
-| **Account signup** | Registration with name, email, phone, and password. Creates a row in the `travellers` table. |
-| **Home screen** | State/city selector with live data (only cities that have published tours). Dynamic hero images from Wikimedia. |
+| **Account signup** | Registration with name, email, phone, and password. Creates a row in the `travellers` table with role separation. |
+| **Home screen** | State/city selector with live data (only cities that have published tours). Dynamic hero images. |
 | **Explore drivers** | Browse all drivers operating in the selected city. View driver photo, rating, vehicle, tour types, and verification badge. |
 | **Driver detail** | Full driver profile: bio, languages, specialties, all offered tours with stops, schedules, and pricing. |
 | **Tour booking** | Select tour date, guest count, and pickup location on an interactive Leaflet map. Booking saves pickup address + coordinates. |
@@ -121,8 +123,40 @@ src/
 | **Pickup map** | Leaflet map with OpenStreetMap tiles. Click/drag to pin exact pickup location. Reverse-geocodes address via Nominatim. |
 | **Booking history** | View all bookings (upcoming, ongoing, completed, cancelled). See OTP codes for trip verification. |
 | **Post-trip rating** | Rate the driver 1–5 stars with an optional comment after trip completion. |
+| **Traveller Profile & Preferences** | Manage personal information, **Food Habits & Diet** (`Pure Veg/Jain`, `Vegetarian`, `Eggitarian`, `Non-Veg`, `Vegan`, `Halal`, `No Preference`) + dietary notes, **Travel Interests** (12 category chips + custom tags), **Preferred Guide/Driver Language**, and **Emergency Contact**. |
 | **Booking cancellation** | Cancel pending bookings before the driver confirms. |
 | **Support tickets** | Create and track support tickets. |
+
+---
+
+## Mobile Application (Android)
+
+HiFive Mobility is configured with **Capacitor** to run as a native Android application.
+
+### Architecture & Build Flow
+```
+Next.js Source Code ──► (npm run build:mobile) ──► /out (Static Build) ──► (cap sync) ──► /android (Native APK / AAB)
+```
+
+- **Zero Rewrite**: 100% of React components, Supabase queries, and Leaflet maps run inside the native container.
+- **Routing**: `next.config.ts` handles multi-target paths — `basePath: ""` for mobile apps vs `basePath: "/hifive-mobility"` for GitHub Pages.
+
+### Mobile Commands
+
+```bash
+# 1. Compile Next.js web app for mobile and sync with Android
+npm run cap:sync
+
+# 2. Open the native Android project in Android Studio
+npm run cap:open
+```
+
+### Running in Android Studio
+1. Open the **`android`** folder in Android Studio.
+2. Connect an Android phone via USB (with **USB Debugging** enabled) or start a Virtual Device / Emulator.
+3. Click the green **▶ Play** button to deploy and run.
+4. To create a standalone `.apk` installable file:  
+   **Build → Build Bundle(s) / APK(s) → Build APK(s)**.
 
 ---
 
@@ -156,7 +190,7 @@ src/
 | `/traveller/driver` | `DriverDetailClient.tsx` | Driver profile + available tours |
 | `/traveller/tour` | `TourDetailClient.tsx` | Tour detail + booking form with map |
 | `/traveller/bookings` | `app/traveller/bookings/page.tsx` | Booking history with OTPs and rating |
-| `/traveller/profile` | `app/traveller/profile/page.tsx` | Traveller profile editor |
+| `/traveller/profile` | `app/traveller/profile/page.tsx` | Traveller profile, interests, food habits & travel style editor |
 | `/traveller/support` | `app/traveller/support/page.tsx` | Traveller support tickets |
 
 ---
@@ -168,12 +202,6 @@ src/
 | Component | Description |
 |---|---|
 | `BookingCard.tsx` | Full booking card for driver view. Expandable detail panel showing traveller info, booking details, pickup location with Google Maps link, OTP entry fields, and action buttons (Confirm / Decline / Start Trip / End Trip). Shows traveller's post-trip rating on completed bookings. |
-
-### `src/components/tours/`
-
-| Component | Description |
-|---|---|
-| `TourCard.tsx` | Driver's tour listing card. Shows tour code, city/state, category, vehicle info, schedule, price, and status badge. Three-dot action menu: Publish/Pause, Edit, Duplicate, Delete. |
 
 ### `src/components/tours/TourWizard/`
 
@@ -220,7 +248,7 @@ src/
 | `useCars` | `driver_cars` | Driver vehicle CRUD + car photo upload. |
 | `useCityStateOptions` | `tours` | Derives distinct city/state pairs from published tours for traveller home dropdowns. |
 | `useDriversByCity` | `tours`, `drivers`, `driver_cars` | Fetches drivers with published tours in a given city + state. Aggregates tour types and active cars per driver. |
-| `useTraveller` | `travellers` | Traveller profile read/update. |
+| `useTraveller` | `travellers` | Traveller profile read/update (interests, food habits, diet notes, language, city, emergency contact, bio). |
 | `useTravellerBookings` | `bookings`, `drivers`, `tours`, `driver_cars` | Traveller bookings: create tour/flexi booking with pickup coords, cancel, submit rating. |
 | `useSupport` | `support_tickets` | Create and read support tickets. Role-scoped (`"driver"` or `"traveller"`). Handles missing table gracefully. |
 
@@ -228,229 +256,76 @@ src/
 
 ## Types
 
-### `src/types/tour.ts`
-
-```ts
-type TourStatus    = "draft" | "published" | "paused" | "past"
-type TourCategory  = "city_sightseeing" | "outer_city_sightseeing" | "flexi" | "heritage"
-                   | "nature" | "food" | "adventure" | "religious" | "coastal" | "city"
-type BookingStatus = "pending" | "confirmed" | "ongoing" | "completed" | "cancelled"
-
-interface TourStop     { id, name, description?, durationMinutes, order }
-interface TourSchedule { startTime, endTime, daysOfWeek[], specificDates? }
-interface Tour         { id, driverId, name, tourCode, city, state, category, stops,
-                         schedule, fullCabPrice, overtimeRatePerHour, hourlyRate,
-                         airportDropPrice, railwayDropPrice, busStationDropPrice,
-                         offersAirportDrop, offersRailwayDrop, offersBusDrop,
-                         offersHourly, isAc, isPetFriendly, smokingAllowed,
-                         maxGuests, rating, reviewCount, status, ... }
-interface Booking      { id, tourId, tourName, tourDate, guest, status, totalAmount,
-                         tourType, hoursRequested, flexiStartTime, flexiEndTime,
-                         startOtp, endOtp, travellerRating, ratingComment,
-                         pickupAddress, pickupLat, pickupLng, ... }
-interface TourDraft    { /* wizard state — mirrors Tour for create/edit */ }
-```
-
-### `src/types/driver.ts`
-
-```ts
-type FuelType    = "petrol" | "diesel" | "cng" | "hybrid" | "ev"
-type VehicleType = "hatchback" | "sedan" | "suv" | "van" | "tempo"
-type Gender      = "male" | "female" | "other" | ""
-
-interface Driver { id, name, rating, totalToursRun, totalGuestsHosted,
-                   bio, languages, specialties, yearsExperience, age, gender,
-                   phone, photoUrl, aadharNumber, aadharFrontUrl, aadharBackUrl,
-                   isVerified, isAvailable, hourlyRate, primaryCar, allCars }
-```
-
-### `src/types/car.ts`
-
-```ts
-interface DriverCar      { id, driverId, carBrand, vehicleModel, vehiclePlate,
-                           vehicleType, vehicleCapacity, fuelType, isAc,
-                           isPetFriendly, smokingAllowed, luggageCapacityBags,
-                           cabPhoto, isActive, createdAt }
-interface DriverCarDraft { /* Omit<DriverCar, 'id' | 'driverId' | 'createdAt'> */ }
-```
-
 ### `src/types/traveller.ts`
 
 ```ts
 type TourType = "city_sightseeing" | "outer_city_sightseeing" | "flexi"
 
-interface Traveller        { id, name, phone, email, createdAt }
-interface TravellerBooking { id, driverName, driverPhoto, vehicleModel,
-                             tourName, tourDate, tourType, status,
-                             startOtp, endOtp, travellerRating, ratingComment,
-                             pickupAddress, pickupLat, pickupLng, ... }
+interface Traveller {
+  id: string
+  name: string
+  phone: string
+  email: string
+  createdAt: string
+  interests?: string[]
+  foodPreference?: string
+  dietaryNotes?: string
+  preferredLanguage?: string
+  city?: string
+  emergencyContact?: string
+  bio?: string
+}
+
+interface TravellerBooking {
+  id: string
+  driverName: string
+  driverPhotoUrl?: string
+  vehicleModel?: string
+  tourCity: string
+  tourDate: string
+  tourType: TourType
+  status: "pending" | "confirmed" | "ongoing" | "cancelled" | "completed"
+  startOtp?: string
+  endOtp?: string
+  travellerRating?: number
+  ratingComment?: string
+  pickupAddress?: string
+  pickupLat?: number
+  pickupLng?: number
+  ...
+}
 ```
 
 ---
 
 ## Database Schema
 
-### Tables
-
-#### `drivers`
+### `travellers`
 | Column | Type | Notes |
 |---|---|---|
-| `id` | uuid | Matches Supabase auth user id |
-| `name` | text | |
-| `email` | text | |
-| `phone` | text | Optional |
-| `age` | int | |
-| `gender` | text | |
-| `photo_url` | text | Supabase Storage URL |
-| `bio` | text | |
-| `languages` | text[] | |
-| `specialties` | text[] | |
-| `years_experience` | int | |
-| `aadhar_number` | text | |
-| `aadhar_front_url` | text | Supabase Storage URL |
-| `aadhar_back_url` | text | Supabase Storage URL |
-| `is_verified` | boolean | Auto-set when Aadhaar + photos are present |
-| `is_available` | boolean | |
-| `hourly_rate` | numeric | |
-| `rating` | numeric | Updated by DB trigger |
-| `total_tours_run` | int | Updated by DB trigger |
-| `total_guests_hosted` | int | Updated by DB trigger |
+| `id` | uuid | Matches auth user id |
+| `name` | text | Full name |
+| `phone` | text | Contact number |
+| `email` | text | Login email |
+| `interests` | text[] | Array of travel interest tags |
+| `food_preference` | text | Diet/food habit preference |
+| `dietary_notes` | text | Allergies & specific requests |
+| `preferred_language` | text | Preferred guide/driver language |
+| `city` | text | Home city |
+| `emergency_contact` | text | Emergency contact information |
+| `bio` | text | Travel bio / preferences |
+| `created_at` | timestamptz | Account creation timestamp |
 
-#### `driver_cars`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | |
-| `driver_id` | uuid | FK → drivers |
-| `car_brand` | text | |
-| `vehicle_model` | text | |
-| `vehicle_plate` | text | |
-| `vehicle_type` | text | hatchback / sedan / suv / van / tempo |
-| `vehicle_capacity` | int | Seat count |
-| `fuel_type` | text | petrol / diesel / cng / hybrid / ev |
-| `is_ac` | boolean | |
-| `is_pet_friendly` | boolean | |
-| `smoking_allowed` | boolean | |
-| `luggage_capacity_bags` | int | |
-| `cab_photo` | text | Supabase Storage URL |
-| `is_active` | boolean | |
-| `created_at` | timestamptz | |
-
-#### `tours`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | |
-| `driver_id` | uuid | FK → drivers |
-| `car_id` | uuid | FK → driver_cars |
-| `name` | text | Auto-generated (city + driver + vehicle) |
-| `tour_code` | text | Short unique code, e.g. `MABA-X1-DEZIRE-01` |
-| `city` | text | |
-| `state` | text | |
-| `country` | text | Default: India |
-| `category` | text | TourCategory enum value |
-| `tour_type` | text | city_sightseeing / outer_city_sightseeing / flexi |
-| `status` | text | draft / published / paused / past |
-| `full_cab_price` | numeric | Price for the entire cab |
-| `overtime_rate_per_hour` | numeric | |
-| `hourly_rate` | numeric | For flexi tours |
-| `airport_drop_price` | numeric | |
-| `railway_drop_price` | numeric | |
-| `bus_station_drop_price` | numeric | |
-| `offers_airport_drop` | boolean | |
-| `offers_railway_drop` | boolean | |
-| `offers_bus_drop` | boolean | |
-| `offers_hourly` | boolean | |
-| `is_ac` | boolean | |
-| `is_pet_friendly` | boolean | |
-| `smoking_allowed` | boolean | |
-| `max_guests` | int | |
-| `start_time` | time | |
-| `end_time` | time | |
-| `days_of_week` | int[] | 0=Sun … 6=Sat |
-| `estimated_duration_minutes` | int | |
-| `rating` | numeric | |
-| `review_count` | int | |
-| `current_bookings` | int | |
-
-#### `tour_stops`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | |
-| `tour_id` | uuid | FK → tours |
-| `name` | text | |
-| `duration_minutes` | int | |
-| `stop_order` | int | Display order |
-
-#### `bookings`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | |
-| `tour_id` | uuid | FK → tours (nullable for flexi) |
-| `driver_id` | uuid | FK → drivers |
-| `traveller_id` | uuid | FK → travellers |
-| `guest_name` | text | |
-| `guest_count` | int | |
-| `tour_date` | date | |
-| `total_amount` | numeric | |
-| `status` | text | pending / confirmed / ongoing / completed / cancelled |
-| `tour_type` | text | |
-| `hours_requested` | int | Flexi only |
-| `hourly_rate` | numeric | Flexi only |
-| `flexi_start_time` | time | Flexi only |
-| `flexi_end_time` | time | Flexi only |
-| `special_requests` | text | |
-| `start_otp` | text | 4-digit, generated on confirm |
-| `end_otp` | text | 4-digit, generated on trip start |
-| `traveller_rating` | int | 1–5 |
-| `rating_comment` | text | |
-| `pickup_address` | text | Reverse-geocoded from map pin |
-| `pickup_lat` | float8 | |
-| `pickup_lng` | float8 | |
-| `created_at` | timestamptz | |
-
-#### `travellers`
-| Column | Type |
-|---|---|
-| `id` | uuid (= auth user id) |
-| `name` | text |
-| `phone` | text |
-| `email` | text |
-| `created_at` | timestamptz |
-
-#### `support_tickets`
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid | |
-| `user_id` | uuid | FK → auth user |
-| `user_role` | text | `"driver"` or `"traveller"` |
-| `category` | text | |
-| `subject` | text | |
-| `description` | text | |
-| `status` | text | open / in_progress / resolved |
-| `admin_reply` | text | |
-| `created_at` | timestamptz | |
-| `updated_at` | timestamptz | |
-
-### DB Trigger
-
-**`024_driver_stats_trigger`** — `SECURITY DEFINER` trigger on the `bookings` table. Automatically updates `drivers.rating`, `drivers.total_tours_run`, and `drivers.total_guests_hosted` whenever a booking is completed or a traveller rating is submitted. This ensures driver stats are always accurate without client-side aggregation.
+*(See `supabase/schema.sql` and `supabase/migrations/` for full DDL of `drivers`, `driver_cars`, `tours`, `tour_stops`, `bookings`, and `support_tickets`).*
 
 ---
 
 ## Authentication
 
-The app uses **Supabase Auth** (email + password only).
-
-### Driver Auth Flow
-1. **Signup** — `supabase.auth.signUp({ email, password, options: { data: { name } } })` → DB trigger / insert creates a row in `drivers` with `id` = auth user id.
-2. **Login** — `supabase.auth.signInWithPassword({ email, password })` → redirect to `/dashboard`.
-3. **Forgot password** — `supabase.auth.resetPasswordForEmail(email, { redirectTo: .../auth/reset-password })`.
-4. **Logout** — `supabase.auth.signOut()` from `AuthContext`.
-
-### Traveller Auth Flow
-Same Supabase calls, but signup inserts into `travellers` instead of `drivers`. Separate UI at `/traveller/auth/`.
-
-### Session Management
-`AuthContext` wraps the app with a single Supabase `onAuthStateChange` listener, reactively updating `session` and `user` state. Route guards (`RequireAuth`, `RequireTravellerAuth`) redirect unauthenticated users to their respective login pages.
+The app uses **Supabase Auth** with role-based routing:
+- **Drivers**: Signed up with `user_type: "driver"` → redirects to `/dashboard`.
+- **Travellers**: Signed up with `user_type: "traveller"` → redirects to `/traveller`.
+- **Route Guards**: `RequireAuth` protects driver routes; `RequireTravellerAuth` protects traveller routes.
 
 ---
 
@@ -465,77 +340,35 @@ Supabase Storage bucket: **`driver-photos`**
 | `{userId}/aadhar-back.{ext}` | Aadhaar card back image |
 | `{userId}/car-{carId}.{ext}` | Car photo |
 
-All uploads use `upsert: true` so re-uploads overwrite the previous file at the same path.
-
 ---
 
-## Deployment
+## Deployment & CI/CD
 
-The app builds to a **fully static export** (no Node.js server needed at runtime).
-
-### Build configuration (`next.config.ts`)
-
-```ts
-output: "export"          // static HTML/CSS/JS only
-basePath: "/hifive-mobility"   // GitHub Pages subpath
-assetPrefix: "/hifive-mobility/"
-trailingSlash: true
-images: { unoptimized: true }  // required for static export
-```
-
-### GitHub Actions (`.github/workflows/deploy.yml`)
-
-Triggers on push to `main` or manual dispatch.
-
-```
-1. actions/checkout@v4
-2. actions/configure-pages@v4   → switches Pages source to "GitHub Actions"
-3. actions/setup-node@v4        → Node 20, npm cache
-4. npm ci
-5. npm run build                → injects NEXT_PUBLIC_SUPABASE_* from secrets
-6. touch ./out/.nojekyll        → prevents Jekyll from processing the output
-7. actions/upload-pages-artifact@v3
-8. actions/deploy-pages@v4
-```
-
-### GitHub Pages settings
-
-Pages source must be set to **GitHub Actions** (not "Deploy from a branch") at:  
-`github.com/alokmaurya/hifive-mobility/settings/pages`
-
-### SPA routing on GitHub Pages
-
-Because GitHub Pages returns a 404 for unknown paths, a custom `404.html` captures the URL and redirects to `/?p=<original-path>`. The root `layout.tsx` includes an inline script that reads the `?p=` query param and restores the original path via `window.location.replace` on load.
+- **GitHub Pages (Web App)**: Automatically built and deployed on every push to `main` via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+- **Mobile Builds (Android)**: Run `npm run cap:sync` to export the web application and sync it into the native Gradle project inside `android/`.
 
 ---
 
 ## Local Development
 
 ```bash
-# Clone the repo
+# Clone the repository
 git clone https://github.com/alokmaurya/hifive-mobility.git
 cd hifive-mobility
 
 # Install dependencies
 npm install
 
-# Set up environment variables
+# Configure environment variables
 cp .env.example .env.local
 # Fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-# Start the dev server
+# Start local web development server
 npm run dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-> **Note:** In development, `basePath` is empty so the app runs at `/`. In production builds, it runs at `/hifive-mobility`.
-
-### Other commands
-
-```bash
-npm run build    # production static export → ./out
-npm run lint     # ESLint
+# Or build & sync for Android mobile development
+npm run cap:sync
+npm run cap:open
 ```
 
 ---
@@ -547,23 +380,8 @@ npm run lint     # ESLint
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | `.env.local` (local) / GitHub Secrets or Variables (CI) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous public key | `.env.local` (local) / GitHub Secrets or Variables (CI) |
 
-For GitHub Actions CI, add these as either:
-- **Repository Secrets** (`Settings → Secrets and variables → Actions → Secrets`)
-- **Repository Variables** (`Settings → Secrets and variables → Actions → Variables`)
-
-The workflow reads both with `secrets.X || vars.X` so either approach works.
-
 ---
 
-## Contributing
+*Built with Next.js + Supabase + Tailwind CSS + Capacitor. Deployed on GitHub Pages & Android.*
 
-1. Create a feature branch from `main`: `git checkout -b feat/your-feature`
-2. Make your changes and commit with a descriptive message
-3. Push and open a pull request against `main`
-4. CI will build and lint automatically
-
----
-
-*Built with Next.js + Supabase + Tailwind CSS. Deployed on GitHub Pages.*
-
-Developer Name : Alok Maurya
+Developer Name: Alok Maurya
