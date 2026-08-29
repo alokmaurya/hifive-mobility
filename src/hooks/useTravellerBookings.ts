@@ -16,7 +16,7 @@ export function useTravellerBookings() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
       .from("bookings")
-      .select("*, drivers(name, photo_url, is_verified), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
+      .select("*, pickup_address, pickup_lat, pickup_lng, drivers(name, photo_url, is_verified), tours(city, start_time, end_time, driver_cars(car_brand, vehicle_model, vehicle_plate, vehicle_capacity, is_ac, cab_photo))")
       .eq("traveller_id", user.id)
       .order("created_at", { ascending: false });
 

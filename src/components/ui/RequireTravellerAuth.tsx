@@ -8,11 +8,13 @@ export default function RequireTravellerAuth({ children }: { children: React.Rea
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  const isDriver = user ? user.user_metadata?.user_type === "driver" : false;
+
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/traveller/auth/login");
-    }
-  }, [user, loading, router]);
+    if (loading) return;
+    if (!user) { router.replace("/traveller/auth/login"); return; }
+    if (isDriver) router.replace("/dashboard");
+  }, [user, loading, isDriver, router]);
 
   if (loading) {
     return (
@@ -22,6 +24,6 @@ export default function RequireTravellerAuth({ children }: { children: React.Rea
     );
   }
 
-  if (!user) return null;
+  if (!user || isDriver) return null;
   return <>{children}</>;
 }
