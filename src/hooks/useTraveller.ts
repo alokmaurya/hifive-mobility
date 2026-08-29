@@ -57,9 +57,16 @@ export function useTraveller() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from("travellers")
-      .update(payload)
-      .eq("id", user.id);
-    if (error) throw error;
+      .upsert({
+        id: user.id,
+        email: user.email,
+        ...payload,
+      });
+
+    if (error) {
+      console.error("Supabase travellers save error:", error);
+      throw new Error(error.message || error.details || error.hint || "Failed to save profile to database");
+    }
     await fetchTraveller();
   }
 

@@ -150,7 +150,18 @@ export default function TravellerProfilePage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to save profile");
+      const rawMsg =
+        err instanceof Error
+          ? err.message
+          : (err as { message?: string; details?: string })?.message ||
+            (err as { message?: string; details?: string })?.details ||
+            String(err);
+
+      if (rawMsg.includes("column") || rawMsg.includes("schema cache") || rawMsg.includes("interests") || rawMsg.includes("food_preference")) {
+        setError("Database columns missing: Please run Migration 028 in Supabase SQL editor to enable new preference fields.");
+      } else {
+        setError(rawMsg || "Failed to save profile");
+      }
     } finally {
       setSaving(false);
     }
